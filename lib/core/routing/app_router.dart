@@ -1,5 +1,7 @@
+import 'package:dartz/dartz.dart';
 import 'package:flutter/material.dart';
-import 'package:pdf_kit/core/permission_service.dart';
+import 'package:pdf_kit/presentation/pages/file_screen_page.dart';
+import 'package:pdf_kit/service/permission_service.dart';
 
 // Route name constants
 class AppRoutes {
@@ -31,8 +33,40 @@ class OnboardingPage extends StatelessWidget {
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
+
+  void _handlePermission(BuildContext context) async {
+    Either<Exception, bool> result =
+        await PermissionService.requestStoragePermission();
+
+    result.fold(
+      (exception) {
+        // On exception, show error message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: ${exception.toString()}')),
+        );
+      },
+      (granted) {
+        // On success, show granted/denied message
+        final message = granted
+            ? "✅ Permission granted"
+            : "❌ Permission denied";
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(message)));
+      },
+    );
+  }
+
   @override
-  Widget build(BuildContext context) => const FilePermissionScreen();
+  Widget build(BuildContext context) => Scaffold(
+    appBar: AppBar(title: const Text("Storage Permission")),
+    body: Center(
+      child: ElevatedButton(
+        onPressed: () => _handlePermission(context),
+        child: const Text("Request Storage Permission"),
+      ),
+    ),
+  );
 }
 
 class AllFilesPage extends StatelessWidget {
@@ -163,7 +197,7 @@ class AppRouter {
   static Route<dynamic> onGenerateRoute(RouteSettings settings) {
     switch (settings.name) {
       case AppRoutes.home:
-        return _material(const HomePage(), settings);
+        return _material(AndroidFilesScreen(), settings);
       case AppRoutes.onboarding:
         return _material(const OnboardingPage(), settings);
       case AppRoutes.allFiles:
