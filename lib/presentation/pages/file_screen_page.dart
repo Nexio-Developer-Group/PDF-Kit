@@ -2,13 +2,15 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:pdf_kit/core/models/file_model.dart';
+import 'package:pdf_kit/models/file_model.dart';
 import 'package:pdf_kit/presentation/component/document_tile.dart';
 import 'package:pdf_kit/presentation/component/folder_tile.dart';
 import 'package:pdf_kit/service/file_system_serevice.dart';
 import 'package:pdf_kit/service/open_service.dart';
 import 'package:pdf_kit/service/path_service.dart';
 import 'package:pdf_kit/service/permission_service.dart';
+import 'package:pdf_kit/core/app_export.dart';
+import 'package:pdf_kit/presentation/sheets/new_folder_sheet.dart';
 
 class AndroidFilesScreen extends StatefulWidget {
   final String? initialPath;
@@ -21,9 +23,10 @@ class _AndroidFilesScreenState extends State<AndroidFilesScreen> {
   List<Directory> _roots = [];
   String? _currentPath;
   List<FileInfo> _entries = [];
+
+  // Search-related fields left intact in case you reuse filtering locally later.
   String _query = '';
   bool _searching = false;
-
   StreamSubscription? _searchSub;
 
   @override
@@ -76,117 +79,85 @@ class _AndroidFilesScreenState extends State<AndroidFilesScreen> {
     );
   }
 
-  void _startDeepSearch(String q) {
-    if (_currentPath == null) return;
-    _cancelSearch();
-    setState(() {
-      _query = q;
-      _entries = [];
-      _searching = true;
-    });
-    debugPrint('startDeepSearch: query="$q" path=$_currentPath');
-    // Optional: exclude heavy system paths if desired.
-    final stream = FileSystemService.searchStream(
-      _currentPath!,
-      q,
-      // excludePrefixes: const ['/storage/emulated/0/Android/obb'],
-    );
-    _searchSub = stream.listen(
-      (either) {
-        either.fold(
-          (err) {
-            debugPrint('searchStream yielded error: $err');
-          },
-          (fi) {
-            debugPrint('searchStream hit: ${fi.path}');
-            setState(() => _entries = [..._entries, fi]);
-          },
-        );
-      },
-      onDone: () {
-        debugPrint('searchStream done for query="$q"');
-      },
-      onError: (err) {
-        debugPrint('searchStream subscription error: $err');
-      },
-    );
-  }
-
-  Future<void> _clearSearchAndRestore() async {
-    FocusScope.of(context).unfocus();
-    setState(() {
-      _query = '';
-      _searching = false;
-    });
-    debugPrint('clearSearchAndRestore: restoring $_currentPath');
-    if (_currentPath != null) await _open(_currentPath!);
-  }
-
   @override
   Widget build(BuildContext context) {
-    // In AndroidFilesScreen.build:
-    final items = _searching
-        ? _entries // deep-search already filtered to files
-        : (_query.isEmpty
-              ? _entries
-              : _entries
-                    .where(
-                      (e) =>
-                          e.name.toLowerCase().contains(_query.toLowerCase()),
-                    )
-                    .toList());
-
-    final folders = items
-        .where((e) => e.isDirectory)
-        .toList(); // will be empty when _searching
+    // No in-place searching here; this screen only lists.
+    final items = _entries;
+    final folders = items.where((e) => e.isDirectory).toList();
     final files = items.where((e) => !e.isDirectory).toList();
 
-    return PopScope(
-      canPop: !(_searching || _query.isNotEmpty),
-      onPopInvoked: (didPop) async {
-        if (didPop) return;
-        // Back pressed while searching: clear filter and stay
-        await _clearSearchAndRestore();
-      },
-      child: Scaffold(
-        appBar: AppBar(
-          title: _searching || _query.isNotEmpty
-              ? TextField(
-                  autofocus: true,
-                  decoration: const InputDecoration(
-                    hintText: 'Search files and folders...',
-                  ),
-                  onChanged: _startDeepSearch,
-                )
-              : Text(_currentPath ?? 'Storage'),
-          actions: [
-            if (!_searching && _query.isEmpty)
-              IconButton(
-                icon: const Icon(Icons.search),
-                onPressed: () => setState(() => _searching = true),
+    return Scaffold(
+      // Custom header replaces AppBar
+      body: SafeArea(
+        child: Padding(
+          padding: screenPadding,
+          child: Column(
+            children: [
+              _buildHeader(context),
+              Expanded(
+                child: _currentPath == null
+                    ? _buildRoots()
+                    : _buildListing(folders, files, context),
               ),
-            if (_searching || _query.isNotEmpty)
-              IconButton(
-                icon: const Icon(Icons.close),
-                onPressed: _clearSearchAndRestore,
-              ),
-          ],
+            ],
+          ),
         ),
-        body: SafeArea(
-          top: false,
-          bottom: true,
-          child: _currentPath == null
-              ? _buildRoots()
-              : _buildListing(folders, files),
-        ),
-        floatingActionButton: !_searching && _query.isEmpty
-            ? FloatingActionButton(
-                onPressed: () =>
-                    Navigator.of(context).popUntil((r) => r.isFirst),
-                tooltip: 'Back to Roots',
-                child: const Icon(Icons.home),
-              )
-            : null,
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => Navigator.of(context).popUntil((r) => r.isFirst),
+        tooltip: 'Back to Roots',
+        child: const Icon(Icons.home),
+      ),
+    );
+  }
+
+  Widget _buildHeader(BuildContext context) {
+    return Container(
+      height: 56,
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      alignment: Alignment.center,
+      child: Row(
+        children: [
+          // Left: app glyph (simple circle + star to emulate Files brand feel)
+          Container(
+            width: 34,
+            height: 34,
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.primary.withOpacity(0.15),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              Icons.widgets_rounded,
+              size: 20,
+              color: Theme.of(context).colorScheme.primary,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Text(
+            'Files',
+            style: Theme.of(
+              context,
+            ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600),
+          ),
+          const Spacer(),
+          IconButton(
+            icon: const Icon(Icons.search),
+            onPressed: () {
+              // Go to dedicated search screen, pass the current path.
+              Navigator.pushNamed(
+                context,
+                AppRoutes.search,
+                arguments: {'path': _currentPath},
+              );
+            },
+            tooltip: 'Search',
+          ),
+          IconButton(
+            icon: const Icon(Icons.more_vert),
+            onPressed: () {},
+            tooltip: 'More',
+          ),
+        ],
       ),
     );
   }
@@ -203,65 +174,112 @@ class _AndroidFilesScreenState extends State<AndroidFilesScreen> {
         .toList(),
   );
 
-  Widget _buildListing(
-    List<FileInfo> folders,
-    List<FileInfo> files,
-  ) => RefreshIndicator(
-    onRefresh: () => _open(_currentPath!),
-    child: ListView(
-      padding: const EdgeInsets.only(bottom: 16),
+  Widget _buildEmptyState() {
+    final theme = Theme.of(context);
+    return RefreshIndicator(
+      onRefresh: () => _open(_currentPath!),
+      child: ListView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.symmetric(horizontal: 24),
+        children: [
+          const SizedBox(height: 56),
+          Center(child: Image.asset('assets/not_found.png')),
+          const SizedBox(height: 12),
+          Text(
+            'This folder is empty',
+            textAlign: TextAlign.center,
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 24),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildListing(List<FileInfo> folders, List<FileInfo> files, BuildContext context) {
+    final isEmpty = folders.isEmpty && files.isEmpty;
+
+    return Column(
       children: [
+        // Fixed (non-scrollable) toolbar
         Padding(
-          padding: const EdgeInsets.all(12),
-          child: Text('Total: ${folders.length + files.length} items'),
+          padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 12),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              Text(
+                'Total: ${folders.length + files.length} items',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              const Spacer(),
+              const IconButton(
+                padding: EdgeInsets.all(0),
+                onPressed: null,
+                icon: Icon(Icons.import_export_rounded),
+              ),
+              IconButton(
+                onPressed:() {showNewFolderSheet(context: context, onCreate: null);},
+                icon: Icon(Icons.create_new_folder_outlined),
+              ),
+            ],
+          ),
         ),
 
-        if (folders.isNotEmpty)
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 12),
-            child: Text('Folders'),
-          ),
-
-        // Folders with FolderEntryCard (uses only FileInfo)
-        ...folders.map(
-          (f) => Container(
-            margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
-            child: FolderEntryCard(
-              info: f,
-              onTap: () => _openFolder(f.path),
-              onMenuSelected: (v) => _handleFolderMenu(v, f),
-            ),
-          ),
-        ),
-
-        // if (files.isNotEmpty) const Divider(),
-
-        // Files with DocEntryCard (uses only FileInfo; shows PDF/image preview)
-        ...files.map(
-          (f) => Container(
-            margin: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
-            child: DocEntryCard(
-              info: f,
-              onOpen: () => OpenService.open(f.path),
-              onMenu: (v) => _handleFileMenu(v, f),
-            ),
-          ),
+        // Scrollable content only
+        Expanded(
+          child: isEmpty
+              ? _buildEmptyState()
+              : RefreshIndicator(
+                  onRefresh: () => _open(_currentPath!),
+                  child: ListView(
+                    padding: const EdgeInsets.only(bottom: 16),
+                    children: [
+                      // Folders
+                      ...folders.map(
+                        (f) => Container(
+                          margin: const EdgeInsets.symmetric(
+                            vertical: 4,
+                            horizontal: 12,
+                          ),
+                          child: FolderEntryCard(
+                            info: f,
+                            onTap: () => _openFolder(f.path),
+                            onMenuSelected: (v) => _handleFolderMenu(v, f),
+                          ),
+                        ),
+                      ),
+                      // Files
+                      ...files.map(
+                        (f) => Container(
+                          margin: const EdgeInsets.symmetric(
+                            vertical: 4,
+                            horizontal: 12,
+                          ),
+                          child: DocEntryCard(
+                            info: f,
+                            onOpen: () => OpenService.open(f.path),
+                            onMenu: (v) => _handleFileMenu(v, f),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
         ),
       ],
-    ),
-  );
+    );
+  }
 
-  // Optional simple handlers
   void _handleFolderMenu(String v, FileInfo f) {
     switch (v) {
       case 'open':
         _openFolder(f.path);
         break;
       case 'rename':
-        // TODO: implement rename
         break;
       case 'delete':
-        // TODO: implement delete
         break;
     }
   }
@@ -272,10 +290,8 @@ class _AndroidFilesScreenState extends State<AndroidFilesScreen> {
         OpenService.open(f.path);
         break;
       case 'rename':
-        // TODO: implement rename
         break;
       case 'delete':
-        // TODO: implement delete
         break;
     }
   }

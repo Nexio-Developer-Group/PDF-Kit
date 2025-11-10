@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:dartz/dartz.dart';
 import 'package:flutter/material.dart';
 import 'package:mime/mime.dart';
-import 'package:pdf_kit/core/models/file_model.dart';
+import 'package:pdf_kit/models/file_model.dart';
 import 'package:pdf_kit/service/fiel_access_guard.dart';
 
 class FileSystemFailure implements Exception {
@@ -34,7 +34,7 @@ class FileSystemService {
     final ext = _ext(path);
     if (_imageExts.contains(ext) || _pdfExts.contains(ext)) return true;
     final mime = lookupMimeType(path);
-    if (mime == null) return false; // fallback if unknown [1]
+    if (mime == null) return false; // fallback if unknown
     return mime.startsWith('image/') || mime == 'application/pdf';
   }
 
@@ -49,7 +49,7 @@ class FileSystemService {
         try {
           if (e is Directory) {
             final st = await e.stat();
-            final count = await _count(e);
+            final count = await _countVisibleChildren(e);
             out.add(
               FileInfo(
                 name: _base(e.path),
@@ -146,34 +146,34 @@ class FileSystemService {
     }
   }
 
-  // Deep search (only image/pdf files)
-// file_system_service.dart
-static Stream<Either<Exception, FileInfo>> searchStream(
-  String dirPath,
-  String query,
-) async* {
-  final q = query.toLowerCase();
+  // Deep search (only image/pdf files) — matches NAME WITHOUT EXTENSION
+  static Stream<Either<Exception, FileInfo>> searchStream(
+    String dirPath,
+    String query,
+  ) async* {
+    final q = query.toLowerCase();
 
-  await for (final either in walkSafe(dirPath)) {
-    Exception? err;
-    FileInfo? fi;
-    either.fold((l) => err = l, (r) => fi = r);  // dartz fold to unwrap [1]
+    await for (final either in walkSafe(dirPath)) {
+      Exception? err;
+      FileInfo? fi;
+      either.fold((l) => err = l, (r) => fi = r);
 
-    if (err != null) {
-      yield Left(err!);
-      continue;
-    }
-    if (fi == null) continue;
+      if (err != null) {
+        yield Left(err!);
+        continue;
+      }
+      if (fi == null) continue;
 
-    // Only files should match; ignore directories entirely
-    if (fi!.isDirectory) continue;
+      // Only files should match; ignore directories entirely
+      if (fi!.isDirectory) continue;
 
-    // If you also restrict to images/PDFs inside walkSafe, this remains consistent
-    if (fi!.name.toLowerCase().contains(q)) {
-      yield Right(fi!);
+      // Compare against stem (filename without extension), case-insensitive.
+      final stemLower = _nameStemLower(fi!.name);
+      if (stemLower.contains(q)) {
+        yield Right(fi!);
+      }
     }
   }
-}
 
   static Future<Either<Exception, List<FileInfo>>> search(
     String dirPath,
@@ -190,16 +190,50 @@ static Stream<Either<Exception, FileInfo>> searchStream(
     }
   }
 
-  static Future<int> _count(Directory d) async {
+  // Helpers
+
+  // Return lowercase stem of a filename (strip only the last extension).
+  // Keeps leading-dot filenames intact (e.g., ".nomedia").
+  static String _nameStemLower(String name) {
+    final lower = name.toLowerCase();
+    final i = lower.lastIndexOf('.');
+    if (i <= 0) return lower; // no dot or leading-dot file; don't strip
+    return lower.substring(0, i);
+  }
+
+  static Future<int> _countVisibleChildren(Directory dir, {int? cap}) async {
+    int n = 0;
     try {
-      return await d.list(followLinks: false).length;
+      // Skip if we can’t enter this directory at all.
+      if (!await FileAccessGuard.canEnterDirectory(dir)) return 0;
+
+      await for (final e in dir.list(followLinks: false)) {
+        try {
+          if (e is Directory) {
+            if (await FileAccessGuard.canEnterDirectory(e)) {
+              n++;
+            }
+          } else if (e is File) {
+            if (await FileAccessGuard.canReadFile(e) &&
+                _isImageOrPdfPath(e.path)) {
+              n++;
+            }
+          }
+          if (cap != null && n >= cap) return n; // early stop, e.g., 99+
+        } on FileSystemException {
+          // Ignore unreadable child entries; continue counting others.
+        }
+      }
     } catch (_) {
+      // On parent listing failure, return 0.
       return 0;
     }
+    return n;
   }
 
   static String _base(String p) =>
       p.split(Platform.pathSeparator).where((e) => e.isNotEmpty).last;
+
   static String _ext(String p) {
     final i = p.lastIndexOf('.');
     return i == -1 ? '' : p.substring(i + 1).toLowerCase();

@@ -1,6 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+/// overall screens paddings
+/// 10 pixels horizontal padding
+const EdgeInsets screenPadding = EdgeInsets.symmetric(
+  horizontal: 12.0,
+  vertical: 0.0,
+);
+
 /// A class that contains all theme configurations for the PDF management application.
 /// Implements Contemporary Professional Minimalism with Adaptive Professional Palette.
 class AppTheme {
@@ -107,14 +114,8 @@ class AppTheme {
         color: onSurfaceLight,
         letterSpacing: 0.15,
       ),
-      iconTheme: IconThemeData(
-        color: onSurfaceLight,
-        size: 24,
-      ),
-      actionsIconTheme: IconThemeData(
-        color: onSurfaceLight,
-        size: 24,
-      ),
+      iconTheme: IconThemeData(color: onSurfaceLight, size: 24),
+      actionsIconTheme: IconThemeData(color: onSurfaceLight, size: 24),
     ),
 
     // Card theme with subtle elevation
@@ -123,9 +124,7 @@ class AppTheme {
       elevation: 1,
       shadowColor: shadowLight,
       surfaceTintColor: surfaceLight,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12.0),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
       margin: const EdgeInsets.all(8.0),
     ),
 
@@ -190,8 +189,9 @@ class AppTheme {
         fontWeight: FontWeight.w400,
         letterSpacing: 0.1,
       ),
-      overlayColor:
-          WidgetStateProperty.all(primaryLight.withValues(alpha: 0.12)),
+      overlayColor: WidgetStateProperty.all(
+        primaryLight.withValues(alpha: 0.12),
+      ),
     ),
 
     // Floating action button with gradient reserved for primary actions
@@ -202,9 +202,7 @@ class AppTheme {
       focusElevation: 8,
       hoverElevation: 8,
       highlightElevation: 12,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16.0),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.0)),
     ),
 
     // Button themes for document actions
@@ -215,9 +213,7 @@ class AppTheme {
         elevation: 2,
         shadowColor: shadowLight,
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8.0),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
         textStyle: GoogleFonts.roboto(
           fontSize: 14,
           fontWeight: FontWeight.w500,
@@ -231,9 +227,7 @@ class AppTheme {
         foregroundColor: primaryLight,
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
         side: BorderSide(color: outlineLight),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8.0),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
         textStyle: GoogleFonts.roboto(
           fontSize: 14,
           fontWeight: FontWeight.w500,
@@ -246,9 +240,7 @@ class AppTheme {
       style: TextButton.styleFrom(
         foregroundColor: primaryLight,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8.0),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
         textStyle: GoogleFonts.roboto(
           fontSize: 14,
           fontWeight: FontWeight.w500,
@@ -264,6 +256,7 @@ class AppTheme {
     inputDecorationTheme: InputDecorationTheme(
       fillColor: surfaceLight,
       filled: true,
+      // suffixIconConstraints: BoxConstraints(maxHeight: 24, maxWidth: 24),
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8.0),
@@ -332,9 +325,7 @@ class AppTheme {
       }),
       checkColor: WidgetStateProperty.all(Colors.white),
       side: BorderSide(color: outlineLight, width: 2),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(2),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(2)),
     ),
 
     radioTheme: RadioThemeData(
@@ -391,9 +382,7 @@ class AppTheme {
       ),
       actionTextColor: accentLight,
       behavior: SnackBarBehavior.floating,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(8.0),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
       elevation: 6,
     ),
 
@@ -403,9 +392,7 @@ class AppTheme {
       elevation: 24,
       shadowColor: shadowLight,
       surfaceTintColor: surfaceLight,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12.0),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
       titleTextStyle: GoogleFonts.inter(
         fontSize: 20,
         fontWeight: FontWeight.w600,
@@ -421,9 +408,7 @@ class AppTheme {
     // List tile theme for file listings
     listTileTheme: ListTileThemeData(
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(8.0),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
       tileColor: Colors.transparent,
       selectedTileColor: primaryLight.withValues(alpha: 0.08),
       iconColor: textMediumEmphasisLight,
@@ -437,6 +422,14 @@ class AppTheme {
         fontSize: 14,
         fontWeight: FontWeight.w400,
         color: textMediumEmphasisLight,
+      ),
+    ),
+
+    iconButtonTheme: IconButtonThemeData(
+      style: ButtonStyle(
+        iconSize: WidgetStateProperty.all(24),
+        foregroundColor: WidgetStateProperty.all(Colors.black),
+        padding: WidgetStateProperty.all(EdgeInsets.all(5)),
       ),
     ),
   );
@@ -493,14 +486,8 @@ class AppTheme {
         color: onSurfaceDark,
         letterSpacing: 0.15,
       ),
-      iconTheme: IconThemeData(
-        color: onSurfaceDark,
-        size: 24,
-      ),
-      actionsIconTheme: IconThemeData(
-        color: onSurfaceDark,
-        size: 24,
-      ),
+      iconTheme: IconThemeData(color: onSurfaceDark, size: 24),
+      actionsIconTheme: IconThemeData(color: onSurfaceDark, size: 24),
     ),
 
     // Card theme for dark mode
@@ -509,9 +496,7 @@ class AppTheme {
       elevation: 1,
       shadowColor: shadowDark,
       surfaceTintColor: surfaceDark,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12.0),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
       margin: const EdgeInsets.all(8.0),
     ),
 
@@ -576,8 +561,9 @@ class AppTheme {
         fontWeight: FontWeight.w400,
         letterSpacing: 0.1,
       ),
-      overlayColor:
-          WidgetStateProperty.all(primaryDark.withValues(alpha: 0.12)),
+      overlayColor: WidgetStateProperty.all(
+        primaryDark.withValues(alpha: 0.12),
+      ),
     ),
 
     // Floating action button for dark mode
@@ -588,9 +574,7 @@ class AppTheme {
       focusElevation: 8,
       hoverElevation: 8,
       highlightElevation: 12,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16.0),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.0)),
     ),
 
     // Button themes for dark mode
@@ -601,9 +585,7 @@ class AppTheme {
         elevation: 2,
         shadowColor: shadowDark,
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8.0),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
         textStyle: GoogleFonts.roboto(
           fontSize: 14,
           fontWeight: FontWeight.w500,
@@ -617,9 +599,7 @@ class AppTheme {
         foregroundColor: primaryDark,
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
         side: BorderSide(color: outlineDark),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8.0),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
         textStyle: GoogleFonts.roboto(
           fontSize: 14,
           fontWeight: FontWeight.w500,
@@ -632,9 +612,7 @@ class AppTheme {
       style: TextButton.styleFrom(
         foregroundColor: primaryDark,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8.0),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
         textStyle: GoogleFonts.roboto(
           fontSize: 14,
           fontWeight: FontWeight.w500,
@@ -650,6 +628,8 @@ class AppTheme {
     inputDecorationTheme: InputDecorationTheme(
       fillColor: surfaceDark,
       filled: true,
+      suffixIconConstraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+      prefixIconConstraints: const BoxConstraints(minWidth: 32, minHeight: 32),
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8.0),
@@ -718,9 +698,7 @@ class AppTheme {
       }),
       checkColor: WidgetStateProperty.all(Colors.black),
       side: BorderSide(color: outlineDark, width: 2),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(2),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(2)),
     ),
 
     radioTheme: RadioThemeData(
@@ -757,7 +735,7 @@ class AppTheme {
     tooltipTheme: TooltipThemeData(
       decoration: BoxDecoration(
         color: onSurfaceDark.withValues(alpha: 0.9),
-        borderRadius: BorderRadius.circular(4),
+        borderRadius: BorderRadius.circular(12),
       ),
       textStyle: GoogleFonts.roboto(
         color: surfaceDark,
@@ -777,9 +755,7 @@ class AppTheme {
       ),
       actionTextColor: accentDark,
       behavior: SnackBarBehavior.floating,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(8.0),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
       elevation: 6,
     ),
 
@@ -789,9 +765,7 @@ class AppTheme {
       elevation: 24,
       shadowColor: shadowDark,
       surfaceTintColor: surfaceDark,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12.0),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
       titleTextStyle: GoogleFonts.inter(
         fontSize: 20,
         fontWeight: FontWeight.w600,
@@ -807,9 +781,7 @@ class AppTheme {
     // List tile theme for dark mode
     listTileTheme: ListTileThemeData(
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(8.0),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
       tileColor: Colors.transparent,
       selectedTileColor: primaryDark.withValues(alpha: 0.12),
       iconColor: textMediumEmphasisDark,
@@ -830,10 +802,12 @@ class AppTheme {
   /// Helper method to build text theme based on brightness
   /// Implements typography standards with Inter for headings and Roboto for body text
   static TextTheme _buildTextTheme({required bool isLight}) {
-    final Color textHighEmphasis =
-        isLight ? textHighEmphasisLight : textHighEmphasisDark;
-    final Color textMediumEmphasis =
-        isLight ? textMediumEmphasisLight : textMediumEmphasisDark;
+    final Color textHighEmphasis = isLight
+        ? textHighEmphasisLight
+        : textHighEmphasisDark;
+    final Color textMediumEmphasis = isLight
+        ? textMediumEmphasisLight
+        : textMediumEmphasisDark;
     final Color textDisabled = isLight ? textDisabledLight : textDisabledDark;
 
     return TextTheme(
@@ -961,8 +935,9 @@ class AppTheme {
     double fontSize = 14,
     FontWeight fontWeight = FontWeight.w400,
   }) {
-    final Color textColor =
-        isLight ? textHighEmphasisLight : textHighEmphasisDark;
+    final Color textColor = isLight
+        ? textHighEmphasisLight
+        : textHighEmphasisDark;
 
     return GoogleFonts.robotoMono(
       fontSize: fontSize,

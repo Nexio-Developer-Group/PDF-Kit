@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:pdf_kit/core/models/file_model.dart';
+import 'package:pdf_kit/models/file_model.dart';
 
 class FolderEntryCard extends StatelessWidget {
   final FileInfo info;
@@ -37,7 +37,7 @@ class FolderEntryCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         onTap: onTap,
         child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 18),
+          padding: const EdgeInsets.symmetric(vertical: 8),
           child: Row(
             children: [
               Padding(
@@ -55,7 +55,10 @@ class FolderEntryCard extends StatelessWidget {
               ),
               // const SizedBox(width: 12),
               Expanded(
+                // child: Padding(
+                // padding: EdgeInsets.symmetric(vertical: 4),
                 child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
@@ -64,16 +67,31 @@ class FolderEntryCard extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      countOrSize,
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: Theme.of(
-                          context,
-                        ).colorScheme.onSurface.withAlpha(179),
-                      ),
+                    // const SizedBox(height: 4),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.description_outlined,
+                          size: 16,
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.onSurface.withAlpha(153),
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          countOrSize,
+                          style: Theme.of(context).textTheme.bodyMedium
+                              ?.copyWith(
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurface.withAlpha(179),
+                              ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 4),
+
+                    // const SizedBox(height: 4),
                     Text(
                       _recent(),
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -84,9 +102,10 @@ class FolderEntryCard extends StatelessWidget {
                     ),
                   ],
                 ),
+                // ),
               ),
               Padding(
-                padding: const EdgeInsets.only(right: 18),
+                padding: const EdgeInsets.only(right: 12),
                 child: PopupMenuButton<String>(
                   onSelected: onMenuSelected,
                   itemBuilder: (ctx) => const [

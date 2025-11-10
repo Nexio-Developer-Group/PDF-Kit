@@ -3,9 +3,10 @@ import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:pdf_kit/presentation/widget/shimmer.dart';
 import 'package:pdfx/pdfx.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:pdf_kit/core/models/file_model.dart';
+import 'package:pdf_kit/models/file_model.dart';
 
 class _Thumb {
   final Uint8List bytes;
@@ -90,98 +91,113 @@ class _DocEntryCardState extends State<DocEntryCard> {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: Theme.of(context).colorScheme.surface,
-      borderRadius: BorderRadius.circular(24),
+      borderRadius: BorderRadius.circular(12),
+      color: Colors.black.withAlpha(28),
+      shadowColor: Colors.black.withAlpha(28),
+      elevation: 2,
+
       child: InkWell(
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(12),
         onTap: widget.onOpen,
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.symmetric(vertical: 8),
           child: Row(
             children: [
-              FutureBuilder<_Thumb?>(
-                future: _thumbnail(),
-                builder: (context, snap) {
-                  Widget child;
-                  if (snap.connectionState == ConnectionState.waiting) {
-                    child = const Center(
-                      child: SizedBox(
-                        width: 24,
-                        height: 24,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      ),
-                    );
-                  } else if (snap.data != null) {
-                    final t = snap.data!;
-                    final fit = (t.height > t.width)
-                        ? BoxFit.fitWidth
-                        : BoxFit.fitHeight;
-                    child = ClipRRect(
-                      borderRadius: BorderRadius.circular(12),
-                      child: SizedBox.square(
-                        dimension: 70,
-                        child: Image.memory(
-                          t.bytes,
-                          fit: fit,
-                          // Optional decode downscale for memory savings:
-                          cacheWidth: 140,
-                          cacheHeight: 140,
+              Padding(
+                padding: const EdgeInsets.only(right: 12, left: 12),
+                child: FutureBuilder<_Thumb?>(
+                  future: _thumbnail(),
+                  builder: (context, snap) {
+                    Widget child;
+                    if (snap.connectionState == ConnectionState.waiting) {
+                      child = const Center(
+                        child: SizedBox(
+                          width: 70,
+                          height: 70,
+                          child: ShimmerBox(
+                            height: 70,
+                            width: 70,
+                            borderRadius: BorderRadiusGeometry.all(
+                              Radius.circular(12),
+                            ),
+                          ),
                         ),
-                      ),
-                    );
-                  } else {
-                    child = Container(
-                      color: Theme.of(
-                        context,
-                      ).colorScheme.surfaceContainerHighest,
-                      width: 110,
-                      height: 110,
-                      child: Icon(
-                        _isPdf ? Icons.picture_as_pdf : Icons.image_outlined,
-                        size: 42,
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
-                    );
-                  }
-                  return ClipRRect(
-                    borderRadius: BorderRadius.circular(16),
-                    child: child,
-                  );
-                },
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: SizedBox(
-                  height: 110,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        widget.info.name,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: Theme.of(context).textTheme.titleMedium,
-                      ),
-                      Text(
-                        _recent(),
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Theme.of(
-                            context,
-                          ).colorScheme.onSurface.withAlpha(153),
+                      );
+                    } else if (snap.data != null) {
+                      final t = snap.data!;
+                      final fit = (t.height < t.width)
+                          ? BoxFit.fitWidth
+                          : BoxFit.fitHeight;
+                      child = ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: SizedBox.square(
+                          dimension: 70,
+                          child: Image.memory(
+                            t.bytes,
+                            fit: fit,
+                            // Optional decode downscale for memory savings:
+                            cacheWidth: 140,
+                            cacheHeight: 140,
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
+                      );
+                    } else {
+                      child = Container(
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.surfaceContainerHighest,
+                        width: 70,
+                        height: 70,
+                        child: Icon(
+                          _isPdf ? Icons.picture_as_pdf : Icons.image_outlined,
+                          size: 42,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
+                      );
+                    }
+                    return ClipRRect(
+                      borderRadius: BorderRadius.circular(16),
+                      child: child,
+                    );
+                  },
                 ),
               ),
-              IconButton(icon: const Icon(Icons.share), onPressed: _share),
+              // const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      widget.info.name,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    Text(
+                      _recent(),
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onSurface.withAlpha(153),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
               PopupMenuButton<String>(
                 onSelected: widget.onMenu,
-                itemBuilder: (c) => const [
+                itemBuilder: (c) => [
                   PopupMenuItem(value: 'open', child: Text('Open')),
                   PopupMenuItem(value: 'rename', child: Text('Rename')),
                   PopupMenuItem(value: 'delete', child: Text('Delete')),
+                  PopupMenuItem(
+                    value: 'share',
+                    onTap: () {
+                      _share();
+                    },
+                    child: Text('Share'),
+                  ),
                 ],
               ),
             ],
