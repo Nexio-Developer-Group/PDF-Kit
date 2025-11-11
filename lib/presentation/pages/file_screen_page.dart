@@ -25,8 +25,6 @@ class _AndroidFilesScreenState extends State<AndroidFilesScreen> {
   String? _currentPath;
   List<FileInfo> _entries = [];
 
-  String _query = '';
-  bool _searching = false;
   StreamSubscription? _searchSub;
 
   @override
@@ -62,8 +60,6 @@ class _AndroidFilesScreenState extends State<AndroidFilesScreen> {
       setState(() {
         _currentPath = path;
         _entries = items;
-        _query = '';
-        _searching = false;
       });
     });
   }
@@ -74,9 +70,10 @@ class _AndroidFilesScreenState extends State<AndroidFilesScreen> {
   }
 
   Future<void> _openFolder(String path) async {
-    AppRouter.filesNavKey.currentState?.pushNamed(
-      FilesRoutes.folder,
-      arguments: path,
+    if (!mounted) return;
+    context.pushNamed(
+      AppRouteName.filesFolder,
+      queryParameters: {'path': path},
     );
   }
 
@@ -136,9 +133,9 @@ class _AndroidFilesScreenState extends State<AndroidFilesScreen> {
           IconButton(
             icon: const Icon(Icons.search),
             onPressed: () {
-              AppRouter.filesNavKey.currentState?.pushNamed(
-                FilesRoutes.search,
-                arguments: _currentPath,
+              context.pushNamed(
+                AppRouteName.filesSearch,
+                queryParameters: {'path': _currentPath},
               );
             },
             tooltip: 'Search',

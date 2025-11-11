@@ -8,17 +8,15 @@ void main() {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return MaterialApp.router(
       title: 'PDF Kit',
-      darkTheme: AppTheme.lightTheme,
-      theme: AppTheme.darkTheme,
+      darkTheme: AppTheme.lightTheme, // light theme
+      theme: AppTheme.darkTheme, // dark theme
+      themeMode: ThemeMode.system, // pick based on system
       debugShowCheckedModeBanner: false,
-      initialRoute: AppRoutes.home,
-      onGenerateRoute: AppRouter.onGenerateRoute,
-      onUnknownRoute: AppRouter.onUnknownRoute,
+      routerConfig: appRouter, // go_router integration
     );
   }
 }

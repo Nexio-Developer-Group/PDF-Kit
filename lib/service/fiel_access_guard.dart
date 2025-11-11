@@ -68,7 +68,7 @@ class FileAccessGuard {
       final raf = await f.open(mode: FileMode.read);
       try {
         // Attempt reading a single byte; if EOF on empty file, it's still readable
-        final bytes = await raf.read(1);
+        await raf.read(1);
         // success (even if empty)
         return true;
       } finally {

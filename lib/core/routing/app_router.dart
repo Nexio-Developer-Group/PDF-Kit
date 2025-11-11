@@ -1,26 +1,143 @@
+// app_router.dart
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:pdf_kit/presentation/pages/page_export.dart';
 
-class AppRoutes {
-  static const String home = '/';
-  static const String onboarding = '/onboarding';
-  static const String allFiles = '/files';
-  static const String search = '/search';
-  static const String preferences = '/preferences';
-  static const String language = '/language';
-  static const String contactUs = '/contact';
-  static const String aboutApp = '/about';
-  static const String takeImage = '/camera';
-  static const String showPdf = '/pdf/view';
-  static const String recent = '/recent';
-  static const String addWatermark = '/pdf/watermark';
-  static const String addSignature = '/pdf/signature';
-  static const String mergePdf = '/pdf/merge';
-  static const String protectPdf = '/pdf/protect';
-  static const String compressPdf = '/pdf/compress';
+// Navigator keys
+final _rootNavKey = GlobalKey<NavigatorState>(debugLabel: 'root');
+final _homeNavKey = GlobalKey<NavigatorState>(debugLabel: 'home');
+final _filesNavKey = GlobalKey<NavigatorState>(debugLabel: 'files');
+final _settingsNavKey = GlobalKey<NavigatorState>(debugLabel: 'settings');
+
+class AppRouteName {
+  static const onboarding = 'onboarding';
+  static const shell = 'hostel_shell';
+  static const home = 'home';
+  static const filesRoot = 'files.root';
+  static const filesFolder = 'files.folder';
+  static const filesSearch = 'files.search';
+  static const settings = 'settings';
+  static const showPdf = 'pdf.view';
+  static const addWatermark = 'pdf.watermark';
+  static const addSignature = 'pdf.signature';
+  static const mergePdf = 'pdf.merge';
+  static const protectPdf = 'pdf.protect';
+  static const compressPdf = 'pdf.compress';
 }
 
-// Stub pages (replace with your real screens)
+final appRouter = GoRouter(
+  navigatorKey: _rootNavKey,
+  initialLocation: '/',
+  errorBuilder: (context, state) => NotFoundPage(routeName: state.uri.toString()),
+  routes: [
+    GoRoute(
+      name: AppRouteName.onboarding,
+      path: '/onboarding',
+      builder: (context, state) => const OnboardingPage(),
+    ),
+
+    // Shell with 3 tabs
+    StatefulShellRoute.indexedStack(
+      builder: (context, state, navShell) => HomeShell(navigationShell: navShell),
+      branches: [
+        // Home branch
+        StatefulShellBranch(
+          navigatorKey: _homeNavKey,
+          routes: [
+            GoRoute(
+              name: AppRouteName.home,
+              path: '/',
+              builder: (context, state) => const HomeTab(),
+            ),
+          ],
+        ),
+
+        // Files branch
+        StatefulShellBranch(
+          navigatorKey: _filesNavKey,
+          routes: [
+            GoRoute(
+              name: AppRouteName.filesRoot,
+              path: '/files',
+              builder: (context, state) => AndroidFilesScreen(
+                initialPath: state.uri.queryParameters['path'],
+              ),
+              routes: [
+                // Use query parameter for the full folder path so slashes are safe
+                GoRoute(
+                  name: AppRouteName.filesFolder,
+                  path: 'folder',
+                  builder: (context, state) => AndroidFilesScreen(
+                    initialPath: state.uri.queryParameters['path'],
+                  ),
+                ),
+                GoRoute(
+                  name: AppRouteName.filesSearch,
+                  path: 'search',
+                  builder: (context, state) => SearchFilesScreen(
+                    initialPath: state.uri.queryParameters['path'],
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+
+        // Settings branch
+        StatefulShellBranch(
+          navigatorKey: _settingsNavKey,
+          routes: [
+            GoRoute(
+              name: AppRouteName.settings,
+              path: '/settings',
+              builder: (context, state) => const SettingsTab(),
+            ),
+          ],
+        ),
+      ],
+    ),
+
+    // App-wide overlays (above shell)
+    GoRoute(
+      name: AppRouteName.showPdf,
+      path: '/pdf/view',
+      parentNavigatorKey: _rootNavKey,
+      builder: (context, state) => ShowPdfPage(path: state.uri.queryParameters['path']),
+    ),
+    GoRoute(
+      name: AppRouteName.addWatermark,
+      path: '/pdf/watermark',
+      parentNavigatorKey: _rootNavKey,
+      builder: (context, state) => const AddWatermarkPage(),
+    ),
+    GoRoute(
+      name: AppRouteName.addSignature,
+      path: '/pdf/signature',
+      parentNavigatorKey: _rootNavKey,
+      builder: (context, state) => const AddSignaturePage(),
+    ),
+    GoRoute(
+      name: AppRouteName.mergePdf,
+      path: '/pdf/merge',
+      parentNavigatorKey: _rootNavKey,
+      builder: (context, state) => const MergePdfPage(),
+    ),
+    GoRoute(
+      name: AppRouteName.protectPdf,
+      path: '/pdf/protect',
+      parentNavigatorKey: _rootNavKey,
+      builder: (context, state) => const ProtectPdfPage(),
+    ),
+    GoRoute(
+      name: AppRouteName.compressPdf,
+      path: '/pdf/compress',
+      parentNavigatorKey: _rootNavKey,
+      builder: (context, state) => const CompressPdfPage(),
+    ),
+  ],
+);
+
+
 class OnboardingPage extends StatelessWidget {
   const OnboardingPage({super.key});
   @override
@@ -142,111 +259,11 @@ class NotFoundPage extends StatelessWidget {
           ElevatedButton(
             onPressed: () => Navigator.of(
               context,
-            ).pushNamedAndRemoveUntil(AppRoutes.home, (r) => false),
+            ).pushNamedAndRemoveUntil(AppRouteName.home, (r) => false),
             child: const Text('Go Home'),
           ),
         ],
       ),
     ),
   );
-}
-
-class FilesRoutes {
-  static const String root = '/';
-  static const String folder = '/folder';
-  static const String search = '/search';
-}
-
-
-// Centralized route generator
-class AppRouter {
-  // Nested navigator for Files tab
-  static final GlobalKey<NavigatorState> filesNavKey = GlobalKey<NavigatorState>();
-
-  static Route<dynamic> onGenerateRoute(RouteSettings settings) {
-    switch (settings.name) {
-      case AppRoutes.home: {
-        final args = settings.arguments;
-        int initialTab = 0;
-        if (args is Map && args['tab'] is int) {
-          initialTab = args['tab'] as int;
-        }
-        return _material(HomeShell(initialIndex: initialTab), settings);
-      }
-      case AppRoutes.onboarding:
-        return _material(const OnboardingPage(), settings);
-      case AppRoutes.preferences:
-        return _material(const PreferencesPage(), settings);
-      case AppRoutes.language:
-        return _material(const LanguageSettingsPage(), settings);
-      case AppRoutes.contactUs:
-        return _material(const ContactUsPage(), settings);
-      case AppRoutes.aboutApp:
-        return _material(const AboutAppPage(), settings);
-      case AppRoutes.takeImage:
-        return _material(const TakeImagePage(), settings);
-      case AppRoutes.showPdf: {
-        final args = settings.arguments;
-        String? path;
-        if (args is Map && args['path'] is String) path = args['path'] as String;
-        return _material(ShowPdfPage(path: path), settings);
-      }
-      case AppRoutes.recent:
-        return _material(const RecentFilesPage(), settings);
-      case AppRoutes.addWatermark:
-        return _material(const AddWatermarkPage(), settings);
-      case AppRoutes.addSignature:
-        return _material(const AddSignaturePage(), settings);
-      case AppRoutes.mergePdf:
-        return _material(const MergePdfPage(), settings);
-      case AppRoutes.protectPdf:
-        return _material(const ProtectPdfPage(), settings);
-      case AppRoutes.compressPdf:
-        return _material(const CompressPdfPage(), settings);
-
-      // Optional: App-wide search (keeps bar if you place it inside Files nested routes instead)
-      case AppRoutes.search: {
-        String? path;
-        final args = settings.arguments;
-        if (args is Map && args['path'] is String) path = args['path'] as String;
-        return _material(SearchFilesScreen(initialPath: path), settings);
-      }
-
-      default:
-        return _unknown(settings);
-    }
-  }
-
-  // Files tab nested router: use this inside FilesTab widget
-  static Route<dynamic> onGenerateFilesRoute(RouteSettings settings) {
-    late Widget page;
-    switch (settings.name) {
-      case FilesRoutes.root:
-      case '/':
-        page = AndroidFilesScreen(initialPath: settings.arguments as String?);
-        break;
-      case FilesRoutes.folder:
-        page = AndroidFilesScreen(initialPath: settings.arguments as String);
-        break;
-      case FilesRoutes.search:
-        page = SearchFilesScreen(initialPath: settings.arguments as String?);
-        break;
-      default:
-        page = AndroidFilesScreen();
-    }
-    return MaterialPageRoute(builder: (_) => page, settings: settings);
-  }
-
-  static Route<dynamic> onUnknownRoute(RouteSettings settings) {
-    return MaterialPageRoute(
-      settings: settings,
-      builder: (_) => NotFoundPage(routeName: settings.name),
-    );
-  }
-
-  static MaterialPageRoute _material(Widget page, RouteSettings settings) {
-    return MaterialPageRoute(builder: (_) => page, settings: settings);
-  }
-
-  static Route<dynamic> _unknown(RouteSettings settings) => onUnknownRoute(settings);
 }

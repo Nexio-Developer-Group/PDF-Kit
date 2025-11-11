@@ -1,57 +1,29 @@
 import 'package:flutter/material.dart';
-import 'package:pdf_kit/presentation/pages/home_page.dart';
-import 'package:pdf_kit/presentation/pages/setting_page.dart';
-import 'package:pdf_kit/core/app_export.dart';
+import 'package:go_router/go_router.dart';
 
-// FilesTabWithRouter (or FilesTab) widget
-class FilesTabWithRouter extends StatelessWidget {
-  const FilesTabWithRouter({super.key});
+// NOTE: FilesTabWithRouter is no longer needed with go_router's StatefulShellRoute.
+// The shell injects a StatefulNavigationShell that manages per-branch Navigators.
 
-  @override
-  Widget build(BuildContext context) {
-    return PopScope(
-      canPop: false, // prevent outer navigator from popping first
-      onPopInvokedWithResult: (didPop, result) async {
-        if (didPop) return;
-        final popped = await AppRouter.filesNavKey.currentState?.maybePop() ?? false;
-        if (!popped) {
-          // allow outer navigator to handle pop if inner can't
-          Navigator.of(context).maybePop();
-        }
-      },
-      child: Navigator(
-        key: AppRouter.filesNavKey,
-        onGenerateRoute: AppRouter.onGenerateFilesRoute,
-        initialRoute: '/', // FilesRoutes.root
-      ),
-    );
-  }
-}
-
-class HomeShell extends StatefulWidget {
-  final int initialIndex;
-  const HomeShell({Key? key, this.initialIndex = 0}) : super(key: key);
-
-  @override
-  State<HomeShell> createState() => _HomeShellState();
-}
-
-class _HomeShellState extends State<HomeShell> {
-  late int _index = widget.initialIndex;
-
-  final _tabs = const [
-    HomeTab(),
-    FilesTabWithRouter(),
-    SettingsTab(),
-  ];
+class HomeShell extends StatelessWidget {
+  final StatefulNavigationShell navigationShell;
+  const HomeShell({super.key, required this.navigationShell});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: IndexedStack(index: _index, children: _tabs),
+      // Renders the active branch's Navigator (keeps each tab's back stack/state)
+      body: navigationShell,
       bottomNavigationBar: NavigationBar(
-        selectedIndex: _index,
-        onDestinationSelected: (i) => setState(() => _index = i),
+        selectedIndex: navigationShell.currentIndex,
+        onDestinationSelected: (index) {
+          // Switch tabs without pushing; preserve existing stacks
+          navigationShell.goBranch(
+            index,
+            // If tapping the already-selected tab, you can choose to pop to its root
+            // by setting initialLocation: true; set false to keep current location.
+            initialLocation: index == navigationShell.currentIndex,
+          );
+        },
         destinations: const [
           NavigationDestination(
             icon: Icon(Icons.home_outlined),

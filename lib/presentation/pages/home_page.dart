@@ -13,7 +13,6 @@ class HomeTab extends StatefulWidget {
 }
 
 class _HomeTabState extends State<HomeTab> {
-  final String _currentPath = '/';
 
   // Define the functionality shown at the top
   late final List<Functionality> _actions = actions;
@@ -85,18 +84,15 @@ class _HomeTabState extends State<HomeTab> {
             ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600),
           ),
           const Spacer(),
-          IconButton(
-            icon: const Icon(Icons.search),
-            onPressed: () {
-              // Go to dedicated search screen, pass the current path.
-              Navigator.pushNamed(
-                context,
-                AppRoutes.search,
-                arguments: {'path': _currentPath},
-              );
-            },
-            tooltip: 'Search',
-          ),
+IconButton(
+  icon: const Icon(Icons.search),
+  onPressed: () {
+    // Option A: open Files-scoped search on top of Files branch
+    context.goNamed(AppRouteName.filesRoot); // switch to Files tab
+    context.pushNamed(AppRouteName.filesSearch, queryParameters: {'path': '/'});
+  },
+  tooltip: 'Search',
+),
           IconButton(
             icon: const Icon(Icons.more_vert),
             onPressed: () {},
