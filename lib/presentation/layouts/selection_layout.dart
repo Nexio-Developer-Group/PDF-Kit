@@ -2,13 +2,14 @@
 
 import 'package:flutter/material.dart';
 import 'package:pdf_kit/models/file_model.dart';
-import 'package:pdf_kit/presentation/state/selection_state.dart';
+import 'package:pdf_kit/presentation/provider/selection_provider.dart';
 
 class SelectionScaffold extends StatefulWidget {
   final Widget child;
   final String? actionText;
   final void Function(List<FileInfo>)? onAction;
   final bool autoEnable; // NEW: defaults true for fullscreen selection shell
+  final SelectionProvider? provider; // optional externally provided provider
 
   const SelectionScaffold({
     super.key,
@@ -16,6 +17,7 @@ class SelectionScaffold extends StatefulWidget {
     this.actionText,
     this.onAction,
     this.autoEnable = true, // NEW
+    this.provider,
   });
 
   @override
@@ -24,15 +26,32 @@ class SelectionScaffold extends StatefulWidget {
 
 class SelectionScaffoldState extends State<SelectionScaffold> {
   late final SelectionProvider provider;
+  late final bool _ownsProvider;
 
   @override
   void initState() {
     super.initState();
-    provider = SelectionProvider();
+    if (widget.provider != null) {
+      provider = widget.provider!;
+      _ownsProvider = false;
+    } else {
+      provider = SelectionProvider();
+      _ownsProvider = true;
+    }
+
     if (widget.autoEnable) {
       // Ensure bottom bar is visible immediately (0 selected)
       provider.enable();
     }
+  }
+
+  @override
+  void dispose() {
+    // Only dispose providers we created locally
+    if (_ownsProvider) {
+      provider.dispose();
+    }
+    super.dispose();
   }
 
   @override

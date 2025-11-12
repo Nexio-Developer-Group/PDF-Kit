@@ -1,8 +1,10 @@
 // app_router.dart
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
+import 'package:pdf_kit/core/routing/file_selection_shell.dart';
+import 'package:pdf_kit/core/routing/home_shell.dart';
 import 'package:pdf_kit/presentation/pages/page_export.dart';
-import 'package:pdf_kit/presentation/pages/selection_layout.dart';
+import 'package:pdf_kit/core/app_export.dart';
+import 'package:pdf_kit/presentation/provider/provider_export.dart';
 
 // Navigator keys
 final _rootNavKey = GlobalKey<NavigatorState>(debugLabel: 'root');
@@ -10,24 +12,6 @@ final _homeNavKey = GlobalKey<NavigatorState>(debugLabel: 'home');
 final _filesNavKey = GlobalKey<NavigatorState>(debugLabel: 'files');
 final _settingsNavKey = GlobalKey<NavigatorState>(debugLabel: 'settings');
 
-class AppRouteName {
-  static const onboarding = 'onboarding';
-  static const shell = 'hostel_shell';
-  static const home = 'home';
-  static const filesRoot = 'files.root';
-  static const filesFolder = 'files.folder';
-  static const filesSearch = 'files.search';
-  static const settings = 'settings';
-  static const showPdf = 'pdf.view';
-  static const addWatermark = 'pdf.watermark';
-  static const addSignature = 'pdf.signature';
-  static const mergePdf = 'pdf.merge';
-  static const protectPdf = 'pdf.protect';
-  static const compressPdf = 'pdf.compress';
-  static const filesRootFullscreen = 'files.root.fullscreen';
-  static const filesFolderFullScreen = 'files.folder.fullscreen';
-  static const filesSearchFullscreen = 'files.search.fullscreen'; // NEW
-}
 
 final appRouter = GoRouter(
   navigatorKey: _rootNavKey,
@@ -41,116 +25,13 @@ final appRouter = GoRouter(
       builder: (context, state) => const OnboardingPage(),
     ),
 
-    // Shell with 3 tabs
-    StatefulShellRoute.indexedStack(
-      builder: (context, state, navShell) =>
-          HomeShell(navigationShell: navShell),
-      branches: [
-        // Home branch
-        StatefulShellBranch(
-          navigatorKey: _homeNavKey,
-          routes: [
-            GoRoute(
-              name: AppRouteName.home,
-              path: '/',
-              builder: (context, state) => const HomeTab(),
-            ),
-          ],
-        ),
-
-        // Files branch
-        StatefulShellBranch(
-          navigatorKey: _filesNavKey,
-          routes: [
-            GoRoute(
-              name: AppRouteName.filesRoot,
-              path: '/files',
-              builder: (context, state) => AndroidFilesScreen(
-                initialPath: state.uri.queryParameters['path'],
-              ),
-              routes: [
-                // Use query parameter for the full folder path so slashes are safe
-                GoRoute(
-                  name: AppRouteName.filesFolder,
-                  path: 'folder',
-                  builder: (context, state) => AndroidFilesScreen(
-                    initialPath: state.uri.queryParameters['path'],
-                  ),
-                ),
-                GoRoute(
-                  name: AppRouteName.filesSearch,
-                  path: 'search',
-                  builder: (context, state) => SearchFilesScreen(
-                    initialPath: state.uri.queryParameters['path'],
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-
-        // Settings branch
-        StatefulShellBranch(
-          navigatorKey: _settingsNavKey,
-          routes: [
-            GoRoute(
-              name: AppRouteName.settings,
-              path: '/settings',
-              builder: (context, state) => const SettingsTab(),
-            ),
-          ],
-        ),
-      ],
+    buildHomeShellRoute(
+      homeNavKey: _homeNavKey,
+      fileNavKey: _filesNavKey,
+      settingsNavKey: _settingsNavKey,
     ),
 
-    // One persistent SelectionScaffold across the fullscreen selection flow
-    ShellRoute(
-      parentNavigatorKey: _rootNavKey,
-      builder: (context, state, child) {
-        return SelectionScaffold(
-          actionText: state.uri.queryParameters['actionText'],
-          onAction: (files) {
-            // Push Merge screen with the selected files
-            // _rootNavKey.currentContext!.pushNamed(
-            //   AppRouteName.mergePdf,
-            //   extra: files,
-            // );
-          },
-          child: child,
-        );
-      },
-      routes: [
-        GoRoute(
-          name: AppRouteName.filesRootFullscreen,
-          path: '/files-fullscreen',
-          builder: (context, state) => AndroidFilesScreen(
-            initialPath: state.uri.queryParameters['path'],
-            selectable: true,
-            isFullscreenRoute: true,
-          ),
-          routes: [
-            GoRoute(
-              name: AppRouteName.filesFolderFullScreen,
-              path: 'folder',
-              builder: (context, state) => AndroidFilesScreen(
-                initialPath: state.uri.queryParameters['path'],
-                selectable: true,
-                isFullscreenRoute: true,
-              ),
-            ),
-            GoRoute(
-              name: AppRouteName.filesSearchFullscreen, // NEW
-              path: 'search',
-              builder: (context, state) => SearchFilesScreen(
-                initialPath: state.uri.queryParameters['path'],
-                selectable: true, // NEW
-                isFullscreenRoute: true, // NEW
-              ),
-            ),
-          ],
-        ),
-      ],
-    ),
+    buildSelectionShellRoute(rootNavKey: _rootNavKey),
 
     // App-wide overlays (above shell)
     GoRoute(
@@ -172,11 +53,27 @@ final appRouter = GoRouter(
       parentNavigatorKey: _rootNavKey,
       builder: (context, state) => const AddSignaturePage(),
     ),
+
     GoRoute(
       name: AppRouteName.mergePdf,
       path: '/pdf/merge',
       parentNavigatorKey: _rootNavKey,
-      builder: (context, state) => const MergePdfPage(),
+      builder: (context, state) {
+        final selectionId = state.uri.queryParameters['selectionId'];
+        if (selectionId != null) {
+          // reuse provider from SelectionManager cache
+          final provider = Get.find<SelectionManager>().of(selectionId);
+          return ChangeNotifierProvider<SelectionProvider>.value(
+            value: provider,
+            child: MergePdfPage(selectionId: selectionId),
+          );
+        }
+        // fallback: create a fresh provider scoped to this route
+        return ChangeNotifierProvider(
+          create: (_) => SelectionProvider(),
+          child: MergePdfPage(),
+        );
+      },
     ),
     GoRoute(
       name: AppRouteName.protectPdf,

@@ -9,11 +9,24 @@ class SelectionProvider extends ChangeNotifier {
   int get mode => _mode;
   bool get isEnabled => _mode != 0;
   int get count => _selected.length;
+  Map<String, FileInfo> get selected => _selected;
   bool isSelected(String path) => _selected.containsKey(path);
   List<FileInfo> get files => _selected.values.toList(growable: false);
 
-  void enable() { if (_mode == 0) { _mode = 1; notifyListeners(); } }
-  void disable() { if (_mode != 0) { _mode = 0; _selected.clear(); notifyListeners(); } }
+  void enable() {
+    if (_mode == 0) {
+      _mode = 1;
+      notifyListeners();
+    }
+  }
+
+  void disable() {
+    if (_mode != 0) {
+      _mode = 0;
+      _selected.clear();
+      notifyListeners();
+    }
+  }
 
   void toggle(FileInfo f) {
     if (_selected.containsKey(f.path)) {

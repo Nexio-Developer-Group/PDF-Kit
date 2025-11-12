@@ -1,7 +1,11 @@
+// main.dart
 import 'package:flutter/material.dart';
+import 'package:pdf_kit/dependency_injection.dart';
 import 'core/app_export.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await initDI(); // register SelectionManager or pre-warm anything
   runApp(const MyApp());
 }
 
@@ -12,11 +16,11 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp.router(
       title: 'PDF Kit',
-      darkTheme: AppTheme.lightTheme, // light theme
-      theme: AppTheme.darkTheme, // dark theme
-      themeMode: ThemeMode.system, // pick based on system
+      theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
+      themeMode: ThemeMode.system,
       debugShowCheckedModeBanner: false,
-      routerConfig: appRouter, // go_router integration
+      routerConfig: appRouter,
     );
   }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:pdf_kit/models/functionality_model.dart';
 import 'package:pdf_kit/core/app_export.dart';
+import 'package:pdf_kit/dependency_injection.dart';
 
 final List<Functionality> actions = [
   Functionality(
@@ -30,12 +31,19 @@ final List<Functionality> actions = [
     icon: Icons.merge_type,
     color: Colors.indigo,
     onPressed: (context) {
+      // create a mapped selection provider and navigate to merge screen
+      final selectionId = 'merge_${DateTime.now().microsecondsSinceEpoch}';
+      // ensure SelectionManager is available and create provider in cache
+      try {
+        final mgr = Get.find<SelectionManager>();
+        mgr.of(selectionId);
+      } catch (_) {
+        // if DI not initialized, still continue with navigation
+      }
+
       context.pushNamed(
-        AppRouteName.filesRootFullscreen,
-        queryParameters: {
-          // 'path': '/storage/emulated/0/Documents',
-          'selectable': 'true',
-        },
+        AppRouteName.mergePdf,
+        queryParameters: {'selectionId': selectionId},
       );
     },
   ),

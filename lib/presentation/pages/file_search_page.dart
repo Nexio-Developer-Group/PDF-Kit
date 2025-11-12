@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:pdf_kit/models/file_model.dart';
 import 'package:pdf_kit/presentation/component/document_tile.dart';
 import 'package:pdf_kit/presentation/component/folder_tile.dart';
-import 'package:pdf_kit/presentation/pages/selection_layout.dart';
-import 'package:pdf_kit/presentation/state/selection_state.dart';
+import 'package:pdf_kit/presentation/layouts/selection_layout.dart';
+import 'package:pdf_kit/presentation/provider/selection_provider.dart';
 import 'package:pdf_kit/service/file_system_serevice.dart';
 import 'package:pdf_kit/service/open_service.dart';
 import 'package:pdf_kit/core/app_export.dart';
@@ -14,11 +14,15 @@ class SearchFilesScreen extends StatefulWidget {
   final String? initialPath;
   final bool selectable; // NEW
   final bool isFullscreenRoute; // NEW
+  final String? selectionId;
+  final String? selectionActionText;
   const SearchFilesScreen({
     super.key,
     this.initialPath,
     this.selectable = false, // NEW
     this.isFullscreenRoute = false, // NEW
+    this.selectionId,
+    this.selectionActionText,
   });
   @override
   State<SearchFilesScreen> createState() => _SearchFilesScreenState();

@@ -5,8 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:pdf_kit/models/file_model.dart';
 import 'package:pdf_kit/presentation/component/document_tile.dart';
 import 'package:pdf_kit/presentation/component/folder_tile.dart';
-import 'package:pdf_kit/presentation/pages/selection_layout.dart';
-import 'package:pdf_kit/presentation/state/selection_state.dart';
+import 'package:pdf_kit/presentation/layouts/selection_layout.dart';
+import 'package:pdf_kit/presentation/provider/selection_provider.dart';
 import 'package:pdf_kit/service/file_system_serevice.dart';
 import 'package:pdf_kit/service/folder_service.dart';
 import 'package:pdf_kit/service/open_service.dart';
@@ -20,6 +20,7 @@ class AndroidFilesScreen extends StatefulWidget {
   final String? initialPath;
   final bool selectable;
   final String? selectionActionText;
+  final String? selectionId;
   final bool? isFullscreenRoute;
   final void Function(List<FileInfo> files)? onSelectionAction;
 
@@ -29,6 +30,7 @@ class AndroidFilesScreen extends StatefulWidget {
     this.selectable = false,
     this.selectionActionText,
     this.onSelectionAction,
+    this.selectionId,
     this.isFullscreenRoute = false,
   });
   @override
@@ -47,6 +49,20 @@ class _AndroidFilesScreenState extends State<AndroidFilesScreen> {
     _boot();
   }
 
+  Future<void> _boot() async {
+    final perm = await PermissionService.requestStoragePermission();
+    perm.fold((_) {}, (ok) async {
+      if (!ok) return;
+      final vols = await PathService.volumes();
+      vols.fold((_) {}, (dirs) async {
+        setState(() => _roots = dirs);
+        final startPath =
+            widget.initialPath ?? (dirs.isNotEmpty ? dirs.first.path : null);
+        if (startPath != null) await _open(startPath);
+      });
+    });
+  }
+
   @override
   void dispose() {
     _searchSub?.cancel();
@@ -63,20 +79,6 @@ class _AndroidFilesScreenState extends State<AndroidFilesScreen> {
 
   bool get _selectionEnabled =>
       widget.selectable && (_maybeProvider()?.isEnabled ?? false);
-
-  Future<void> _boot() async {
-    final perm = await PermissionService.requestStoragePermission();
-    perm.fold((_) {}, (ok) async {
-      if (!ok) return;
-      final vols = await PathService.volumes();
-      vols.fold((_) {}, (dirs) async {
-        setState(() => _roots = dirs);
-        final startPath =
-            widget.initialPath ?? (dirs.isNotEmpty ? dirs.first.path : null);
-        if (startPath != null) await _open(startPath);
-      });
-    });
-  }
 
   Future<void> _open(String path) async {
     _cancelSearch();
@@ -98,9 +100,18 @@ class _AndroidFilesScreenState extends State<AndroidFilesScreen> {
   Future<void> _openFolder(String path) async {
     if (!mounted) return;
     if (widget.isFullscreenRoute == true) {
+      // Preserve selection-related params we received when this fullscreen
+      // screen was created (selectionId, actionText) and forward them
+      // along with the folder `path` when navigating deeper.
+      final params = <String, String>{'path': path};
+      if (widget.selectionId != null)
+        params['selectionId'] = widget.selectionId!;
+      if (widget.selectionActionText != null)
+        params['actionText'] = widget.selectionActionText!;
+
       context.pushNamed(
         AppRouteName.filesFolderFullScreen,
-        queryParameters: {'path': path},
+        queryParameters: params,
       );
     } else {
       context.pushNamed(
