@@ -1,6 +1,5 @@
 // main.dart
 import 'package:flutter/material.dart';
-import 'package:pdf_kit/dependency_injection.dart';
 import 'core/app_export.dart';
 
 Future<void> main() async {
