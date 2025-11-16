@@ -1,11 +1,12 @@
 // lib/services/pdf_merge_service.dart
+
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:dartz/dartz.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
-import 'package:pdfx/pdfx.dart' as pdfx;  // Add prefix here
+import 'package:pdfx/pdfx.dart' as pdfx;
 import 'package:pdf_kit/models/file_model.dart';
 import 'package:path/path.dart' as p;
 import 'dart:ui' as ui;
@@ -14,9 +15,11 @@ class PdfMergeService {
   PdfMergeService._();
 
   /// Merges multiple PDFs and images with optional rotation
+  /// [destinationPath] - Optional custom destination folder path. If null, uses Downloads.
   static Future<Either<CustomException, FileInfo>> mergePdfs({
     required List<MapEntry<FileInfo, int>> filesWithRotation,
     required String outputFileName,
+    String? destinationPath, // 🆕 Optional destination parameter
   }) async {
     try {
       if (filesWithRotation.isEmpty) {
@@ -44,8 +47,11 @@ class PdfMergeService {
         }
       }
 
-      // Get output path in Downloads directory
-      final outputPath = await _getOutputPath(outputFileName);
+      // Get output path using custom destination or default Downloads
+      final outputPath = await _getOutputPath(
+        outputFileName,
+        customDestination: destinationPath, // Pass custom destination
+      );
 
       // Save the PDF
       final File outputFile = File(outputPath);
@@ -217,19 +223,42 @@ class PdfMergeService {
     return imageExtensions.contains(file.extension.toLowerCase());
   }
 
-  /// Get output path in Downloads directory
-  static Future<String> _getOutputPath(String fileName) async {
+  /// Get output path in specified destination or Downloads directory
+  /// [customDestination] - Optional custom folder path. If null, uses Downloads.
+  static Future<String> _getOutputPath(
+    String fileName, {
+    String? customDestination,
+  }) async {
     try {
-      // For Android, use Downloads directory
       Directory? directory;
-      
-      if (Platform.isAndroid) {
-        directory = Directory('/storage/emulated/0/Download');
+
+      // 🆕 Use custom destination if provided
+      if (customDestination != null && customDestination.isNotEmpty) {
+        directory = Directory(customDestination);
+        
+        // Verify directory exists and is accessible
         if (!await directory.exists()) {
-          directory = await getExternalStorageDirectory();
+          throw Exception('Destination folder does not exist: $customDestination');
+        }
+        
+        // Try to test write access
+        try {
+          final testFile = File(p.join(directory.path, '.test_write'));
+          await testFile.writeAsString('test');
+          await testFile.delete();
+        } catch (e) {
+          throw Exception('No write permission for destination: $customDestination');
         }
       } else {
-        directory = await getApplicationDocumentsDirectory();
+        // Fall back to default Downloads directory
+        if (Platform.isAndroid) {
+          directory = Directory('/storage/emulated/0/Download');
+          if (!await directory.exists()) {
+            directory = await getExternalStorageDirectory();
+          }
+        } else {
+          directory = await getApplicationDocumentsDirectory();
+        }
       }
 
       if (directory == null) {
@@ -257,7 +286,6 @@ class PdfMergeService {
     }
   }
 }
-
 
 // lib/core/exceptions/custom_exception.dart
 class CustomException implements Exception {

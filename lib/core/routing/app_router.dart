@@ -12,7 +12,6 @@ final _homeNavKey = GlobalKey<NavigatorState>(debugLabel: 'home');
 final _filesNavKey = GlobalKey<NavigatorState>(debugLabel: 'files');
 final _settingsNavKey = GlobalKey<NavigatorState>(debugLabel: 'settings');
 
-
 final appRouter = GoRouter(
   navigatorKey: _rootNavKey,
   initialLocation: '/',
@@ -79,8 +78,36 @@ final appRouter = GoRouter(
       name: AppRouteName.protectPdf,
       path: '/pdf/protect',
       parentNavigatorKey: _rootNavKey,
-      builder: (context, state) => const ProtectPdfPage(),
+      builder: (context, state) {
+        final selectionId = state.uri.queryParameters['selectionId'];
+        if (selectionId != null) {
+          // reuse provider from SelectionManager cache
+          final provider = Get.find<SelectionManager>().of(selectionId);
+          return ChangeNotifierProvider<SelectionProvider>.value(
+            value: provider,
+            child: ProtectPdfPage(selectionId: selectionId),
+          );
+        }
+        // fallback: create a fresh provider scoped to this route
+        return ChangeNotifierProvider(
+          create: (_) => SelectionProvider(),
+          child: const ProtectPdfPage(),
+        );
+      },
     ),
+
+    GoRoute(
+      // explicit URL path for the folder picker
+      path: '/folder-picker',
+      name: AppRouteName.folderPickScreen,
+      pageBuilder: (context, state) {
+        return MaterialPage(
+          key: state.pageKey,
+          child: const FolderPickerPage(),
+        );
+      },
+    ),
+
     GoRoute(
       name: AppRouteName.compressPdf,
       path: '/pdf/compress',
@@ -173,13 +200,6 @@ class AddSignaturePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) =>
       const Scaffold(body: Center(child: Text('Add Digital Signature')));
-}
-
-class ProtectPdfPage extends StatelessWidget {
-  const ProtectPdfPage({super.key});
-  @override
-  Widget build(BuildContext context) =>
-      const Scaffold(body: Center(child: Text('Protect PDF')));
 }
 
 class CompressPdfPage extends StatelessWidget {

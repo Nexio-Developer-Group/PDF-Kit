@@ -5,3 +5,5 @@ export 'package:go_router/go_router.dart';
 export 'package:provider/provider.dart';
 export 'package:get/get.dart';
 export 'package:pdf_kit/dependency_injection.dart';
+export 'package:pdf_kit/core/utility/storage_utility.dart';
+export 'package:shared_preferences/shared_preferences.dart';

@@ -14,11 +14,10 @@ import 'package:pdf_kit/service/path_service.dart';
 import 'package:pdf_kit/service/permission_service.dart';
 import 'package:pdf_kit/core/app_export.dart';
 import 'package:pdf_kit/presentation/sheets/new_folder_sheet.dart';
+import 'package:pdf_kit/presentation/sheets/filter_sheet.dart';
 import 'package:path/path.dart' as p;
 
-enum SortOption { name, modified, type }
-
-enum TypeFilter { folder, pdf, image }
+import 'package:pdf_kit/presentation/models/filter_models.dart';
 
 class AndroidFilesScreen extends StatefulWidget {
   final String? initialPath;
@@ -49,7 +48,7 @@ class _AndroidFilesScreenState extends State<AndroidFilesScreen> {
   // Sorting and filtering state
   SortOption _sortOption = SortOption.name;
   final Set<TypeFilter> _typeFilters = {}; // empty = all
-  bool _filterDialogOpen = false;
+  bool _filterSheetOpen = false;
   final ScrollController _listingScrollController = ScrollController();
 
   @override
@@ -57,7 +56,7 @@ class _AndroidFilesScreenState extends State<AndroidFilesScreen> {
     super.initState();
     _boot();
     _listingScrollController.addListener(() {
-      if (!_filterDialogOpen) return;
+      if (!_filterSheetOpen) return;
       try {
         if (_listingScrollController.hasClients &&
             _listingScrollController.position.isScrollingNotifier.value) {
@@ -173,124 +172,51 @@ class _AndroidFilesScreenState extends State<AndroidFilesScreen> {
     return filtered;
   }
 
-  String _typeFilterLabel() {
-    if (_typeFilters.isEmpty) return 'All';
-    final parts = <String>[];
-    if (_typeFilters.contains(TypeFilter.folder)) parts.add('Folders');
-    if (_typeFilters.contains(TypeFilter.pdf)) parts.add('PDFs');
-    if (_typeFilters.contains(TypeFilter.image)) parts.add('Images');
-    return parts.join(' + ');
-  }
-
   Future<void> _openFilterDialog() async {
-    _filterDialogOpen = true;
-    await showDialog(
+    _filterSheetOpen = true;
+
+    await showModalBottomSheet(
       context: context,
-      barrierDismissible: true,
-      builder: (c) {
-        bool showTypeOptions = true;
-        return StatefulBuilder(
-          builder: (ctx, setSt) {
-            return AlertDialog(
-              title: const Text('Sort & Filter'),
-              content: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    RadioListTile<SortOption>(
-                      title: const Text('By name'),
-                      value: SortOption.name,
-                      groupValue: _sortOption,
-                      onChanged: (v) {
-                        if (v == null) return;
-                        setState(() => _sortOption = v);
-                        setSt(() {});
-                      },
-                    ),
-                    RadioListTile<SortOption>(
-                      title: const Text('By modified date'),
-                      value: SortOption.modified,
-                      groupValue: _sortOption,
-                      onChanged: (v) {
-                        if (v == null) return;
-                        setState(() => _sortOption = v);
-                        setSt(() {});
-                      },
-                    ),
-                    RadioListTile<SortOption>(
-                      title: const Text('By type (grouped)'),
-                      value: SortOption.type,
-                      groupValue: _sortOption,
-                      onChanged: (v) {
-                        if (v == null) return;
-                        setState(() => _sortOption = v);
-                        setSt(() {});
-                      },
-                    ),
-                    const Divider(),
-                    ListTile(
-                      title: const Text('Type'),
-                      subtitle: Text(_typeFilterLabel()),
-                      trailing: IconButton(
-                        icon: const Icon(Icons.arrow_drop_down),
-                        onPressed: () {
-                          setSt(() => showTypeOptions = !showTypeOptions);
-                        },
-                      ),
-                    ),
-                    if (showTypeOptions)
-                      Column(
-                        children: [
-                          CheckboxListTile(
-                            title: const Text('Folders'),
-                            value: _typeFilters.contains(TypeFilter.folder),
-                            onChanged: (v) {
-                              setState(() {
-                                if (v == true)
-                                  _typeFilters.add(TypeFilter.folder);
-                                else
-                                  _typeFilters.remove(TypeFilter.folder);
-                              });
-                              setSt(() {});
-                            },
-                          ),
-                          CheckboxListTile(
-                            title: const Text('PDFs'),
-                            value: _typeFilters.contains(TypeFilter.pdf),
-                            onChanged: (v) {
-                              setState(() {
-                                if (v == true)
-                                  _typeFilters.add(TypeFilter.pdf);
-                                else
-                                  _typeFilters.remove(TypeFilter.pdf);
-                              });
-                              setSt(() {});
-                            },
-                          ),
-                          CheckboxListTile(
-                            title: const Text('Images'),
-                            value: _typeFilters.contains(TypeFilter.image),
-                            onChanged: (v) {
-                              setState(() {
-                                if (v == true)
-                                  _typeFilters.add(TypeFilter.image);
-                                else
-                                  _typeFilters.remove(TypeFilter.image);
-                              });
-                              setSt(() {});
-                            },
-                          ),
-                        ],
-                      ),
-                  ],
+      useRootNavigator: true,
+      backgroundColor: Colors.transparent, // Important for transparent overlay
+      isScrollControlled: true,
+      builder: (context) {
+        return Padding(
+          padding: const EdgeInsets.fromLTRB(
+            16,
+            12,
+            16,
+            16,
+          ), // margin with top inset too
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(28),
+            child: Container(
+              // color: Theme.of(context).dialogBackgroundColor, // or cardColor
+              padding: const EdgeInsets.all(0),
+              child: SafeArea(
+                bottom: true,
+                top: false,
+                left: false,
+                right: false,
+                child: FilterSheet(
+                  currentSort: _sortOption,
+                  currentTypes: Set.from(_typeFilters),
+                  onSortChanged: (s) => setState(() => _sortOption = s),
+                  onTypeFiltersChanged: (set) {
+                    setState(() {
+                      _typeFilters.clear();
+                      _typeFilters.addAll(set);
+                    });
+                  },
                 ),
               ),
-            );
-          },
+            ),
+          ),
         );
       },
     );
-    _filterDialogOpen = false;
+
+    _filterSheetOpen = false;
   }
 
   void _cancelSearch() {
