@@ -5,7 +5,7 @@ import 'package:pdf_kit/presentation/provider/selection_provider.dart';
 import 'package:pdf_kit/service/pdf_merge_service.dart';
 import 'package:pdf_kit/core/app_export.dart';
 import 'package:path/path.dart' as p;
-import 'package:provider/provider.dart';
+import 'dart:ui';
 
 class MergePdfPage extends StatefulWidget {
   final String? selectionId;
@@ -42,26 +42,49 @@ class _MergePdfPageState extends State<MergePdfPage> {
 
   String _suggestDefaultName(List<FileInfo> files) {
     if (files.isEmpty) return 'Merged Document';
-    final first = _displayName(files.first);
-    return '${first.isEmpty ? "Merged Document" : first} - Merged';
+    final List<String> first = _displayName(files.first).split('.');
+    first.removeLast();
+    return '${first.isEmpty ? "Merged Document" : first.join('.')} - Merged';
   }
 
-  Future<void> _handleMerge(BuildContext context, SelectionProvider selection) async {
+  // Custom proxy decorator for transparent drag item
+  Widget _proxyDecorator(Widget child, int index, Animation<double> animation) {
+    return AnimatedBuilder(
+      animation: animation,
+      builder: (BuildContext context, Widget? child) {
+        final double animValue = Curves.easeInOut.transform(animation.value);
+        final double elevation = lerpDouble(0, 6, animValue)!;
+        return Material(
+          elevation: elevation,
+          color: Colors.transparent,
+          // shadowColor: Colors.black.withOpacity(0.3),
+          borderRadius: BorderRadius.circular(12),
+          child: child,
+        );
+      },
+      child: child,
+    );
+  }
+
+  Future<void> _handleMerge(
+    BuildContext context,
+    SelectionProvider selection,
+  ) async {
     setState(() => _isMerging = true);
-    
+
     final outName = _nameCtrl.text.trim().isEmpty
         ? 'Merged Document'
         : _nameCtrl.text.trim();
-    
+
     final filesWithRotation = selection.filesWithRotation;
-    
+
     final result = await PdfMergeService.mergePdfs(
       filesWithRotation: filesWithRotation,
       outputFileName: outName,
     );
-    
+
     setState(() => _isMerging = false);
-    
+
     result.fold(
       (error) {
         if (!mounted) return;
@@ -121,74 +144,102 @@ class _MergePdfPageState extends State<MergePdfPage> {
             centerTitle: false,
           ),
           body: SafeArea(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    '${files.length} selected files to be merged',
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: theme.colorScheme.onSurface.withOpacity(0.7),
+            child: CustomScrollView(
+              slivers: [
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                  sliver: SliverToBoxAdapter(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '${files.length} selected files to be merged',
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: theme.colorScheme.onSurface.withOpacity(0.7),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+
+                        // File Name section
+                        Text('File Name', style: theme.textTheme.titleMedium),
+                        const SizedBox(height: 8),
+                        TextField(
+                          controller: _nameCtrl,
+                          textInputAction: TextInputAction.done,
+                          decoration: InputDecoration(
+                            hintText: 'Type output file name',
+                            border: const UnderlineInputBorder(),
+                            enabledBorder: UnderlineInputBorder(
+                              borderSide: BorderSide(
+                                color: theme.colorScheme.primary.withOpacity(
+                                  0.3,
+                                ),
+                              ),
+                            ),
+                            focusedBorder: UnderlineInputBorder(
+                              borderSide: BorderSide(
+                                color: theme.colorScheme.primary,
+                                width: 2,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                      ],
                     ),
                   ),
-                  const SizedBox(height: 16),
+                ),
 
-                  // File Name section
-                  Text('File Name', style: theme.textTheme.titleMedium),
-                  const SizedBox(height: 8),
-                  TextField(
-                    controller: _nameCtrl,
-                    textInputAction: TextInputAction.done,
-                    decoration: InputDecoration(
-                      hintText: 'Type output file name',
-                      border: const UnderlineInputBorder(),
-                      enabledBorder: UnderlineInputBorder(
-                        borderSide: BorderSide(
-                          color: theme.colorScheme.primary.withOpacity(0.3),
+                // Reorderable files list as Sliver
+                SliverReorderableList(
+                  itemCount: files.length,
+                  onReorder: (oldIndex, newIndex) {
+                    selection.reorderFiles(oldIndex, newIndex);
+                  },
+                  proxyDecorator: _proxyDecorator,
+                  itemBuilder: (context, index) {
+                    final f = files[index];
+                    return ReorderableDelayedDragStartListener(
+                      key: ValueKey(f.path),
+                      index: index,
+                      // delay: const Duration(milliseconds: 500),
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                        child: DocEntryCard(
+                          info: f,
+                          showActions: true,
+                          rotation: selection.getRotation(f.path),
+                          onRotate: () => selection.rotateFile(f.path),
+                          onRemove: () => selection.removeFile(f.path),
+                          onOpen: () => context.pushNamed(
+                            AppRouteName.showPdf,
+                            queryParameters: {'path': f.path},
+                          ),
                         ),
                       ),
-                      focusedBorder: UnderlineInputBorder(
-                        borderSide: BorderSide(
-                          color: theme.colorScheme.primary,
-                          width: 2,
-                        ),
-                      ),
+                    );
+                  },
+                ),
+
+                // Add more files button
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                  sliver: SliverToBoxAdapter(
+                    child: _AddMoreButton(
+                      onTap: () {
+                        final params = <String, String>{'actionText': 'Add'};
+                        if (widget.selectionId != null) {
+                          params['selectionId'] = widget.selectionId!;
+                        }
+                        context.pushNamed(
+                          AppRouteName.filesRootFullscreen,
+                          queryParameters: params,
+                        );
+                      },
                     ),
                   ),
-                  const SizedBox(height: 16),
-
-                  // Selected files with action buttons
-                  for (final f in files) ...[
-                    DocEntryCard(
-                      info: f,
-                      showActions: true,
-                      rotation: selection.getRotation(f.path),
-                      onRotate: () => selection.rotateFile(f.path),
-                      onRemove: () => selection.removeFile(f.path),
-                      onOpen: () => context.pushNamed(
-                        AppRouteName.showPdf,
-                        queryParameters: {'path': f.path},
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                  ],
-
-                  // Add more files
-                  _AddMoreButton(
-                    onTap: () {
-                      final params = <String, String>{'actionText': 'Add'};
-                      if (widget.selectionId != null) {
-                        params['selectionId'] = widget.selectionId!;
-                      }
-                      context.pushNamed(
-                        AppRouteName.filesRootFullscreen,
-                        queryParameters: params,
-                      );
-                    },
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
           bottomNavigationBar: SafeArea(
@@ -206,7 +257,9 @@ class _MergePdfPageState extends State<MergePdfPage> {
                         width: 24,
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            Colors.white,
+                          ),
                         ),
                       )
                     : const Text('Merge'),

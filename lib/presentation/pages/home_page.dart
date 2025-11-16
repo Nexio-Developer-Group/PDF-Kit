@@ -13,7 +13,6 @@ class HomeTab extends StatefulWidget {
 }
 
 class _HomeTabState extends State<HomeTab> {
-
   // Define the functionality shown at the top
   late final List<Functionality> _actions = actions;
 
@@ -23,33 +22,43 @@ class _HomeTabState extends State<HomeTab> {
   @override
   Widget build(BuildContext context) {
     return SafeArea(
-      child: Padding(
-        padding: screenPadding,
-        child: CustomScrollView(
-          slivers: [
-            SliverToBoxAdapter(child: _buildHeader(context)),
-            const SliverToBoxAdapter(child: SizedBox(height: 8)),
-            // Top functionality grid
-            SliverPadding(
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              sliver: SliverToBoxAdapter(
-                child: QuickActionsGrid(items: _actions),
-              ),
-            ),
-            const SliverToBoxAdapter(child: SizedBox(height: 16)),
-            // Recent files section
-            SliverPadding(
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              sliver: SliverToBoxAdapter(
-                child: RecentFilesSection(
-                  onGetStartedPrimary: () => _toast(context, 'Scan a document'),
-                  onGetStartedSecondary: () => _toast(context, 'Import PDF'),
+      child: Column(
+        children: [
+          // Fixed header - stays at top
+          Padding(padding: screenPadding, child: _buildHeader(context)),
+          // Scrollable content with bounce effect
+          Expanded(
+            child: CustomScrollView(
+              physics: const BouncingScrollPhysics(), // iOS-style bounce
+              slivers: [
+                const SliverToBoxAdapter(child: SizedBox(height: 8)),
+                SliverPadding(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: screenPadding.left + 12,
+                  ),
+                  sliver: SliverToBoxAdapter(
+                    child: QuickActionsGrid(items: _actions),
+                  ),
                 ),
-              ),
+                const SliverToBoxAdapter(child: SizedBox(height: 16)),
+                SliverPadding(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: screenPadding.left + 12,
+                  ),
+                  sliver: SliverToBoxAdapter(
+                    child: RecentFilesSection(
+                      onGetStartedPrimary: () =>
+                          _toast(context, 'Scan a document'),
+                      onGetStartedSecondary: () =>
+                          _toast(context, 'Import PDF'),
+                    ),
+                  ),
+                ),
+                const SliverToBoxAdapter(child: SizedBox(height: 24)),
+              ],
             ),
-            const SliverToBoxAdapter(child: SizedBox(height: 24)),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -84,15 +93,18 @@ class _HomeTabState extends State<HomeTab> {
             ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600),
           ),
           const Spacer(),
-IconButton(
-  icon: const Icon(Icons.search),
-  onPressed: () {
-    // Option A: open Files-scoped search on top of Files branch
-    context.goNamed(AppRouteName.filesRoot); // switch to Files tab
-    context.pushNamed(AppRouteName.filesSearch, queryParameters: {'path': '/'});
-  },
-  tooltip: 'Search',
-),
+          IconButton(
+            icon: const Icon(Icons.search),
+            onPressed: () {
+              // Option A: open Files-scoped search on top of Files branch
+              context.goNamed(AppRouteName.filesRoot); // switch to Files tab
+              context.pushNamed(
+                AppRouteName.filesSearch,
+                queryParameters: {'path': '/'},
+              );
+            },
+            tooltip: 'Search',
+          ),
           IconButton(
             icon: const Icon(Icons.more_vert),
             onPressed: () {},

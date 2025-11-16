@@ -49,18 +49,34 @@ class DocEntryCard extends StatefulWidget {
 
 class _DocEntryCardState extends State<DocEntryCard> {
   static final Map<String, _Thumb> _cache = {};
+  late Future<_Thumb?> _thumbnailFuture; // Cache the future itself
 
   bool get _isPdf => widget.info.extension.toLowerCase() == 'pdf';
   bool get _isImage => const {
-        'jpg',
-        'jpeg',
-        'png',
-        'gif',
-        'webp',
-        'bmp',
-        'heic',
-        'heif',
-      }.contains(widget.info.extension.toLowerCase());
+    'jpg',
+    'jpeg',
+    'png',
+    'gif',
+    'webp',
+    'bmp',
+    'heic',
+    'heif',
+  }.contains(widget.info.extension.toLowerCase());
+
+  @override
+  void initState() {
+    super.initState();
+    _thumbnailFuture = _thumbnail(); // Initialize once
+  }
+
+  @override
+  void didUpdateWidget(DocEntryCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Only recreate future if the file path changes
+    if (oldWidget.info.path != widget.info.path) {
+      _thumbnailFuture = _thumbnail();
+    }
+  }
 
   Future<_Thumb?> _thumbnail() async {
     final key = widget.info.path;
@@ -126,7 +142,7 @@ class _DocEntryCardState extends State<DocEntryCard> {
               Padding(
                 padding: const EdgeInsets.only(right: 12, left: 12),
                 child: FutureBuilder<_Thumb?>(
-                  future: _thumbnail(),
+                  future: _thumbnailFuture, // Use the cached future
                   builder: (context, snap) {
                     Widget child;
                     if (snap.connectionState == ConnectionState.waiting) {
@@ -148,7 +164,7 @@ class _DocEntryCardState extends State<DocEntryCard> {
                       final fit = (t.height < t.width)
                           ? BoxFit.fitWidth
                           : BoxFit.fitHeight;
-                      
+
                       child = Transform.rotate(
                         angle: widget.rotation * 3.14159 / 180,
                         child: ClipRRect(
@@ -166,9 +182,9 @@ class _DocEntryCardState extends State<DocEntryCard> {
                       );
                     } else {
                       child = Container(
-                        color: Theme.of(context)
-                            .colorScheme
-                            .surfaceContainerHighest,
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.surfaceContainerHighest,
                         width: 70,
                         height: 70,
                         child: Icon(
@@ -200,13 +216,12 @@ class _DocEntryCardState extends State<DocEntryCard> {
                       children: [
                         Text(
                           _recent(),
-                          style:
-                              Theme.of(context).textTheme.bodySmall?.copyWith(
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .onSurface
-                                        .withAlpha(153),
-                                  ),
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurface.withAlpha(153),
+                              ),
                         ),
                         if (widget.rotation != 0) ...[
                           const SizedBox(width: 8),
@@ -216,20 +231,18 @@ class _DocEntryCardState extends State<DocEntryCard> {
                               vertical: 2,
                             ),
                             decoration: BoxDecoration(
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .primary
-                                  .withOpacity(0.1),
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.primary.withOpacity(0.1),
                               borderRadius: BorderRadius.circular(4),
                             ),
                             child: Text(
                               '${widget.rotation}°',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodySmall
+                              style: Theme.of(context).textTheme.bodySmall
                                   ?.copyWith(
-                                    color:
-                                        Theme.of(context).colorScheme.primary,
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.primary,
                                     fontWeight: FontWeight.w600,
                                   ),
                             ),
@@ -274,14 +287,8 @@ class _DocEntryCardState extends State<DocEntryCard> {
                   onSelected: widget.onMenu,
                   itemBuilder: (c) => [
                     const PopupMenuItem(value: 'open', child: Text('Open')),
-                    const PopupMenuItem(
-                      value: 'rename',
-                      child: Text('Rename'),
-                    ),
-                    const PopupMenuItem(
-                      value: 'delete',
-                      child: Text('Delete'),
-                    ),
+                    const PopupMenuItem(value: 'rename', child: Text('Rename')),
+                    const PopupMenuItem(value: 'delete', child: Text('Delete')),
                     PopupMenuItem(
                       value: 'share',
                       onTap: () {

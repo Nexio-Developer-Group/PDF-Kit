@@ -16,6 +16,10 @@ import 'package:pdf_kit/core/app_export.dart';
 import 'package:pdf_kit/presentation/sheets/new_folder_sheet.dart';
 import 'package:path/path.dart' as p;
 
+enum SortOption { name, modified, type }
+
+enum TypeFilter { folder, pdf, image }
+
 class AndroidFilesScreen extends StatefulWidget {
   final String? initialPath;
   final bool selectable;
@@ -42,11 +46,27 @@ class _AndroidFilesScreenState extends State<AndroidFilesScreen> {
   String? _currentPath;
   List<FileInfo> _entries = [];
   StreamSubscription? _searchSub;
+  // Sorting and filtering state
+  SortOption _sortOption = SortOption.name;
+  final Set<TypeFilter> _typeFilters = {}; // empty = all
+  bool _filterDialogOpen = false;
+  final ScrollController _listingScrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
     _boot();
+    _listingScrollController.addListener(() {
+      if (!_filterDialogOpen) return;
+      try {
+        if (_listingScrollController.hasClients &&
+            _listingScrollController.position.isScrollingNotifier.value) {
+          if (mounted) Navigator.of(context).maybePop();
+        }
+      } catch (_) {
+        // ignore any position/access glitches
+      }
+    });
   }
 
   Future<void> _boot() async {
@@ -66,6 +86,7 @@ class _AndroidFilesScreenState extends State<AndroidFilesScreen> {
   @override
   void dispose() {
     _searchSub?.cancel();
+    _listingScrollController.dispose();
     super.dispose();
   }
 
@@ -89,6 +110,187 @@ class _AndroidFilesScreenState extends State<AndroidFilesScreen> {
         _entries = items;
       });
     });
+  }
+
+  List<FileInfo> _getVisibleEntries() {
+    final list = List<FileInfo>.from(_entries);
+
+    // Apply type filter (multi-select). If none selected => all
+    List<FileInfo> filtered = list.where((e) {
+      if (_typeFilters.isEmpty) return true;
+      if (_typeFilters.contains(TypeFilter.folder) && e.isDirectory)
+        return true;
+      if (_typeFilters.contains(TypeFilter.pdf) &&
+          e.extension.toLowerCase() == 'pdf')
+        return true;
+      if (_typeFilters.contains(TypeFilter.image)) {
+        const imgExt = {
+          'jpg',
+          'jpeg',
+          'png',
+          'gif',
+          'webp',
+          'bmp',
+          'tif',
+          'tiff',
+          'heic',
+          'heif',
+          'svg',
+        };
+        if (imgExt.contains(e.extension.toLowerCase())) return true;
+      }
+      return false;
+    }).toList();
+
+    // Apply sort
+    switch (_sortOption) {
+      case SortOption.name:
+        filtered.sort(
+          (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()),
+        );
+        break;
+      case SortOption.modified:
+        filtered.sort(
+          (a, b) => (b.lastModified ?? DateTime.fromMillisecondsSinceEpoch(0))
+              .compareTo(
+                a.lastModified ?? DateTime.fromMillisecondsSinceEpoch(0),
+              ),
+        );
+        break;
+      case SortOption.type:
+        filtered.sort((a, b) {
+          if (a.isDirectory && !b.isDirectory) return -1;
+          if (!a.isDirectory && b.isDirectory) return 1;
+          final ae = a.extension.toLowerCase();
+          final be = b.extension.toLowerCase();
+          final c = ae.compareTo(be);
+          if (c != 0) return c;
+          return a.name.toLowerCase().compareTo(b.name.toLowerCase());
+        });
+        break;
+    }
+
+    return filtered;
+  }
+
+  String _typeFilterLabel() {
+    if (_typeFilters.isEmpty) return 'All';
+    final parts = <String>[];
+    if (_typeFilters.contains(TypeFilter.folder)) parts.add('Folders');
+    if (_typeFilters.contains(TypeFilter.pdf)) parts.add('PDFs');
+    if (_typeFilters.contains(TypeFilter.image)) parts.add('Images');
+    return parts.join(' + ');
+  }
+
+  Future<void> _openFilterDialog() async {
+    _filterDialogOpen = true;
+    await showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (c) {
+        bool showTypeOptions = true;
+        return StatefulBuilder(
+          builder: (ctx, setSt) {
+            return AlertDialog(
+              title: const Text('Sort & Filter'),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    RadioListTile<SortOption>(
+                      title: const Text('By name'),
+                      value: SortOption.name,
+                      groupValue: _sortOption,
+                      onChanged: (v) {
+                        if (v == null) return;
+                        setState(() => _sortOption = v);
+                        setSt(() {});
+                      },
+                    ),
+                    RadioListTile<SortOption>(
+                      title: const Text('By modified date'),
+                      value: SortOption.modified,
+                      groupValue: _sortOption,
+                      onChanged: (v) {
+                        if (v == null) return;
+                        setState(() => _sortOption = v);
+                        setSt(() {});
+                      },
+                    ),
+                    RadioListTile<SortOption>(
+                      title: const Text('By type (grouped)'),
+                      value: SortOption.type,
+                      groupValue: _sortOption,
+                      onChanged: (v) {
+                        if (v == null) return;
+                        setState(() => _sortOption = v);
+                        setSt(() {});
+                      },
+                    ),
+                    const Divider(),
+                    ListTile(
+                      title: const Text('Type'),
+                      subtitle: Text(_typeFilterLabel()),
+                      trailing: IconButton(
+                        icon: const Icon(Icons.arrow_drop_down),
+                        onPressed: () {
+                          setSt(() => showTypeOptions = !showTypeOptions);
+                        },
+                      ),
+                    ),
+                    if (showTypeOptions)
+                      Column(
+                        children: [
+                          CheckboxListTile(
+                            title: const Text('Folders'),
+                            value: _typeFilters.contains(TypeFilter.folder),
+                            onChanged: (v) {
+                              setState(() {
+                                if (v == true)
+                                  _typeFilters.add(TypeFilter.folder);
+                                else
+                                  _typeFilters.remove(TypeFilter.folder);
+                              });
+                              setSt(() {});
+                            },
+                          ),
+                          CheckboxListTile(
+                            title: const Text('PDFs'),
+                            value: _typeFilters.contains(TypeFilter.pdf),
+                            onChanged: (v) {
+                              setState(() {
+                                if (v == true)
+                                  _typeFilters.add(TypeFilter.pdf);
+                                else
+                                  _typeFilters.remove(TypeFilter.pdf);
+                              });
+                              setSt(() {});
+                            },
+                          ),
+                          CheckboxListTile(
+                            title: const Text('Images'),
+                            value: _typeFilters.contains(TypeFilter.image),
+                            onChanged: (v) {
+                              setState(() {
+                                if (v == true)
+                                  _typeFilters.add(TypeFilter.image);
+                                else
+                                  _typeFilters.remove(TypeFilter.image);
+                              });
+                              setSt(() {});
+                            },
+                          ),
+                        ],
+                      ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+    _filterDialogOpen = false;
   }
 
   void _cancelSearch() {
@@ -123,9 +325,9 @@ class _AndroidFilesScreenState extends State<AndroidFilesScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final items = _entries;
-    final folders = items.where((e) => e.isDirectory).toList();
-    final files = items.where((e) => !e.isDirectory).toList();
+    final visibleItems = _getVisibleEntries();
+    final folders = visibleItems.where((e) => e.isDirectory).toList();
+    final files = visibleItems.where((e) => !e.isDirectory).toList();
 
     return Scaffold(
       body: SafeArea(
@@ -327,10 +529,11 @@ class _AndroidFilesScreenState extends State<AndroidFilesScreen> {
                   ],
                 ),
               ),
-              const IconButton(
-                padding: EdgeInsets.all(0),
-                onPressed: null,
-                icon: Icon(Icons.import_export_rounded),
+              IconButton(
+                padding: EdgeInsets.zero,
+                tooltip: 'Sort / Filter',
+                icon: const Icon(Icons.import_export_rounded),
+                onPressed: () => _openFilterDialog(),
               ),
               IconButton(
                 onPressed: () {
@@ -377,6 +580,7 @@ class _AndroidFilesScreenState extends State<AndroidFilesScreen> {
               : RefreshIndicator(
                   onRefresh: () => _open(_currentPath!),
                   child: ListView(
+                    controller: _listingScrollController,
                     padding: const EdgeInsets.only(bottom: 16),
                     children: [
                       ...folders.map(
