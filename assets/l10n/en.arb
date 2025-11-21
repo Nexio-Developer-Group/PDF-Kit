@@ -1,0 +1,183 @@
+{
+  "@@locale": "en",
+
+  "app_nav_home": "Home",
+  "app_nav_files": "Files",
+  "app_nav_settings": "Settings",
+  "settings_title": "Settings",
+
+  "common_cancel": "Cancel",
+  "common_clear_all": "Clear All",
+  "common_clear": "Clear",
+  "common_select": "Select",
+  "common_retry": "Retry",
+  "common_open": "Open",
+  "common_rename": "Rename",
+  "common_delete": "Delete",
+  "common_share": "Share",
+  "common_search": "Search",
+  "common_close": "Close",
+  "common_action": "Action",
+  "common_enable_selection": "Enable selection",
+  "common_select_all_on_page": "Select all on page",
+  "common_clear_page_selection": "Clear this page",
+
+  "recent_files_title": "Recent Files",
+  "recent_files_empty_title": "No recent files",
+  "recent_files_empty_message": "Your recently accessed files will appear here.",
+  "recent_files_removed_snackbar": "Removed from recent files",
+  "recent_files_clear_menu": "Clear all recent files",
+  "recent_files_clear_confirm_title": "Clear all recent files?",
+  "recent_files_clear_confirm_message": "This will remove all files from your recent files list. This action cannot be undone.",
+
+  "recent_files_search_hint": "Search recent files...",
+  "recent_files_search_previous_header": "Previous Search",
+  "recent_files_search_no_results_title": "No results found",
+  "recent_files_search_no_results_message": "Try searching with different keywords.",
+
+  "files_header_title": "Files",
+  "files_empty_folder_title": "This folder is empty",
+  "files_total_items": "Total: {count} items",
+  "@files_total_items": {
+    "description": "Label showing total number of items in current folder.",
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "files_sort_filter_tooltip": "Sort / Filter",
+  "files_enable_selection_tooltip": "Enable selection",
+  "files_select_all_page_tooltip": "Select all on page",
+  "files_clear_page_tooltip": "Clear this page",
+  "files_more_tooltip": "More",
+  "files_create_new_folder_tooltip": "Create new folder",
+  "files_previous_search_clear_all_tooltip": "Clear all",
+  "files_search_hint": "Search files and folders...",
+  "files_search_not_found_title": "Not Found",
+  "files_search_not_found_message": "Please search with another keywords.",
+
+  "selection_count_label": "{count} selected",
+  "@selection_count_label": {
+    "description": "Label in selection bar showing count of selected files.",
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "selection_pick_sheet_selected": "{count} Selected",
+  "@selection_pick_sheet_selected": {
+    "description": "Header showing number of selected files in bottom sheet.",
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "selection_pick_sheet_no_files": "No files selected",
+  "selection_pick_sheet_close_tooltip": "Close",
+  "selection_pick_sheet_remove_tooltip": "Remove",
+
+  "filter_sheet_title": "Sort & Filter",
+  "filter_by_name": "By name",
+  "filter_by_modified": "By modified date",
+  "filter_type_header": "Type",
+  "filter_type_all": "All",
+  "filter_type_folders": "Folders",
+  "filter_type_pdfs": "PDFs",
+  "filter_type_images": "Images",
+
+  "new_folder_sheet_title": "New Folder",
+  "new_folder_field_label": "Folder Name",
+  "new_folder_field_hint": "Enter folder name",
+
+  "folder_picker_title": "Select Folder",
+  "folder_picker_select_button": "SELECT",
+  "folder_picker_unable_to_load_title": "Unable to load folders",
+  "folder_picker_no_folders": "No folders available",
+  "folder_picker_selected_folder_label": "Selected Folder",
+  "folder_picker_retry": "Retry",
+
+  "merge_pdf_title": "Merge PDF",
+  "merge_pdf_description": "Merge PDFs and images together, drag to reorder, rename, choose where to save, and add or edit files anytime.",
+  "merge_pdf_file_name_label": "File Name",
+  "merge_pdf_file_name_hint": "Type output file name",
+  "merge_pdf_save_to_folder_label": "Save to Folder",
+  "merge_pdf_files_selected": "{count} Files Selected",
+  "@merge_pdf_files_selected": {
+    "description": "Label showing number of files selected for merging.",
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "merge_pdf_reorder": "Reorder",
+  "merge_pdf_done": "Done",
+  "merge_pdf_add_more_files": "Add More Files",
+  "merge_pdf_button": "Merge PDF",
+  "merge_pdf_loading_default_folder": "Loading default folder...",
+  "merge_pdf_select_folder_placeholder": "Select Folder",
+  "merge_pdf_destination_snackbar": "Destination: {folderName}",
+  "@merge_pdf_destination_snackbar": {
+    "description": "Snackbar message showing chosen destination folder.",
+    "placeholders": {"folderName": {"type": "String"}}
+  },
+  "merge_pdf_success_snackbar": "Successfully merged to {fileName}",
+  "@merge_pdf_success_snackbar": {
+    "description": "Snackbar message after successful merge.",
+    "placeholders": {"fileName": {"type": "String"}}
+  },
+
+  "protect_pdf_title": "Protect PDF",
+  "protect_pdf_description": "Set a password to protect your scan. This password will be required if you or the person you provide the scanned document wants to access the file. If you forget the password, then this file will not be accessible forever.",
+  "protect_pdf_selected_file_label": "Selected File",
+  "protect_pdf_add_pdf_file": "Add PDF File",
+  "protect_pdf_password_label": "Password",
+  "protect_pdf_confirm_password_label": "Confirm Password",
+  "protect_pdf_password_hint_obscured": "••••••••••",
+  "protect_pdf_visibility_toggle_show": "Show",
+  "protect_pdf_visibility_toggle_hide": "Hide",
+  "protect_pdf_button": "Protect",
+  "protect_pdf_error_enter_password": "Please enter a password",
+  "protect_pdf_error_passwords_mismatch": "Passwords do not match",
+  "protect_pdf_success_snackbar": "Successfully protected {fileName}",
+  "@protect_pdf_success_snackbar": {
+    "description": "Snackbar message after successful protection.",
+    "placeholders": {"fileName": {"type": "String"}}
+  },
+
+  "doc_menu_open": "Open",
+  "doc_menu_rename": "Rename",
+  "doc_menu_delete": "Delete",
+  "doc_menu_share": "Share",
+  "doc_menu_edit": "Edit",
+  "doc_menu_remove": "Remove",
+  "doc_rotation_degrees": "{degrees}°",
+  "@doc_rotation_degrees": {
+    "description": "Badge showing rotation of a page in degrees.",
+    "placeholders": {"degrees": {"type": "int"}}
+  },
+
+  "errors_generic": "Error: {message}",
+  "@errors_generic": {
+    "description": "Generic error message with details.",
+    "placeholders": {"message": {"type": "String"}}
+  },
+  "errors_failed_to_load_recent": "Failed to load recent files.",
+  "errors_unable_to_load_folders": "Unable to load folders",
+
+  "empty_no_files_selected": "No files selected",
+  "empty_no_recent_files": "No recent files",
+  "empty_folder": "This folder is empty",
+  "empty_not_found": "Not Found",
+  "empty_no_results_found": "No results found",
+  "empty_try_different_keywords": "Try searching with different keywords.",
+
+  "snackbar_removed_recent": "Removed from recent files",
+  "snackbar_destination_folder": "Destination: {folderName}",
+  "@snackbar_destination_folder": {
+    "description": "Duplicate of merge_pdf_destination_snackbar (can consolidate).",
+    "placeholders": {"folderName": {"type": "String"}}
+  },
+  "snackbar_error": "Error: {message}",
+  "@snackbar_error": {
+    "description": "Generic snackbar error message.",
+    "placeholders": {"message": {"type": "String"}}
+  },
+  "snackbar_success_merge": "Successfully merged to {fileName}",
+  "@snackbar_success_merge": {
+    "description": "Duplicate of merge_pdf_success_snackbar (can consolidate).",
+    "placeholders": {"fileName": {"type": "String"}}
+  },
+  "snackbar_success_protect": "Successfully protected {fileName}",
+  "@snackbar_success_protect": {
+    "description": "Duplicate of protect_pdf_success_snackbar (can consolidate).",
+    "placeholders": {"fileName": {"type": "String"}}
+  }
+}

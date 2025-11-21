@@ -7,6 +7,8 @@ class SelectionProvider extends ChangeNotifier {
   final Map<String, int> _rotations = {};
   List<FileInfo> _orderedFiles = [];
   int _mode = 0;
+  int? _maxSelectable; // optional upper limit
+  String? _lastErrorMessage; // surfaced when exceeding limit
 
   int get mode => _mode;
   bool get isEnabled => _mode != 0;
@@ -15,6 +17,9 @@ class SelectionProvider extends ChangeNotifier {
   bool isSelected(String path) => _selected.containsKey(path);
 
   List<FileInfo> get files => List.unmodifiable(_orderedFiles);
+
+  int? get maxSelectable => _maxSelectable;
+  String? get lastErrorMessage => _lastErrorMessage;
 
   int getRotation(String path) => _rotations[path] ?? 0;
 
@@ -41,16 +46,39 @@ class SelectionProvider extends ChangeNotifier {
     }
   }
 
+  void setMaxSelectable(int? value) {
+    _maxSelectable = value;
+    notifyListeners();
+  }
+
+  void clearError() {
+    if (_lastErrorMessage != null) {
+      _lastErrorMessage = null;
+      notifyListeners();
+    }
+  }
+
   void toggle(FileInfo f) {
+    // Remove existing selection
     if (_selected.containsKey(f.path)) {
       _selected.remove(f.path);
       _rotations.remove(f.path);
       _orderedFiles.removeWhere((file) => file.path == f.path);
-    } else {
-      _selected[f.path] = f;
-      _rotations[f.path] = 0;
-      _orderedFiles.add(f);
+      notifyListeners();
+      return;
     }
+
+    // Enforce max selectable limit if provided
+    if (_maxSelectable != null && _selected.length >= _maxSelectable!) {
+      _lastErrorMessage =
+          'You can select at most $_maxSelectable file${_maxSelectable == 1 ? '' : 's'}.';
+      notifyListeners();
+      return; // do not add
+    }
+
+    _selected[f.path] = f;
+    _rotations[f.path] = 0;
+    _orderedFiles.add(f);
     notifyListeners();
   }
 
@@ -69,17 +97,17 @@ class SelectionProvider extends ChangeNotifier {
     }
   }
 
-// selection_provider.dart
-void reorderFiles(int oldIndex, int newIndex) {
-  // Adjust newIndex if moving down
-  if (oldIndex < newIndex) {
-    newIndex -= 1;
+  // selection_provider.dart
+  void reorderFiles(int oldIndex, int newIndex) {
+    // Adjust newIndex if moving down
+    if (oldIndex < newIndex) {
+      newIndex -= 1;
+    }
+    final file = _orderedFiles.removeAt(oldIndex);
+    _orderedFiles.insert(newIndex, file);
+    notifyListeners();
   }
-  final file = _orderedFiles.removeAt(oldIndex);
-  _orderedFiles.insert(newIndex, file);
-  notifyListeners();
-}
-  
+
   bool areAllSelected(Iterable<FileInfo> visible) {
     var any = false;
     for (final f in visible) {
@@ -126,6 +154,7 @@ void reorderFiles(int oldIndex, int newIndex) {
     _rotations.clear();
     _orderedFiles.clear();
     _mode = 1;
+    _lastErrorMessage = null;
     notifyListeners();
   }
 

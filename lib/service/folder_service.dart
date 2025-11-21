@@ -17,30 +17,45 @@ class FolderServiceAndroid {
     bool recursive = true,
   }) async {
     try {
+      print(
+        '[FolderService] createFolder(basePath: "$basePath", folderName: "$folderName", requireAllFilesAccess: $requireAllFilesAccess, recursive: $recursive)',
+      );
       if (!Platform.isAndroid) {
+        print(
+          '[FolderService] Unsupported platform: ${Platform.operatingSystem}',
+        );
         return left('Unsupported platform');
       }
 
       if (folderName.trim().isEmpty) {
+        print('[FolderService] Invalid name (empty after trim)');
         return left('Folder name cannot be empty');
       }
 
       final sanitized = _sanitizeFolderName(folderName);
+      print('[FolderService] Sanitized name: "$sanitized"');
       final targetPath = _join(basePath, sanitized);
+      print('[FolderService] Target path: $targetPath');
 
       if (requireAllFilesAccess) {
+        print('[FolderService] Ensuring MANAGE_EXTERNAL_STORAGE permission...');
         final ok = await _ensureAllFilesAccess();
+        print('[FolderService] All files access granted: $ok');
         if (!ok) return left('All files access not granted');
       }
 
       final dir = Directory(targetPath);
       if (await dir.exists()) {
+        print('[FolderService] Already exists');
         return right(dir);
       }
 
+      print('[FolderService] Creating directory (recursive=$recursive)...');
       final created = await dir.create(recursive: recursive);
+      print('[FolderService] Created at: ${created.path}');
       return right(created);
     } catch (e) {
+      print('[FolderService] Error: $e');
       return left('Failed to create folder: $e');
     }
   }
@@ -70,8 +85,9 @@ class FolderServiceAndroid {
   }
 
   static String _sanitizeFolderName(String input) {
-    final sanitized =
-        input.replaceAll(RegExp(r'[<>:"/\\|?*\x00-\x1F]'), '_').trim();
+    final sanitized = input
+        .replaceAll(RegExp(r'[<>:"/\\|?*\x00-\x1F]'), '_')
+        .trim();
     return sanitized.isEmpty ? 'New Folder' : sanitized;
   }
 

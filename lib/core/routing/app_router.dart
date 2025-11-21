@@ -118,7 +118,22 @@ final appRouter = GoRouter(
       name: AppRouteName.compressPdf,
       path: '/pdf/compress',
       parentNavigatorKey: _rootNavKey,
-      builder: (context, state) => const CompressPdfPage(),
+      builder: (context, state) {
+        final selectionId = state.uri.queryParameters['selectionId'];
+        if (selectionId != null) {
+          try {
+            final provider = Get.find<SelectionManager>().of(selectionId);
+            return ChangeNotifierProvider<SelectionProvider>.value(
+              value: provider,
+              child: CompressPdfPage(selectionId: selectionId),
+            );
+          } catch (_) {}
+        }
+        return ChangeNotifierProvider(
+          create: (_) => SelectionProvider(),
+          child: const CompressPdfPage(),
+        );
+      },
     ),
 
     GoRoute(
@@ -208,12 +223,7 @@ class AddSignaturePage extends StatelessWidget {
       const Scaffold(body: Center(child: Text('Add Digital Signature')));
 }
 
-class CompressPdfPage extends StatelessWidget {
-  const CompressPdfPage({super.key});
-  @override
-  Widget build(BuildContext context) =>
-      const Scaffold(body: Center(child: Text('Compress PDF')));
-}
+// Removed placeholder CompressPdfPage; real implementation lives in pages/compress_pdf.dart
 
 class NotFoundPage extends StatelessWidget {
   final String? routeName;

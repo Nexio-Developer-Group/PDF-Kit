@@ -280,7 +280,9 @@ class _AndroidFilesScreenState extends State<AndroidFilesScreen> {
   Widget _buildHeader(BuildContext context, List<FileInfo> visibleFiles) {
     final p = _maybeProvider();
     final enabled = widget.selectable && (p?.isEnabled ?? false);
-    final allOnPage = enabled
+    final maxLimitActive =
+        p?.maxSelectable != null; // hide select-all when limit imposed
+    final allOnPage = (!maxLimitActive && enabled)
         ? (p?.areAllSelected(visibleFiles) ?? false)
         : false;
     return Container(
@@ -327,7 +329,7 @@ class _AndroidFilesScreenState extends State<AndroidFilesScreen> {
             },
             tooltip: 'Search',
           ),
-          if (widget.selectable)
+          if (widget.selectable && !maxLimitActive)
             IconButton(
               icon: Icon(
                 !enabled
@@ -345,6 +347,8 @@ class _AndroidFilesScreenState extends State<AndroidFilesScreen> {
                 prov.cyclePage(visibleFiles);
               },
             )
+          else if (widget.selectable && maxLimitActive)
+            SizedBox.shrink()
           else
             IconButton(
               icon: const Icon(Icons.more_vert),

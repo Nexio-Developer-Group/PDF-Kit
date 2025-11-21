@@ -16,6 +16,8 @@ ShellRoute buildSelectionShellRoute({
       final actionId = state.uri.queryParameters['actionId'];
       final actionText = state.uri.queryParameters['actionText'];
       final selectionId = state.uri.queryParameters['selectionId'];
+      final maxStr = state.uri.queryParameters['max'];
+      final maxSelectable = int.tryParse(maxStr ?? '');
 
       SelectionProvider? provided;
       if (selectionId != null) {
@@ -29,12 +31,21 @@ ShellRoute buildSelectionShellRoute({
       return SelectionScaffold(
         provider: provided,
         actionText: actionText,
+        maxSelectable: maxSelectable,
         onAction: (files) {
           if (selectionId != null) {
-            rootNavKey.currentContext!.pushNamed(
-              AppRouteName.mergePdf,
-              queryParameters: {'selectionId': selectionId},
-            );
+            // Decide target route based on actionText
+            if (actionText?.toLowerCase() == 'compress') {
+              rootNavKey.currentContext!.pushNamed(
+                AppRouteName.compressPdf,
+                queryParameters: {'selectionId': selectionId},
+              );
+            } else {
+              rootNavKey.currentContext!.pushNamed(
+                AppRouteName.mergePdf,
+                queryParameters: {'selectionId': selectionId},
+              );
+            }
             return;
           }
 
@@ -46,10 +57,18 @@ ShellRoute buildSelectionShellRoute({
               callback(files);
               manager.clear(); // cleanup after use
             } else {
-              rootNavKey.currentContext!.pushNamed(
-                AppRouteName.mergePdf,
-                extra: files,
-              );
+              // Fallback decides route by actionText
+              if (actionText?.toLowerCase() == 'compress') {
+                rootNavKey.currentContext!.pushNamed(
+                  AppRouteName.compressPdf,
+                  extra: files,
+                );
+              } else {
+                rootNavKey.currentContext!.pushNamed(
+                  AppRouteName.mergePdf,
+                  extra: files,
+                );
+              }
             }
           }
         },

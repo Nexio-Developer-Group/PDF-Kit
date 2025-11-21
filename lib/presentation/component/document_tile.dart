@@ -67,6 +67,8 @@ class _DocEntryCardState extends State<DocEntryCard> {
     'heif',
   }.contains(widget.info.extension.toLowerCase());
 
+  int? _pageCount; // for PDFs only
+
   @override
   void initState() {
     super.initState();
@@ -86,8 +88,29 @@ class _DocEntryCardState extends State<DocEntryCard> {
     final key = widget.info.path;
     if (_cache.containsKey(key)) return _cache[key];
 
+    // if (_isPdf) {
+    //   final doc = await PdfDocument.openFile(widget.info.path);
+    //   final page = await doc.getPage(1);
+    //   final w = page.width.round();
+    //   final h = page.height.round();
+    //   const scale = 2.0;
+    //   final img = await page.render(
+    //     width: (w * scale).toDouble(),
+    //     height: (h * scale).toDouble(),
+    //   );
+    //   await page.close();
+    //   await doc.close();
+    //   if (img == null) return null;
+    //   final t = _Thumb(img.bytes, w, h);
+    //   _cache[key] = t;
+    //   return t;
+    // }
+
     if (_isPdf) {
       final doc = await PdfDocument.openFile(widget.info.path);
+      _pageCount = doc.pagesCount; // pdfx provides this
+      // Trigger a rebuild so the page count row updates
+      if (mounted) setState(() {});
       final page = await doc.getPage(1);
       final w = page.width.round();
       final h = page.height.round();
@@ -175,11 +198,44 @@ class _DocEntryCardState extends State<DocEntryCard> {
                           borderRadius: BorderRadius.circular(12),
                           child: SizedBox.square(
                             dimension: 70,
-                            child: Image.memory(
-                              t.bytes,
-                              fit: fit,
-                              cacheWidth: 140,
-                              cacheHeight: 140,
+                            child: Stack(
+                              children: [
+                                // Thumbnail
+                                Positioned.fill(
+                                  child: Image.memory(
+                                    t.bytes,
+                                    fit: fit,
+                                    cacheWidth: 140,
+                                    cacheHeight: 140,
+                                  ),
+                                ),
+
+                                // Extension badge (top‑left)
+                                Positioned(
+                                  top: 4,
+                                  left: 4,
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 3,
+                                      vertical: 1,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: Colors.black.withOpacity(
+                                        0.6,
+                                      ), // not pure black
+                                      borderRadius: BorderRadius.circular(2),
+                                    ),
+                                    child: Text(
+                                      widget.info.extension.toUpperCase(),
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ),
@@ -212,7 +268,7 @@ class _DocEntryCardState extends State<DocEntryCard> {
                   children: [
                     Text(
                       widget.info.name,
-                      maxLines: 2,
+                      maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         color: widget.disabled
@@ -260,6 +316,58 @@ class _DocEntryCardState extends State<DocEntryCard> {
                         ],
                       ],
                     ),
+                    const SizedBox(height: 2),
+                    Row(
+                      children: [
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.sd_storage,
+                              size: 14,
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.onSurface.withAlpha(153),
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              widget.info.readableSize,
+                              style: Theme.of(context).textTheme.bodySmall
+                                  ?.copyWith(
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.onSurface.withAlpha(153),
+                                  ),
+                            ),
+                          ],
+                        ),
+                        if (_isPdf && _pageCount != null) ...[
+                          const SizedBox(width: 12),
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.auto_stories,
+                                size: 14,
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurface.withAlpha(153),
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                '${_pageCount} page${_pageCount == 1 ? '' : 's'}',
+                                style: Theme.of(context).textTheme.bodySmall
+                                    ?.copyWith(
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.onSurface.withAlpha(153),
+                                    ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ],
+                    ),
                   ],
                 ),
               ),
@@ -276,17 +384,19 @@ class _DocEntryCardState extends State<DocEntryCard> {
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    IconButton(
-                      icon: const Icon(Icons.edit),
-                      onPressed: widget.disabled ? null : widget.onEdit,
-                      tooltip: 'Edit',
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.close),
-                      onPressed: widget.disabled ? null : widget.onRemove,
-                      tooltip: 'Remove',
-                      color: Theme.of(context).colorScheme.error,
-                    ),
+                    if (widget.onEdit != null)
+                      IconButton(
+                        icon: const Icon(Icons.edit),
+                        onPressed: widget.disabled ? null : widget.onEdit,
+                        tooltip: 'Edit',
+                      ),
+                    if (widget.onRemove != null)
+                      IconButton(
+                        icon: const Icon(Icons.close),
+                        onPressed: widget.disabled ? null : widget.onRemove,
+                        tooltip: 'Remove',
+                        color: Theme.of(context).colorScheme.error,
+                      ),
                   ],
                 )
               else if (widget.selectable)

@@ -25,6 +25,8 @@ final List<Functionality> actions = [
     color: Colors.deepPurple,
     onPressed: (context) => _toast(context, 'Split PDF'),
   ),
+
+  // merge pdf
   Functionality(
     id: 'merge',
     label: 'Merge PDF',
@@ -47,7 +49,7 @@ final List<Functionality> actions = [
 
       final result = await context.pushNamed(
         AppRouteName.filesRootFullscreen,
-        queryParameters: {'selectionId': selectionId},
+        queryParameters: {'selectionId': selectionId, 'actionText': 'Merge'},
       );
 
       // If the merge screen returned `true`, request recent files to refresh.
@@ -56,6 +58,8 @@ final List<Functionality> actions = [
       }
     },
   ),
+
+  // potect pdf
   Functionality(
     id: 'protect',
     label: 'Protect PDF',
@@ -83,12 +87,33 @@ final List<Functionality> actions = [
       }
     },
   ),
+
+  // compress pdf
   Functionality(
     id: 'compress',
     label: 'Compress PDF',
     icon: Icons.data_saver_on, // "compress" substitute
     color: Colors.orange,
-    onPressed: (context) => _toast(context, 'Compress PDF'),
+    onPressed: (context) async {
+      final selectionId = 'compress_${DateTime.now().microsecondsSinceEpoch}';
+      try {
+        final mgr = Get.find<SelectionManager>();
+        mgr.of(selectionId);
+      } catch (_) {}
+
+      final result = await context.pushNamed(
+        AppRouteName.filesRootFullscreen,
+        queryParameters: {
+          'selectionId': selectionId,
+          'actionText': 'Compress',
+          'max': '1', // only one file for compression
+        },
+      );
+
+      if (result == true) {
+        RecentFilesSection.refreshNotifier.value++;
+      }
+    },
   ),
   Functionality(
     id: 'all',
