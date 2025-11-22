@@ -180,4 +180,76 @@
     "description": "Duplicate of protect_pdf_success_snackbar (can consolidate).",
     "placeholders": {"fileName": {"type": "String"}}
   }
+
+  ,"home_brand_title": "PDF Kit"
+  ,"home_get_started_title": "Get started with your PDFs"
+  ,"home_get_started_message": "Scan documents or import files to see them here."
+  ,"home_get_started_scan": "Scan a document"
+  ,"home_get_started_import": "Import PDF"
+
+  ,"recent_files_view_all_tooltip": "View all recent files"
+
+  ,"common_rename_coming_soon": "Rename feature coming soon"
+
+  ,"files_root_label": "root"
+
+  ,"merge_pdf_default_file_name": "Merged Document"
+  ,"merge_pdf_default_suffix": "Merged"
+  ,"merge_pdf_default_downloads_label": "Downloads"
+  ,"doc_page_count": "{count, plural, one {# page} other {# pages}}"
+  ,"@doc_page_count": {"description": "Page count label for a PDF.", "placeholders": {"count": {"type": "int"}}}
+
+  ,"selection_limit_error": "You can select at most {count, plural, one {# file} other {# files}}."
+  ,"@selection_limit_error": {"description": "Shown when user exceeds maximum selectable files.", "placeholders": {"count": {"type": "int"}}}
+
+  ,"compress_pdf_title": "Compress PDF"
+  ,"compress_pdf_description": "Reduce PDF size with smart compression, adjust quality, choose your save location, and rename the file. Add PDFs anytime and quickly create a lighter, optimized document."
+  ,"compress_pdf_no_pdf_selected": "No PDF selected. Go back and choose one."
+  ,"compress_pdf_select_level_label": "Select compression level:"
+  ,"compress_pdf_high": "High Compression"
+  ,"compress_pdf_medium": "Medium Compression"
+  ,"compress_pdf_low": "Low Compression"
+  ,"compress_pdf_high_sub": "Smallest size, lower quality"
+  ,"compress_pdf_medium_sub": "Medium size, medium quality"
+  ,"compress_pdf_low_sub": "Largest size, better quality"
+  ,"compress_pdf_button": "Compress"
+  ,"compress_pdf_compressing": "Compressing..."
+  ,"compress_pdf_select_first_error": "Select a PDF first"
+  ,"compress_pdf_result_pattern": "Compressed \"{original}\" ({level}) → {result}"
+  ,"@compress_pdf_result_pattern": {"description": "Snackbar pattern after compression.", "placeholders": {"original": {"type": "String"}, "level": {"type": "String"}, "result": {"type": "String"}}}
+
+  ,"protect_pdf_success_snackbar": "Successfully protected {fileName}"
+  ,"@protect_pdf_success_snackbar": {"description": "Snackbar message after successful protection (override duplicates).", "placeholders": {"fileName": {"type": "String"}}}
+
+  ,"volume_internal_storage": "Internal Storage"
+  ,"volume_sd_card": "SD Card"
+  ,"volume_generic_storage": "Storage"
+
+  ,"folder_children_files_label": "{count} files"
+  ,"@folder_children_files_label": {"placeholders": {"count": {"type": "int"}}}
+
+  ,"new_folder_create_button": "Create"
+
+  ,"recent_files_search_seed_1": "My Home Certificate"
+  ,"recent_files_search_seed_2": "Work Documents"
+  ,"recent_files_search_seed_3": "Recommendation Letter"
+  ,"recent_files_search_seed_4": "Sales Report Documents"
+  ,"recent_files_search_seed_5": "Business Plan Proposal"
+  ,"recent_files_search_seed_6": "Job Application Letter"
+  ,"recent_files_search_seed_7": "Legal & Terms of Reference"
+  ,"recent_files_search_seed_8": "My National ID Card"
+
+  ,"recent_files_search_clear_all_tooltip": "Clear all"
+
+  ,"clear_recent_files_title": "Clear all recent files?"
+  ,"clear_recent_files_message": "This will remove all files from your recent files list. This action cannot be undone."
+  ,"clear_recent_files_confirm": "Clear All"
+
+  ,"common_edit": "Edit"
+  ,"common_remove": "Remove"
+  ,"common_open_snackbar": "Open"
+
+  ,"selection_action_default": "Action"
+  ,"selection_selected_label": "{count} selected"
+  ,"@selection_selected_label": {"placeholders": {"count": {"type": "int"}}}
 }

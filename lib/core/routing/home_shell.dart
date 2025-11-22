@@ -62,7 +62,7 @@ StatefulShellRoute buildHomeShellRoute({
           GoRoute(
             name: AppRouteName.settings,
             path: '/settings',
-            builder: (context, state) => const SettingsTab(),
+            builder: (context, state) => const SettingsScreen(),
           ),
         ],
       ),
