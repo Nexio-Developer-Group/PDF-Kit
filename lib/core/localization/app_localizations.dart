@@ -12,7 +12,18 @@ class AppLocalizations {
 
   AppLocalizations(this.locale);
 
-  static const supportedLocales = [Locale('en'), Locale('hi')];
+  static const supportedLocales = [
+    Locale('en'), // English
+    Locale('hi'), // Hindi
+    Locale('es'), // Spanish
+    Locale('ar'), // Arabic
+    Locale('bn'), // Bengali
+    Locale('de'), // German
+    Locale('fr'), // French
+    Locale('ja'), // Japanese
+    Locale('pt'), // Portuguese
+    Locale('zh'), // Chinese
+  ];
 
   static const _folder = 'assets/l10n';
 

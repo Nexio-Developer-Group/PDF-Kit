@@ -191,6 +191,20 @@ class PreferencesPage extends StatelessWidget {
 
 class LanguageSettingsPage extends StatelessWidget {
   const LanguageSettingsPage({super.key});
+
+  static const _languages = [
+    {'code': 'en', 'key': 'language_option_english'},
+    {'code': 'hi', 'key': 'language_option_hindi'},
+    {'code': 'es', 'key': 'language_option_spanish'},
+    {'code': 'ar', 'key': 'language_option_arabic'},
+    {'code': 'bn', 'key': 'language_option_bengali'},
+    {'code': 'de', 'key': 'language_option_german'},
+    {'code': 'fr', 'key': 'language_option_french'},
+    {'code': 'ja', 'key': 'language_option_japanese'},
+    {'code': 'pt', 'key': 'language_option_portuguese'},
+    {'code': 'zh', 'key': 'language_option_chinese'},
+  ];
+
   @override
   Widget build(BuildContext context) {
     final t = AppLocalizations.of(context);
@@ -208,31 +222,20 @@ class LanguageSettingsPage extends StatelessWidget {
               style: Theme.of(context).textTheme.titleMedium,
             ),
           ),
-          RadioListTile<String>(
-            title: Text(t.t('language_option_english')),
-            value: 'en',
-            groupValue: current,
-            onChanged: (v) {
-              provider.setLocale('en');
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(t.t('language_settings_applied_snackbar')),
-                ),
-              );
-            },
-          ),
-          RadioListTile<String>(
-            title: Text(t.t('language_option_hindi')),
-            value: 'hi',
-            groupValue: current,
-            onChanged: (v) {
-              provider.setLocale('hi');
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(t.t('language_settings_applied_snackbar')),
-                ),
-              );
-            },
+          ..._languages.map(
+            (lang) => RadioListTile<String>(
+              title: Text(t.t(lang['key']!)),
+              value: lang['code']!,
+              groupValue: current,
+              onChanged: (v) {
+                provider.setLocale(lang['code']!);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(t.t('language_settings_applied_snackbar')),
+                  ),
+                );
+              },
+            ),
           ),
         ],
       ),

@@ -1,0 +1,381 @@
+{
+  "@@locale": "ja",
+
+  "app_nav_home": "ホーム",
+  "app_nav_files": "ファイル",
+  "app_nav_settings": "設定",
+  "settings_title": "設定",
+
+  "common_cancel": "キャンセル",
+  "common_clear_all": "すべてクリア",
+  "common_clear": "クリア",
+  "common_select": "選択",
+  "common_retry": "再試行",
+  "common_open": "開く",
+  "common_rename": "名前を変更",
+  "common_delete": "削除",
+  "common_share": "共有",
+  "common_search": "検索",
+  "common_close": "閉じる",
+  "common_action": "操作",
+  "common_enable_selection": "選択モードを有効化",
+  "common_select_all_on_page": "このページのすべてを選択",
+  "common_clear_page_selection": "このページをクリア",
+
+  "recent_files_title": "最近のファイル",
+  "recent_files_empty_title": "最近のファイルはありません",
+  "recent_files_empty_message": "最近アクセスしたファイルがここに表示されます。",
+  "recent_files_removed_snackbar": "最近のファイルから削除しました",
+  "recent_files_clear_menu": "すべての最近ファイルをクリア",
+  "recent_files_clear_confirm_title": "最近のファイルをすべてクリアしますか？",
+  "recent_files_clear_confirm_message": "最近ファイル一覧からすべて削除されます。この操作は元に戻せません。",
+
+  "recent_files_search_hint": "最近のファイルを検索...",
+  "recent_files_search_previous_header": "前回の検索",
+  "recent_files_search_no_results_title": "結果が見つかりません",
+  "recent_files_search_no_results_message": "別のキーワードで検索してください。",
+
+  "files_header_title": "ファイル",
+  "files_empty_folder_title": "このフォルダーは空です",
+  "files_total_items": "合計：{count} 件",
+  "@files_total_items": {
+    "description": "現在のフォルダー内の項目数。",
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "files_sort_filter_tooltip": "並べ替え / フィルター",
+  "files_enable_selection_tooltip": "選択を有効にする",
+  "files_select_all_page_tooltip": "このページのすべてを選択",
+  "files_clear_page_tooltip": "このページをクリア",
+  "files_more_tooltip": "その他",
+  "files_create_new_folder_tooltip": "新規フォルダー作成",
+  "files_previous_search_clear_all_tooltip": "すべてクリア",
+  "files_search_hint": "ファイルとフォルダーを検索...",
+  "files_search_not_found_title": "見つかりません",
+  "files_search_not_found_message": "別のキーワードで検索してください。",
+
+  "selection_count_label": "{count} 件選択済み",
+  "@selection_count_label": {
+    "description": "選択されたファイル数の表示。",
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "selection_pick_sheet_selected": "{count} 件選択済み",
+  "@selection_pick_sheet_selected": {
+    "description": "ボトムシートに表示される選択済みファイル数。",
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "selection_pick_sheet_no_files": "ファイルが選択されていません",
+  "selection_pick_sheet_close_tooltip": "閉じる",
+  "selection_pick_sheet_remove_tooltip": "削除",
+
+  "filter_sheet_title": "並べ替えとフィルター",
+  "filter_by_name": "名前順",
+  "filter_by_modified": "更新日順",
+  "filter_type_header": "種類",
+  "filter_type_all": "すべて",
+  "filter_type_folders": "フォルダー",
+  "filter_type_pdfs": "PDF",
+  "filter_type_images": "画像",
+
+  "new_folder_sheet_title": "新規フォルダー",
+  "new_folder_field_label": "フォルダー名",
+  "new_folder_field_hint": "フォルダー名を入力",
+
+  "folder_picker_title": "フォルダーを選択",
+  "folder_picker_select_button": "選択",
+  "folder_picker_unable_to_load_title": "フォルダーを読み込めません",
+  "folder_picker_no_folders": "利用可能なフォルダーがありません",
+  "folder_picker_selected_folder_label": "選択したフォルダー",
+  "folder_picker_retry": "再試行",
+
+  "merge_pdf_title": "PDFを結合",
+  "merge_pdf_description": "PDFと画像を結合し、ドラッグで並べ替え、名前変更、保存先選択、ファイル追加・編集が可能です。",
+  "merge_pdf_file_name_label": "ファイル名",
+  "merge_pdf_file_name_hint": "出力ファイル名を入力",
+  "merge_pdf_save_to_folder_label": "保存先フォルダー",
+  "merge_pdf_files_selected": "{count} 件選択",
+  "@merge_pdf_files_selected": {
+    "description": "結合するために選択されたファイル数。",
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "merge_pdf_reorder": "並べ替え",
+  "merge_pdf_done": "完了",
+  "merge_pdf_add_more_files": "ファイルを追加",
+  "merge_pdf_button": "PDFを結合",
+  "merge_pdf_loading_default_folder": "デフォルトフォルダーを読み込み中...",
+  "merge_pdf_select_folder_placeholder": "フォルダーを選択",
+  "merge_pdf_destination_snackbar": "保存先：{folderName}",
+  "@merge_pdf_destination_snackbar": {
+    "description": "選択した保存先を示すメッセージ。",
+    "placeholders": { "folderName": { "type": "String" } }
+  },
+
+  "merge_pdf_success_snackbar": "{fileName} に正常に結合されました",
+  "@merge_pdf_success_snackbar": {
+    "description": "結合成功後のメッセージ。",
+    "placeholders": { "fileName": { "type": "String" } }
+  },
+
+  "protect_pdf_title": "PDFを保護",
+  "protect_pdf_description": "PDFにパスワードを設定して保護します。パスワードを忘れると永久に開けなくなります。",
+  "protect_pdf_selected_file_label": "選択したファイル",
+  "protect_pdf_add_pdf_file": "PDFファイルを追加",
+  "protect_pdf_password_label": "パスワード",
+  "protect_pdf_confirm_password_label": "パスワード確認",
+  "protect_pdf_password_hint_obscured": "••••••••••",
+  "protect_pdf_visibility_toggle_show": "表示",
+  "protect_pdf_visibility_toggle_hide": "非表示",
+  "protect_pdf_button": "保護",
+  "protect_pdf_error_enter_password": "パスワードを入力してください",
+  "protect_pdf_error_passwords_mismatch": "パスワードが一致しません",
+
+  "protect_pdf_success_snackbar": "{fileName} が正常に保護されました",
+  "@protect_pdf_success_snackbar": {
+    "placeholders": { "fileName": { "type": "String" } }
+  },
+
+  "doc_menu_open": "開く",
+  "doc_menu_rename": "名前を変更",
+  "doc_menu_delete": "削除",
+  "doc_menu_share": "共有",
+  "doc_menu_edit": "編集",
+  "doc_menu_remove": "削除",
+
+  "doc_rotation_degrees": "{degrees}°",
+  "@doc_rotation_degrees": {
+    "placeholders": { "degrees": { "type": "int" } }
+  },
+
+  "errors_generic": "エラー：{message}",
+  "@errors_generic": {
+    "placeholders": { "message": { "type": "String" } }
+  },
+
+  "errors_failed_to_load_recent": "最近のファイルを読み込めませんでした。",
+  "errors_unable_to_load_folders": "フォルダーを読み込めません。",
+
+  "empty_no_files_selected": "ファイルが選択されていません",
+  "empty_no_recent_files": "最近のファイルはありません",
+  "empty_folder": "このフォルダーは空です",
+  "empty_not_found": "見つかりません",
+  "empty_no_results_found": "結果が見つかりません",
+  "empty_try_different_keywords": "別のキーワードをお試しください。",
+
+  "snackbar_removed_recent": "最近のファイルから削除しました",
+  "snackbar_destination_folder": "保存先：{folderName}",
+  "@snackbar_destination_folder": {
+    "placeholders": { "folderName": { "type": "String" } }
+  },
+
+  "snackbar_error": "エラー：{message}",
+  "@snackbar_error": {
+    "placeholders": { "message": { "type": "String" } }
+  },
+
+  "snackbar_success_merge": "{fileName} に正常に結合されました",
+  "@snackbar_success_merge": {
+    "placeholders": { "fileName": { "type": "String" } }
+  },
+
+  "snackbar_success_protect": "{fileName} が正常に保護されました",
+  "@snackbar_success_protect": {
+    "placeholders": { "fileName": { "type": "String" } }
+  },
+
+  "home_brand_title": "PDF Kit",
+  "home_get_started_title": "PDFの利用を開始する",
+  "home_get_started_message": "文書をスキャンするかファイルをインポートすると、ここに表示されます。",
+  "home_get_started_scan": "文書をスキャン",
+  "home_get_started_import": "PDFをインポート",
+
+  "recent_files_view_all_tooltip": "すべての最近のファイルを表示",
+
+  "common_rename_coming_soon": "名前変更機能は近日公開",
+
+  "files_root_label": "ルート",
+
+  "merge_pdf_default_file_name": "結合された文書",
+  "merge_pdf_default_suffix": "結合済み",
+  "merge_pdf_default_downloads_label": "ダウンロード",
+
+  "doc_page_count": "{count, plural, one {# ページ} other {# ページ}}",
+  "@doc_page_count": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "selection_limit_error": "{count, plural, one {最大 # 件まで選択可能です} other {最大 # 件まで選択可能です}}。",
+  "@selection_limit_error": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "compress_pdf_title": "PDFを圧縮",
+  "compress_pdf_description": "スマート圧縮でPDFサイズを削減し、品質を調整し、保存場所を選択し、名前を変更できます。",
+  "compress_pdf_no_pdf_selected": "PDFが選択されていません。戻ってPDFを選択してください。",
+  "compress_pdf_select_level_label": "圧縮レベルを選択：",
+  "compress_pdf_high": "高圧縮",
+  "compress_pdf_medium": "中圧縮",
+  "compress_pdf_low": "低圧縮",
+  "compress_pdf_high_sub": "最小サイズ、低品質",
+  "compress_pdf_medium_sub": "中サイズ、中品質",
+  "compress_pdf_low_sub": "最大サイズ、高品質",
+  "compress_pdf_button": "圧縮",
+  "compress_pdf_compressing": "圧縮中…",
+  "compress_pdf_select_first_error": "PDFを先に選択してください",
+  "compress_pdf_result_pattern": "\"{original}\"（{level}）→ {result} に圧縮しました",
+  "@compress_pdf_result_pattern": {
+    "placeholders": {
+      "original": { "type": "String" },
+      "level": { "type": "String" },
+      "result": { "type": "String" }
+    }
+  },
+
+  "volume_internal_storage": "内部ストレージ",
+  "volume_sd_card": "SDカード",
+  "volume_generic_storage": "ストレージ",
+
+  "folder_children_files_label": "{count} 件のファイル",
+  "@folder_children_files_label": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "new_folder_create_button": "作成",
+
+  "recent_files_search_seed_1": "自宅証明書",
+  "recent_files_search_seed_2": "業務書類",
+  "recent_files_search_seed_3": "推薦状",
+  "recent_files_search_seed_4": "販売報告書",
+  "recent_files_search_seed_5": "事業計画書",
+  "recent_files_search_seed_6": "求人応募書",
+  "recent_files_search_seed_7": "法的文書および規約",
+  "recent_files_search_seed_8": "国民IDカード",
+
+  "recent_files_search_clear_all_tooltip": "すべてクリア",
+
+  "clear_recent_files_title": "最近のファイルをすべてクリアしますか？",
+  "clear_recent_files_message": "最近のファイル一覧からすべて削除されます。この操作は元に戻せません。",
+  "clear_recent_files_confirm": "すべてクリア",
+
+  "common_edit": "編集",
+  "common_remove": "削除",
+  "common_open_snackbar": "開きました",
+
+  "selection_action_default": "操作",
+  "selection_selected_label": "{count} 件選択済み",
+  "@selection_selected_label": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "settings_language_item_title": "言語",
+  "settings_language_item_subtitle": "使用したい言語を選択してください",
+  "settings_default_save_location_title": "デフォルトの保存場所",
+  "settings_default_save_location_subtitle": "PDFの保存先を選択",
+  "settings_dark_mode_title": "ダークモード",
+  "settings_dark_mode_subtitle": "ライト／ダークテーマを切り替え",
+  "settings_file_naming_title": "ファイル命名規則",
+  "settings_file_naming_subtitle": "新しいファイルの自動命名方法を設定",
+  "settings_pdf_compression_title": "PDF圧縮",
+  "settings_pdf_compression_subtitle": "新しいファイルの自動圧縮方法を設定",
+  "settings_filter_options_title": "フィルター設定",
+  "settings_filter_options_subtitle": "デフォルトで使用するフィルターを選択",
+  "settings_grid_view_layout_title": "グリッドレイアウト",
+  "settings_grid_view_layout_subtitle": "ファイルとフォルダーの表示方法を管理",
+  "settings_pdf_content_fit_title": "PDF表示モード",
+  "settings_pdf_content_fit_subtitle": "画像とPDFの表示方法を選択",
+  "settings_help_center_title": "ヘルプセンター",
+  "settings_help_center_subtitle": "ヘルプ、FAQ、回答を確認",
+  "settings_about_pdf_kit_title": "PDF-Kitについて",
+  "settings_about_pdf_kit_subtitle": "アプリの詳細情報を見る",
+  "settings_about_us_title": "私たちについて",
+  "settings_about_us_subtitle": "私たちのビジョンと仕事の取り組みを知る",
+
+  "language_settings_page_title": "言語設定",
+  "language_settings_choose_label": "アプリの言語を選択",
+  "language_option_english": "English",
+  "language_option_hindi": "हिन्दी (Hindi)",
+  "language_option_spanish": "Español (Spanish)",
+  "language_option_arabic": "العربية (Arabic)",
+  "language_option_bengali": "বাংলা (Bengali)",
+  "language_option_german": "Deutsch (German)",
+  "language_option_french": "Français (French)",
+  "language_option_japanese": "日本語 (Japanese)",
+  "language_option_portuguese": "Português (Portuguese)",
+  "language_option_chinese": "中文 (Chinese)",
+  "language_settings_applied_snackbar": "言語が更新されました",
+
+  "show_pdf_no_path": "パスなし",
+  "show_pdf_prefix": "PDFを表示：{path}",
+  "@show_pdf_prefix": {
+    "placeholders": { "path": { "type": "String" } }
+  },
+
+  "onboarding_title": "オンボーディング",
+  "all_files_title": "すべてのファイルとフォルダー",
+  "search_files_title": "ファイルを検索",
+  "preferences_title": "設定",
+  "contact_us_title": "お問い合わせ",
+  "about_app_title": "アプリについて",
+  "take_image_title": "画像を撮影",
+  "add_watermark_title": "透かしを追加",
+  "add_signature_title": "デジタル署名を追加",
+
+  "not_found_page_title": "ページが見つかりません",
+  "not_found_page_route_undefined": "定義されていないルート：{route}",
+  "@not_found_page_route_undefined": {
+    "placeholders": { "route": { "type": "String" } }
+  },
+
+  "not_found_go_home_button": "ホームに戻る",
+
+  "action_watermark_label": "透かし",
+  "action_esign_label": "電子署名 PDF",
+  "action_split_label": "PDFを分割",
+  "action_merge_label": "PDFを結合",
+  "action_protect_label": "PDFを保護",
+  "action_compress_label": "PDFを圧縮",
+  "action_all_tools_label": "すべてのツール",
+  "action_coming_soon_toast": "{feature} は近日公開予定です",
+  "@action_coming_soon_toast": {
+    "placeholders": { "feature": { "type": "String" } }
+  },
+
+  "selection_max_info": "最大：{count}",
+  "@selection_max_info": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "selection_sheet_title": "選択したファイル",
+  "@selection_sheet_title": {},
+
+  "selection_sheet_empty": "選択されたファイルはありません",
+  "@selection_sheet_empty": {},
+
+  "selection_folder_items_single": "{count} 件",
+  "@selection_folder_items_single": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "selection_folder_items_multiple": "{count} 件",
+  "@selection_folder_items_multiple": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "selection_folder_collapse_tooltip": "折りたたむ",
+  "@selection_folder_collapse_tooltip": {},
+
+  "selection_folder_expand_tooltip": "展開",
+  "@selection_folder_expand_tooltip": {},
+
+  "selection_limit_error_single": "最大 {count} 件まで選択できます。",
+  "@selection_limit_error_single": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "selection_limit_error_multiple": "最大 {count} 件まで選択できます。",
+  "@selection_limit_error_multiple": {
+    "placeholders": { "count": { "type": "int" } }
+  }
+}

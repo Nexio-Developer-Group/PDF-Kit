@@ -1,0 +1,402 @@
+{
+  "@@locale": "zh",
+
+  "app_nav_home": "首页",
+  "app_nav_files": "文件",
+  "app_nav_settings": "设置",
+  "settings_title": "设置",
+
+  "common_cancel": "取消",
+  "common_clear_all": "清除全部",
+  "common_clear": "清除",
+  "common_select": "选择",
+  "common_retry": "重试",
+  "common_open": "打开",
+  "common_rename": "重命名",
+  "common_delete": "删除",
+  "common_share": "分享",
+  "common_search": "搜索",
+  "common_close": "关闭",
+  "common_action": "操作",
+  "common_enable_selection": "启用选择",
+  "common_select_all_on_page": "选择此页面全部",
+  "common_clear_page_selection": "清除此页面",
+
+  "recent_files_title": "最近文件",
+  "recent_files_empty_title": "无最近文件",
+  "recent_files_empty_message": "您最近访问的文件将显示在这里。",
+  "recent_files_removed_snackbar": "已从最近文件移除",
+  "recent_files_clear_menu": "清除所有最近文件",
+  "recent_files_clear_confirm_title": "清除所有最近文件？",
+  "recent_files_clear_confirm_message": "这将从您的最近文件列表中移除所有文件。此操作不可撤销。",
+
+  "recent_files_search_hint": "搜索最近文件...",
+  "recent_files_search_previous_header": "上次搜索",
+  "recent_files_search_no_results_title": "未找到结果",
+  "recent_files_search_no_results_message": "请尝试使用其他关键字搜索。",
+
+  "files_header_title": "文件",
+  "files_empty_folder_title": "该文件夹为空",
+  "files_total_items": "总计：{count} 项",
+  "@files_total_items": {
+    "description": "显示当前文件夹中文件数量的标签。",
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "files_sort_filter_tooltip": "排序 / 筛选",
+  "files_enable_selection_tooltip": "启用选择",
+  "files_select_all_page_tooltip": "选择此页面全部",
+  "files_clear_page_tooltip": "清除此页面",
+  "files_more_tooltip": "更多",
+  "files_create_new_folder_tooltip": "新建文件夹",
+  "files_previous_search_clear_all_tooltip": "清除全部",
+  "files_search_hint": "搜索文件和文件夹...",
+  "files_search_not_found_title": "未找到",
+  "files_search_not_found_message": "请尝试使用其他关键字搜索。",
+
+  "selection_count_label": "已选择 {count} 项",
+  "@selection_count_label": {
+    "description": "选择栏中显示已选择文件数量。",
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "selection_pick_sheet_selected": "已选择 {count} 项",
+  "@selection_pick_sheet_selected": {
+    "description": "底部弹窗中显示选择的文件数量。",
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "selection_pick_sheet_no_files": "未选择文件",
+  "selection_pick_sheet_close_tooltip": "关闭",
+  "selection_pick_sheet_remove_tooltip": "移除",
+
+  "filter_sheet_title": "排序与筛选",
+  "filter_by_name": "按名称",
+  "filter_by_modified": "按修改日期",
+  "filter_type_header": "类型",
+  "filter_type_all": "全部",
+  "filter_type_folders": "文件夹",
+  "filter_type_pdfs": "PDF",
+  "filter_type_images": "图片",
+
+  "new_folder_sheet_title": "新建文件夹",
+  "new_folder_field_label": "文件夹名称",
+  "new_folder_field_hint": "输入文件夹名称",
+
+  "folder_picker_title": "选择文件夹",
+  "folder_picker_select_button": "选择",
+  "folder_picker_unable_to_load_title": "无法加载文件夹",
+  "folder_picker_no_folders": "无可用文件夹",
+  "folder_picker_selected_folder_label": "已选择文件夹",
+  "folder_picker_retry": "重试",
+
+  "merge_pdf_title": "合并 PDF",
+  "merge_pdf_description": "将 PDF 和图片合并，拖动以重新排序、重命名、选择保存位置，并随时添加或编辑文件。",
+  "merge_pdf_file_name_label": "文件名",
+  "merge_pdf_file_name_hint": "输入输出文件名",
+  "merge_pdf_save_to_folder_label": "保存到文件夹",
+  "merge_pdf_files_selected": "已选择 {count} 个文件",
+  "@merge_pdf_files_selected": {
+    "description": "显示为合并选择的文件数量。",
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+
+  "merge_pdf_reorder": "重新排序",
+  "merge_pdf_done": "完成",
+  "merge_pdf_add_more_files": "添加更多文件",
+  "merge_pdf_button": "合并 PDF",
+  "merge_pdf_loading_default_folder": "正在加载默认文件夹...",
+  "merge_pdf_select_folder_placeholder": "选择文件夹",
+  "merge_pdf_destination_snackbar": "保存到：{folderName}",
+  "@merge_pdf_destination_snackbar": {
+    "description": "显示选择的保存位置。",
+    "placeholders": { "folderName": { "type": "String" } }
+  },
+
+  "merge_pdf_success_snackbar": "成功合并为 {fileName}",
+  "@merge_pdf_success_snackbar": {
+    "description": "成功合并后的提示信息。",
+    "placeholders": { "fileName": { "type": "String" } }
+  },
+
+  "protect_pdf_title": "保护 PDF",
+  "protect_pdf_description": "设置密码以保护您的扫描文件。访问文件时需要输入密码。如果您忘记密码，将无法再访问此文件。",
+  "protect_pdf_selected_file_label": "已选择文件",
+  "protect_pdf_add_pdf_file": "添加 PDF 文件",
+  "protect_pdf_password_label": "密码",
+  "protect_pdf_confirm_password_label": "确认密码",
+  "protect_pdf_password_hint_obscured": "••••••••••",
+  "protect_pdf_visibility_toggle_show": "显示",
+  "protect_pdf_visibility_toggle_hide": "隐藏",
+  "protect_pdf_button": "保护",
+  "protect_pdf_error_enter_password": "请输入密码",
+  "protect_pdf_error_passwords_mismatch": "两次密码不一致",
+
+  "protect_pdf_success_snackbar": "{fileName} 已成功保护",
+  "@protect_pdf_success_snackbar": {
+    "description": "成功保护后的提示信息。",
+    "placeholders": { "fileName": { "type": "String" } }
+  },
+
+  "doc_menu_open": "打开",
+  "doc_menu_rename": "重命名",
+  "doc_menu_delete": "删除",
+  "doc_menu_share": "分享",
+  "doc_menu_edit": "编辑",
+  "doc_menu_remove": "移除",
+
+  "doc_rotation_degrees": "{degrees}°",
+  "@doc_rotation_degrees": {
+    "description": "显示页面旋转角度。",
+    "placeholders": { "degrees": { "type": "int" } }
+  },
+
+  "errors_generic": "错误：{message}",
+  "@errors_generic": {
+    "description": "错误信息。",
+    "placeholders": { "message": { "type": "String" } }
+  },
+
+  "errors_failed_to_load_recent": "无法加载最近文件。",
+  "errors_unable_to_load_folders": "无法加载文件夹。",
+
+  "empty_no_files_selected": "未选择文件",
+  "empty_no_recent_files": "无最近文件",
+  "empty_folder": "该文件夹为空",
+  "empty_not_found": "未找到",
+  "empty_no_results_found": "未找到结果",
+  "empty_try_different_keywords": "请尝试其他关键字。",
+
+  "snackbar_removed_recent": "已从最近文件移除",
+  "snackbar_destination_folder": "保存到：{folderName}",
+  "@snackbar_destination_folder": {
+    "description": "merge_pdf_destination_snackbar 的重复。",
+    "placeholders": { "folderName": { "type": "String" } }
+  },
+
+  "snackbar_error": "错误：{message}",
+  "@snackbar_error": {
+    "description": "通用错误信息。",
+    "placeholders": { "message": { "type": "String" } }
+  },
+
+  "snackbar_success_merge": "成功合并为 {fileName}",
+  "@snackbar_success_merge": {
+    "description": "merge_pdf_success_snackbar 的重复。",
+    "placeholders": { "fileName": { "type": "String" } }
+  },
+
+  "snackbar_success_protect": "{fileName} 已成功保护",
+  "@snackbar_success_protect": {
+    "description": "protect_pdf_success_snackbar 的重复。",
+    "placeholders": { "fileName": { "type": "String" } }
+  },
+
+  "home_brand_title": "PDF Kit",
+  "home_get_started_title": "开始使用您的 PDF",
+  "home_get_started_message": "扫描文档或导入文件以在此处显示。",
+  "home_get_started_scan": "扫描文档",
+  "home_get_started_import": "导入 PDF",
+
+  "recent_files_view_all_tooltip": "查看所有最近文件",
+
+  "common_rename_coming_soon": "重命名功能即将推出",
+
+  "files_root_label": "根目录",
+
+  "merge_pdf_default_file_name": "已合并文档",
+  "merge_pdf_default_suffix": "已合并",
+  "merge_pdf_default_downloads_label": "下载",
+
+  "doc_page_count": "{count, plural, one {# 页} other {# 页}}",
+  "@doc_page_count": {
+    "description": "PDF 页数标签。",
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "selection_limit_error": "最多可选择 {count, plural, one {# 个文件} other {# 个文件}}。",
+  "@selection_limit_error": {
+    "description": "超出最大选择数量时显示。",
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "compress_pdf_title": "压缩 PDF",
+  "compress_pdf_description": "通过智能压缩减小 PDF 大小，可调整质量、选择保存位置并重命名文件。",
+  "compress_pdf_no_pdf_selected": "未选择 PDF。请返回并选择一个。",
+  "compress_pdf_select_level_label": "选择压缩等级：",
+  "compress_pdf_high": "高压缩",
+  "compress_pdf_medium": "中压缩",
+  "compress_pdf_low": "低压缩",
+  "compress_pdf_high_sub": "最小体积，最低质量",
+  "compress_pdf_medium_sub": "中等体积，中等质量",
+  "compress_pdf_low_sub": "最大体积，更好质量",
+  "compress_pdf_button": "压缩",
+  "compress_pdf_compressing": "正在压缩...",
+  "compress_pdf_select_first_error": "请先选择 PDF",
+  "compress_pdf_result_pattern": "已压缩 \"{original}\"（{level}）→ {result}",
+  "@compress_pdf_result_pattern": {
+    "placeholders": {
+      "original": { "type": "String" },
+      "level": { "type": "String" },
+      "result": { "type": "String" }
+    }
+  },
+
+  "volume_internal_storage": "内部存储",
+  "volume_sd_card": "SD 卡",
+  "volume_generic_storage": "存储",
+
+  "folder_children_files_label": "{count} 个文件",
+  "@folder_children_files_label": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "new_folder_create_button": "创建",
+
+  "recent_files_search_seed_1": "我的房产证明",
+  "recent_files_search_seed_2": "工作文件",
+  "recent_files_search_seed_3": "推荐信",
+  "recent_files_search_seed_4": "销售报告",
+  "recent_files_search_seed_5": "商业计划书",
+  "recent_files_search_seed_6": "求职申请书",
+  "recent_files_search_seed_7": "法律与参考条款",
+  "recent_files_search_seed_8": "我的国家身份证",
+
+  "recent_files_search_clear_all_tooltip": "清除全部",
+
+  "clear_recent_files_title": "清除所有最近文件？",
+  "clear_recent_files_message": "这将从列表中移除所有最近文件。此操作不可撤销。",
+  "clear_recent_files_confirm": "清除全部",
+
+  "common_edit": "编辑",
+  "common_remove": "移除",
+  "common_open_snackbar": "已打开",
+
+  "selection_action_default": "操作",
+  "selection_selected_label": "已选择 {count} 项",
+  "@selection_selected_label": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "settings_language_item_title": "语言",
+  "settings_language_item_subtitle": "选择任何您喜欢的语言",
+  "settings_default_save_location_title": "默认保存位置",
+  "settings_default_save_location_subtitle": "选择所有 PDF 的默认保存位置",
+  "settings_dark_mode_title": "深色模式",
+  "settings_dark_mode_subtitle": "在浅色和深色主题之间切换",
+  "settings_file_naming_title": "文件命名规则",
+  "settings_file_naming_subtitle": "设置新文件的自动命名方式",
+  "settings_pdf_compression_title": "PDF 压缩",
+  "settings_pdf_compression_subtitle": "设置新文件的自动压缩方式",
+  "settings_filter_options_title": "筛选选项",
+  "settings_filter_options_subtitle": "选择应用默认使用的筛选类型",
+  "settings_grid_view_layout_title": "网格视图布局",
+  "settings_grid_view_layout_subtitle": "控制文件和文件夹的显示方式",
+  "settings_pdf_content_fit_title": "PDF 内容适配模式",
+  "settings_pdf_content_fit_subtitle": "选择图像和 PDF 的适配方式",
+  "settings_help_center_title": "帮助中心",
+  "settings_help_center_subtitle": "获取帮助、常见问题和答案",
+  "settings_about_pdf_kit_title": "关于 PDF-Kit",
+  "settings_about_pdf_kit_subtitle": "查看该应用的详细信息",
+  "settings_about_us_title": "关于我们",
+  "settings_about_us_subtitle": "了解我们的愿景和工作方式",
+
+  "language_settings_page_title": "语言设置",
+  "language_settings_choose_label": "选择应用语言",
+  "language_option_english": "English",
+  "language_option_hindi": "हिन्दी (Hindi)",
+  "language_option_spanish": "Español (Spanish)",
+  "language_option_arabic": "العربية (Arabic)",
+  "language_option_bengali": "বাংলা (Bengali)",
+  "language_option_german": "Deutsch (German)",
+  "language_option_french": "Français (French)",
+  "language_option_japanese": "日本語 (Japanese)",
+  "language_option_portuguese": "Português (Portuguese)",
+  "language_option_chinese": "中文 (Chinese)",
+  "language_settings_applied_snackbar": "语言已更新",
+
+  "show_pdf_no_path": "无路径",
+  "show_pdf_prefix": "显示 PDF：{path}",
+  "@show_pdf_prefix": {
+    "placeholders": { "path": { "type": "String" } }
+  },
+
+  "onboarding_title": "入门",
+  "all_files_title": "所有文件与文件夹",
+  "search_files_title": "搜索文件",
+  "preferences_title": "偏好设置",
+  "contact_us_title": "联系我们",
+  "about_app_title": "关于应用",
+  "take_image_title": "拍摄图片",
+  "add_watermark_title": "添加水印",
+  "add_signature_title": "添加数字签名",
+
+  "not_found_page_title": "未找到页面",
+  "not_found_page_route_undefined": "未定义路由：{route}",
+  "@not_found_page_route_undefined": {
+    "placeholders": { "route": { "type": "String" } }
+  },
+  "not_found_go_home_button": "回到首页",
+
+  "action_watermark_label": "水印",
+  "action_esign_label": "电子签名 PDF",
+  "action_split_label": "拆分 PDF",
+  "action_merge_label": "合并 PDF",
+  "action_protect_label": "保护 PDF",
+  "action_compress_label": "压缩 PDF",
+  "action_all_tools_label": "全部工具",
+  "action_coming_soon_toast": "{feature} 即将推出",
+  "@action_coming_soon_toast": {
+    "placeholders": { "feature": { "type": "String" } }
+  },
+
+  "selection_max_info": "最大：{count}",
+  "@selection_max_info": {
+    "description": "显示最大可选择的数量。",
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "selection_sheet_title": "已选择文件",
+  "@selection_sheet_title": {
+    "description": "选择文件底部弹窗标题。"
+  },
+
+  "selection_sheet_empty": "未选择任何文件",
+  "@selection_sheet_empty": {
+    "description": "当没有选择文件时的提示。"
+  },
+
+  "selection_folder_items_single": "{count} 项",
+  "@selection_folder_items_single": {
+    "description": "当某文件夹组仅有一个项目时展示。",
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "selection_folder_items_multiple": "{count} 项",
+  "@selection_folder_items_multiple": {
+    "description": "当某文件夹组有多个项目时展示。",
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "selection_folder_collapse_tooltip": "折叠",
+  "@selection_folder_collapse_tooltip": {
+    "description": "文件夹折叠提示。"
+  },
+
+  "selection_folder_expand_tooltip": "展开",
+  "@selection_folder_expand_tooltip": {
+    "description": "文件夹展开提示。"
+  },
+
+  "selection_limit_error_single": "您最多可以选择 {count} 个文件。",
+  "@selection_limit_error_single": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "selection_limit_error_multiple": "您最多可以选择 {count} 个文件。",
+  "@selection_limit_error_multiple": {
+    "placeholders": { "count": { "type": "int" } }
+  }
+}

@@ -1,0 +1,401 @@
+{
+  "@@locale": "pt",
+
+  "app_nav_home": "Início",
+  "app_nav_files": "Arquivos",
+  "app_nav_settings": "Configurações",
+  "settings_title": "Configurações",
+
+  "common_cancel": "Cancelar",
+  "common_clear_all": "Limpar tudo",
+  "common_clear": "Limpar",
+  "common_select": "Selecionar",
+  "common_retry": "Tentar novamente",
+  "common_open": "Abrir",
+  "common_rename": "Renomear",
+  "common_delete": "Excluir",
+  "common_share": "Compartilhar",
+  "common_search": "Pesquisar",
+  "common_close": "Fechar",
+  "common_action": "Ação",
+  "common_enable_selection": "Ativar seleção",
+  "common_select_all_on_page": "Selecionar tudo na página",
+  "common_clear_page_selection": "Limpar esta página",
+
+  "recent_files_title": "Arquivos recentes",
+  "recent_files_empty_title": "Nenhum arquivo recente",
+  "recent_files_empty_message": "Seus arquivos acessados recentemente aparecerão aqui.",
+  "recent_files_removed_snackbar": "Removido dos arquivos recentes",
+  "recent_files_clear_menu": "Limpar todos os arquivos recentes",
+  "recent_files_clear_confirm_title": "Limpar todos os arquivos recentes?",
+  "recent_files_clear_confirm_message": "Isso removerá todos os arquivos da sua lista de recentes. Esta ação não pode ser desfeita.",
+
+  "recent_files_search_hint": "Pesquisar arquivos recentes...",
+  "recent_files_search_previous_header": "Pesquisa anterior",
+  "recent_files_search_no_results_title": "Nenhum resultado encontrado",
+  "recent_files_search_no_results_message": "Tente pesquisar com outras palavras-chave.",
+
+  "files_header_title": "Arquivos",
+  "files_empty_folder_title": "Esta pasta está vazia",
+  "files_total_items": "Total: {count} itens",
+  "@files_total_items": {
+    "description": "Rótulo mostrando o número total de itens na pasta atual.",
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "files_sort_filter_tooltip": "Classificar / Filtrar",
+  "files_enable_selection_tooltip": "Ativar seleção",
+  "files_select_all_page_tooltip": "Selecionar tudo nesta página",
+  "files_clear_page_tooltip": "Limpar esta página",
+  "files_more_tooltip": "Mais",
+  "files_create_new_folder_tooltip": "Criar nova pasta",
+  "files_previous_search_clear_all_tooltip": "Limpar tudo",
+  "files_search_hint": "Pesquisar arquivos e pastas...",
+  "files_search_not_found_title": "Não encontrado",
+  "files_search_not_found_message": "Pesquise com outras palavras-chave.",
+
+  "selection_count_label": "{count} selecionado(s)",
+  "@selection_count_label": {
+    "description": "Rótulo mostrando a quantidade de arquivos selecionados.",
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "selection_pick_sheet_selected": "{count} selecionado(s)",
+  "@selection_pick_sheet_selected": {
+    "description": "Cabeçalho mostrando a quantidade de arquivos selecionados na folha inferior.",
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "selection_pick_sheet_no_files": "Nenhum arquivo selecionado",
+  "selection_pick_sheet_close_tooltip": "Fechar",
+  "selection_pick_sheet_remove_tooltip": "Remover",
+
+  "filter_sheet_title": "Classificar e Filtrar",
+  "filter_by_name": "Por nome",
+  "filter_by_modified": "Por data de modificação",
+  "filter_type_header": "Tipo",
+  "filter_type_all": "Todos",
+  "filter_type_folders": "Pastas",
+  "filter_type_pdfs": "PDFs",
+  "filter_type_images": "Imagens",
+
+  "new_folder_sheet_title": "Nova pasta",
+  "new_folder_field_label": "Nome da pasta",
+  "new_folder_field_hint": "Digite o nome da pasta",
+
+  "folder_picker_title": "Selecionar pasta",
+  "folder_picker_select_button": "SELECIONAR",
+  "folder_picker_unable_to_load_title": "Não foi possível carregar as pastas",
+  "folder_picker_no_folders": "Nenhuma pasta disponível",
+  "folder_picker_selected_folder_label": "Pasta selecionada",
+  "folder_picker_retry": "Tentar novamente",
+
+  "merge_pdf_title": "Mesclar PDF",
+  "merge_pdf_description": "Mescle PDFs e imagens, arraste para reorganizar, renomeie, escolha onde salvar e adicione ou edite arquivos a qualquer momento.",
+  "merge_pdf_file_name_label": "Nome do arquivo",
+  "merge_pdf_file_name_hint": "Digite o nome do arquivo de saída",
+  "merge_pdf_save_to_folder_label": "Salvar na pasta",
+  "merge_pdf_files_selected": "{count} arquivo(s) selecionado(s)",
+  "@merge_pdf_files_selected": {
+    "description": "Quantidade de arquivos selecionados para mesclagem.",
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "merge_pdf_reorder": "Reordenar",
+  "merge_pdf_done": "Concluído",
+  "merge_pdf_add_more_files": "Adicionar mais arquivos",
+  "merge_pdf_button": "Mesclar PDF",
+  "merge_pdf_loading_default_folder": "Carregando pasta padrão...",
+  "merge_pdf_select_folder_placeholder": "Selecionar pasta",
+  "merge_pdf_destination_snackbar": "Destino: {folderName}",
+  "@merge_pdf_destination_snackbar": {
+    "description": "Mensagem mostrando a pasta de destino escolhida.",
+    "placeholders": { "folderName": { "type": "String" } }
+  },
+
+  "merge_pdf_success_snackbar": "Mesclado com sucesso em {fileName}",
+  "@merge_pdf_success_snackbar": {
+    "description": "Mensagem após mesclagem bem-sucedida.",
+    "placeholders": { "fileName": { "type": "String" } }
+  },
+
+  "protect_pdf_title": "Proteger PDF",
+  "protect_pdf_description": "Defina uma senha para proteger seu documento. A senha será necessária para acessar o arquivo. Se você esquecê-la, o arquivo ficará inacessível permanentemente.",
+  "protect_pdf_selected_file_label": "Arquivo selecionado",
+  "protect_pdf_add_pdf_file": "Adicionar arquivo PDF",
+  "protect_pdf_password_label": "Senha",
+  "protect_pdf_confirm_password_label": "Confirmar senha",
+  "protect_pdf_password_hint_obscured": "••••••••••",
+  "protect_pdf_visibility_toggle_show": "Mostrar",
+  "protect_pdf_visibility_toggle_hide": "Ocultar",
+  "protect_pdf_button": "Proteger",
+  "protect_pdf_error_enter_password": "Digite uma senha",
+  "protect_pdf_error_passwords_mismatch": "As senhas não coincidem",
+
+  "protect_pdf_success_snackbar": "{fileName} protegido com sucesso",
+  "@protect_pdf_success_snackbar": {
+    "description": "Mensagem após proteção bem-sucedida.",
+    "placeholders": { "fileName": { "type": "String" } }
+  },
+
+  "doc_menu_open": "Abrir",
+  "doc_menu_rename": "Renomear",
+  "doc_menu_delete": "Excluir",
+  "doc_menu_share": "Compartilhar",
+  "doc_menu_edit": "Editar",
+  "doc_menu_remove": "Remover",
+
+  "doc_rotation_degrees": "{degrees}°",
+  "@doc_rotation_degrees": {
+    "description": "Indica a rotação da página em graus.",
+    "placeholders": { "degrees": { "type": "int" } }
+  },
+
+  "errors_generic": "Erro: {message}",
+  "@errors_generic": {
+    "description": "Mensagem de erro geral.",
+    "placeholders": { "message": { "type": "String" } }
+  },
+
+  "errors_failed_to_load_recent": "Falha ao carregar arquivos recentes.",
+  "errors_unable_to_load_folders": "Não foi possível carregar as pastas.",
+
+  "empty_no_files_selected": "Nenhum arquivo selecionado",
+  "empty_no_recent_files": "Nenhum arquivo recente",
+  "empty_folder": "Esta pasta está vazia",
+  "empty_not_found": "Não encontrado",
+  "empty_no_results_found": "Nenhum resultado encontrado",
+  "empty_try_different_keywords": "Tente outras palavras-chave.",
+
+  "snackbar_removed_recent": "Removido dos arquivos recentes",
+  "snackbar_destination_folder": "Destino: {folderName}",
+  "@snackbar_destination_folder": {
+    "description": "Duplicado de merge_pdf_destination_snackbar.",
+    "placeholders": { "folderName": { "type": "String" } }
+  },
+
+  "snackbar_error": "Erro: {message}",
+  "@snackbar_error": {
+    "description": "Mensagem geral de erro.",
+    "placeholders": { "message": { "type": "String" } }
+  },
+
+  "snackbar_success_merge": "Mesclado com sucesso em {fileName}",
+  "@snackbar_success_merge": {
+    "description": "Duplicado de merge_pdf_success_snackbar.",
+    "placeholders": { "fileName": { "type": "String" } }
+  },
+
+  "snackbar_success_protect": "{fileName} protegido com sucesso",
+  "@snackbar_success_protect": {
+    "description": "Duplicado de protect_pdf_success_snackbar.",
+    "placeholders": { "fileName": { "type": "String" } }
+  },
+
+  "home_brand_title": "PDF Kit",
+  "home_get_started_title": "Comece a trabalhar com seus PDFs",
+  "home_get_started_message": "Digitalize documentos ou importe arquivos para vê-los aqui.",
+  "home_get_started_scan": "Digitalizar documento",
+  "home_get_started_import": "Importar PDF",
+
+  "recent_files_view_all_tooltip": "Ver todos os arquivos recentes",
+
+  "common_rename_coming_soon": "Recurso de renomear em breve",
+
+  "files_root_label": "raiz",
+
+  "merge_pdf_default_file_name": "Documento mesclado",
+  "merge_pdf_default_suffix": "Mesclado",
+  "merge_pdf_default_downloads_label": "Downloads",
+
+  "doc_page_count": "{count, plural, one {# página} other {# páginas}}",
+  "@doc_page_count": {
+    "description": "Número de páginas de um PDF.",
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "selection_limit_error": "Você pode selecionar no máximo {count, plural, one {# arquivo} other {# arquivos}}.",
+  "@selection_limit_error": {
+    "description": "Mensagem quando o limite de seleção é excedido.",
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "compress_pdf_title": "Comprimir PDF",
+  "compress_pdf_description": "Reduza o tamanho do PDF com compressão inteligente, ajuste a qualidade, escolha o local de salvamento e renomeie o arquivo.",
+  "compress_pdf_no_pdf_selected": "Nenhum PDF selecionado. Volte e escolha um.",
+  "compress_pdf_select_level_label": "Selecione o nível de compressão:",
+  "compress_pdf_high": "Alta compressão",
+  "compress_pdf_medium": "Compressão média",
+  "compress_pdf_low": "Baixa compressão",
+  "compress_pdf_high_sub": "Menor tamanho, menor qualidade",
+  "compress_pdf_medium_sub": "Tamanho médio, qualidade média",
+  "compress_pdf_low_sub": "Maior tamanho, melhor qualidade",
+  "compress_pdf_button": "Comprimir",
+  "compress_pdf_compressing": "Comprimindo...",
+  "compress_pdf_select_first_error": "Selecione um PDF primeiro",
+  "compress_pdf_result_pattern": "\"{original}\" ({level}) → {result} comprimido",
+  "@compress_pdf_result_pattern": {
+    "description": "Mensagem após a compressão.",
+    "placeholders": {
+      "original": { "type": "String" },
+      "level": { "type": "String" },
+      "result": { "type": "String" }
+    }
+  },
+
+  "volume_internal_storage": "Armazenamento interno",
+  "volume_sd_card": "Cartão SD",
+  "volume_generic_storage": "Armazenamento",
+
+  "folder_children_files_label": "{count} arquivos",
+  "@folder_children_files_label": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "new_folder_create_button": "Criar",
+
+  "recent_files_search_seed_1": "Meu certificado residencial",
+  "recent_files_search_seed_2": "Documentos de trabalho",
+  "recent_files_search_seed_3": "Carta de recomendação",
+  "recent_files_search_seed_4": "Relatórios de vendas",
+  "recent_files_search_seed_5": "Proposta de plano de negócios",
+  "recent_files_search_seed_6": "Carta de candidatura a emprego",
+  "recent_files_search_seed_7": "Documentos legais e termos de referência",
+  "recent_files_search_seed_8": "Minha carteira de identidade nacional",
+
+  "recent_files_search_clear_all_tooltip": "Limpar tudo",
+
+  "clear_recent_files_title": "Limpar todos os arquivos recentes?",
+  "clear_recent_files_message": "Isso removerá todos os arquivos da lista de recentes. Esta ação não poderá ser desfeita.",
+  "clear_recent_files_confirm": "Limpar tudo",
+
+  "common_edit": "Editar",
+  "common_remove": "Remover",
+  "common_open_snackbar": "Aberto",
+
+  "selection_action_default": "Ação",
+  "selection_selected_label": "{count} selecionado(s)",
+  "@selection_selected_label": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "settings_language_item_title": "Idioma",
+  "settings_language_item_subtitle": "Selecione qualquer idioma que desejar",
+  "settings_default_save_location_title": "Local padrão de salvamento",
+  "settings_default_save_location_subtitle": "Escolha onde todos os PDFs serão salvos",
+  "settings_dark_mode_title": "Modo escuro",
+  "settings_dark_mode_subtitle": "Alterar entre temas claro e escuro",
+  "settings_file_naming_title": "Esquema de nomeação de arquivos",
+  "settings_file_naming_subtitle": "Defina como novos arquivos serão nomeados automaticamente",
+  "settings_pdf_compression_title": "Compressão de PDF",
+  "settings_pdf_compression_subtitle": "Defina como novos arquivos serão comprimidos automaticamente",
+  "settings_filter_options_title": "Opções de filtro",
+  "settings_filter_options_subtitle": "Escolha quais filtros o aplicativo aplicará por padrão",
+  "settings_grid_view_layout_title": "Layout em grade",
+  "settings_grid_view_layout_subtitle": "Controle como arquivos e pastas aparecem",
+  "settings_pdf_content_fit_title": "Modo de ajuste de conteúdo PDF",
+  "settings_pdf_content_fit_subtitle": "Escolha como imagens e PDFs devem se ajustar",
+  "settings_help_center_title": "Central de ajuda",
+  "settings_help_center_subtitle": "Obtenha ajuda, perguntas frequentes e respostas",
+  "settings_about_pdf_kit_title": "Sobre o PDF-Kit",
+  "settings_about_pdf_kit_subtitle": "Veja detalhes sobre este aplicativo",
+  "settings_about_us_title": "Sobre nós",
+  "settings_about_us_subtitle": "Descubra nossa visão e forma de trabalho",
+
+  "language_settings_page_title": "Configurações de idioma",
+  "language_settings_choose_label": "Escolher idioma do aplicativo",
+  "language_option_english": "English",
+  "language_option_hindi": "हिन्दी (Hindi)",
+  "language_option_spanish": "Español (Spanish)",
+  "language_option_arabic": "العربية (Arabic)",
+  "language_option_bengali": "বাংলা (Bengali)",
+  "language_option_german": "Deutsch (German)",
+  "language_option_french": "Français (French)",
+  "language_option_japanese": "日本語 (Japanese)",
+  "language_option_portuguese": "Português (Portuguese)",
+  "language_option_chinese": "中文 (Chinese)",
+  "language_settings_applied_snackbar": "Idioma atualizado",
+
+  "show_pdf_no_path": "nenhum caminho",
+  "show_pdf_prefix": "Exibir PDF: {path}",
+  "@show_pdf_prefix": {
+    "placeholders": { "path": { "type": "String" } }
+  },
+
+  "onboarding_title": "Introdução",
+  "all_files_title": "Todos os arquivos e pastas",
+  "search_files_title": "Pesquisar arquivos",
+  "preferences_title": "Preferências",
+  "contact_us_title": "Contate-nos",
+  "about_app_title": "Sobre o aplicativo",
+  "take_image_title": "Capturar imagem",
+  "add_watermark_title": "Adicionar marca d'água",
+  "add_signature_title": "Adicionar assinatura digital",
+
+  "not_found_page_title": "Página não encontrada",
+  "not_found_page_route_undefined": "Nenhuma rota definida para: {route}",
+  "@not_found_page_route_undefined": {
+    "placeholders": { "route": { "type": "String" } }
+  },
+  "not_found_go_home_button": "Voltar ao início",
+
+  "action_watermark_label": "Marca d'água",
+  "action_esign_label": "Assinar PDF",
+  "action_split_label": "Dividir PDF",
+  "action_merge_label": "Mesclar PDF",
+  "action_protect_label": "Proteger PDF",
+  "action_compress_label": "Comprimir PDF",
+  "action_all_tools_label": "Todas as ferramentas",
+  "action_coming_soon_toast": "{feature} em breve",
+  "@action_coming_soon_toast": {
+    "placeholders": { "feature": { "type": "String" } }
+  },
+
+  "selection_max_info": "Máximo: {count}",
+  "@selection_max_info": {
+    "description": "Informação sobre o número máximo de arquivos selecionáveis.",
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "selection_sheet_title": "Arquivos selecionados",
+  "@selection_sheet_title": {
+    "description": "Título da folha de seleção."
+  },
+
+  "selection_sheet_empty": "Nenhum arquivo selecionado",
+  "@selection_sheet_empty": {
+    "description": "Mensagem quando não há arquivos selecionados."
+  },
+
+  "selection_folder_items_single": "{count} item",
+  "@selection_folder_items_single": {
+    "description": "Etiqueta quando há apenas um item selecionado.",
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "selection_folder_items_multiple": "{count} itens",
+  "@selection_folder_items_multiple": {
+    "description": "Etiqueta quando há vários itens selecionados.",
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "selection_folder_collapse_tooltip": "Recolher",
+  "@selection_folder_collapse_tooltip": {
+    "description": "Tooltip de recolher pasta."
+  },
+
+  "selection_folder_expand_tooltip": "Expandir",
+  "@selection_folder_expand_tooltip": {
+    "description": "Tooltip de expandir pasta."
+  },
+
+  "selection_limit_error_single": "Você pode selecionar no máximo {count} arquivo.",
+  "@selection_limit_error_single": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "selection_limit_error_multiple": "Você pode selecionar no máximo {count} arquivos.",
+  "@selection_limit_error_multiple": {
+    "placeholders": { "count": { "type": "int" } }
+  }
+}
