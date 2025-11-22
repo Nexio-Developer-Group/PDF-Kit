@@ -406,7 +406,7 @@ class _MergePdfPageState extends State<MergePdfPage> {
                       style: OutlinedButton.styleFrom(
                         backgroundColor: Theme.of(
                           context,
-                        ).colorScheme.primary.withOpacity(0.06),
+                        ).colorScheme.primary.withAlpha(15),
                       ),
                     ),
                   ),

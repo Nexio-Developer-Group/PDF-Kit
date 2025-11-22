@@ -93,6 +93,7 @@ class SelectionScaffoldState extends State<SelectionScaffold> {
   }
 
   Widget _bottomBar(BuildContext context) {
+    final theme = Theme.of(context);
     if (!provider.isEnabled) return const SizedBox.shrink();
     final count = provider.count;
     return SafeArea(
@@ -120,9 +121,28 @@ class SelectionScaffoldState extends State<SelectionScaffold> {
                       )
                     : null,
                 icon: const Icon(Icons.checklist),
-                label: Text(
-                  '$count selected',
-                  // Use button's default text style so disabled color applies
+                label: Text('$count selected'),
+                style: Theme.of(context).elevatedButtonTheme.style?.copyWith(
+                  backgroundColor: WidgetStateProperty.resolveWith<Color?>((
+                    states,
+                  ) {
+                    if (states.contains(WidgetState.disabled)) {
+                      return null;
+                    }
+                    return Theme.of(context).colorScheme.primary.withAlpha(15);
+                  }),
+                  iconColor: WidgetStateProperty.resolveWith<Color?>((states) {
+                    if (states.contains(WidgetState.disabled)) {
+                      return null;
+                    }
+                    return Theme.of(context).colorScheme.primary;
+                  }),
+                  foregroundColor: WidgetStateProperty.resolveWith<Color?>((
+                    states,
+                  ) {
+                    if (states.contains(WidgetState.disabled)) return null;
+                    return theme.colorScheme.primary;
+                  }),
                 ),
               ),
             ),

@@ -78,7 +78,7 @@ class _SelectionPickSheetState extends State<_SelectionPickSheet> {
                   Container(
                     width: 48,
                     height: 4,
-                    margin: const EdgeInsets.only(top: 12, bottom: 16),
+                    margin: const EdgeInsets.only(top: 0, bottom: 16),
                     decoration: BoxDecoration(
                       color: theme.colorScheme.onSurface.withOpacity(0.18),
                       borderRadius: BorderRadius.circular(4),
@@ -103,7 +103,7 @@ class _SelectionPickSheetState extends State<_SelectionPickSheet> {
                   if (widget.infoMessage != null) ...[
                     Container(
                       width: double.infinity,
-                      margin: const EdgeInsets.fromLTRB(20, 12, 20, 8),
+                      margin: const EdgeInsets.fromLTRB(0, 0, 0, 12),
                       padding: const EdgeInsets.symmetric(
                         horizontal: 14,
                         vertical: 12,
@@ -147,7 +147,7 @@ class _SelectionPickSheetState extends State<_SelectionPickSheet> {
                   Flexible(
                     child: ListView.builder(
                       shrinkWrap: true,
-                      padding: const EdgeInsets.only(bottom: 12),
+                      padding: const EdgeInsets.only(bottom: 0),
                       itemCount: folders.length,
                       itemBuilder: (ctx, i) {
                         final folderPath = folders[i];
