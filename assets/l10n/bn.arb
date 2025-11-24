@@ -37,7 +37,7 @@
 
   "files_header_title": "ফাইল",
   "files_empty_folder_title": "এই ফোল্ডারটি খালি",
-  "files_total_items": "মোট: {count} আইটেম",
+  "files_total_items": "মোট: {count}টি আইটেম",
   "@files_total_items": {
     "description": "বর্তমান ফোল্ডারের মোট আইটেম সংখ্যা দেখায়।",
     "placeholders": { "count": { "type": "int" } }
@@ -109,17 +109,19 @@
   "merge_pdf_select_folder_placeholder": "ফোল্ডার নির্বাচন করুন",
   "merge_pdf_destination_snackbar": "সংরক্ষণস্থল: {folderName}",
   "@merge_pdf_destination_snackbar": {
+    "description": "Snackbar message showing chosen destination folder.",
     "placeholders": { "folderName": { "type": "String" } }
   },
-
   "merge_pdf_success_snackbar": "{fileName} সফলভাবে একত্রিত করা হয়েছে",
   "@merge_pdf_success_snackbar": {
+    "description": "Snackbar message after successful merge.",
     "placeholders": { "fileName": { "type": "String" } }
   },
 
   "protect_pdf_title": "PDF সুরক্ষিত করুন",
   "protect_pdf_description": "স্ক্যান করা ফাইল সুরক্ষিত করতে পাসওয়ার্ড সেট করুন। আপনি বা অন্য কেউ ফাইল খুলতে চাইলে এই পাসওয়ার্ড প্রয়োজন হবে। পাসওয়ার্ড ভুলে গেলে ফাইল আর কখনো খোলা যাবে না।",
   "protect_pdf_selected_file_label": "নির্বাচিত ফাইল",
+  "protect_pdf_no_pdf_selected": "কোনো PDF নির্বাচিত নেই",
   "protect_pdf_add_pdf_file": "PDF ফাইল যোগ করুন",
   "protect_pdf_password_label": "পাসওয়ার্ড",
   "protect_pdf_confirm_password_label": "পাসওয়ার্ড নিশ্চিত করুন",
@@ -130,10 +132,15 @@
   "protect_pdf_error_enter_password": "অনুগ্রহ করে পাসওয়ার্ড লিখুন",
   "protect_pdf_error_passwords_mismatch": "পাসওয়ার্ড মিলছে না",
 
-  "protect_pdf_success_snackbar": "{fileName} সফলভাবে সুরক্ষিত করা হয়েছে",
-  "@protect_pdf_success_snackbar": {
-    "placeholders": { "fileName": { "type": "String" } }
-  },
+  "unlock_pdf_title": "PDF আনলক করুন",
+  "unlock_pdf_description": "এই PDF থেকে সুরক্ষা সরাতে পাসওয়ার্ড দিন। আনলক করার পর, ফাইলটি পাসওয়ার্ড ছাড়াই খোলা যাবে।",
+  "unlock_pdf_selected_file_label": "নির্বাচিত ফাইল",
+  "unlock_pdf_no_pdf_selected": "কোনো PDF নির্বাচিত নেই",
+  "unlock_pdf_password_label": "পাসওয়ার্ড দিন",
+  "unlock_pdf_password_hint": "PDF পাসওয়ার্ড দিন",
+  "unlock_pdf_button": "আনলক",
+  "unlock_pdf_error_enter_password": "দয়া করে পাসওয়ার্ড দিন",
+  "action_unlock_label": "PDF আনলক করুন",
 
   "doc_menu_open": "খুলুন",
   "doc_menu_rename": "নাম পরিবর্তন",
@@ -141,17 +148,17 @@
   "doc_menu_share": "শেয়ার করুন",
   "doc_menu_edit": "সম্পাদনা করুন",
   "doc_menu_remove": "সরান",
-
   "doc_rotation_degrees": "{degrees}°",
   "@doc_rotation_degrees": {
+    "description": "Badge showing rotation of a page in degrees.",
     "placeholders": { "degrees": { "type": "int" } }
   },
 
   "errors_generic": "ত্রুটি: {message}",
   "@errors_generic": {
+    "description": "Generic error message with details.",
     "placeholders": { "message": { "type": "String" } }
   },
-
   "errors_failed_to_load_recent": "সাম্প্রতিক ফাইল লোড করতে ব্যর্থ।",
   "errors_unable_to_load_folders": "ফোল্ডার লোড করা যাচ্ছে না।",
 
@@ -165,215 +172,232 @@
   "snackbar_removed_recent": "সাম্প্রতিক ফাইল থেকে সরানো হয়েছে",
   "snackbar_destination_folder": "সংরক্ষণস্থল: {folderName}",
   "@snackbar_destination_folder": {
+    "description": "Duplicate of merge_pdf_destination_snackbar (can consolidate).",
     "placeholders": { "folderName": { "type": "String" } }
   },
-
   "snackbar_error": "ত্রুটি: {message}",
   "@snackbar_error": {
+    "description": "Generic snackbar error message.",
     "placeholders": { "message": { "type": "String" } }
   },
-
   "snackbar_success_merge": "{fileName} সফলভাবে একত্রিত করা হয়েছে",
   "@snackbar_success_merge": {
+    "description": "Duplicate of merge_pdf_success_snackbar (can consolidate).",
     "placeholders": { "fileName": { "type": "String" } }
   },
-
   "snackbar_success_protect": "{fileName} সফলভাবে সুরক্ষিত করা হয়েছে",
   "@snackbar_success_protect": {
+    "description": "Duplicate of protect_pdf_success_snackbar (can consolidate).",
     "placeholders": { "fileName": { "type": "String" } }
-  },
+  }
 
-  "home_brand_title": "PDF Kit",
-  "home_get_started_title": "আপনার PDF দিয়ে শুরু করুন",
-  "home_get_started_message": "দস্তাবেজ স্ক্যান করুন বা ফাইল আমদানি করুন, সেগুলো এখানে প্রদর্শিত হবে।",
-  "home_get_started_scan": "দস্তাবেজ স্ক্যান করুন",
-  "home_get_started_import": "PDF আমদানি করুন",
+  ,"home_brand_title": "PDF Kit"
+  ,"home_get_started_title": "আপনার PDF দিয়ে শুরু করুন"
+  ,"home_get_started_message": "দস্তাবেজ স্ক্যান করুন বা ফাইল আমদানি করুন, সেগুলো এখানে প্রদর্শিত হবে।"
+  ,"home_get_started_scan": "দস্তাবেজ স্ক্যান করুন"
+  ,"home_get_started_import": "PDF আমদানি করুন"
 
-  "recent_files_view_all_tooltip": "সব সাম্প্রতিক ফাইল দেখুন",
+  ,"recent_files_view_all_tooltip": "সব সাম্প্রতিক ফাইল দেখুন"
 
-  "common_rename_coming_soon": "নাম পরিবর্তন ফিচার শীঘ্রই আসছে",
+  ,"common_rename_coming_soon": "নাম পরিবর্তন ফিচার শীঘ্রই আসছে"
 
-  "files_root_label": "রুট",
+  ,"files_root_label": "রুট"
 
-  "merge_pdf_default_file_name": "একত্রিত ডকুমেন্ট",
-  "merge_pdf_default_suffix": "একত্রিত",
-  "merge_pdf_default_downloads_label": "ডাউনলোড",
+  ,"merge_pdf_default_file_name": "একত্রিত ডকুমেন্ট"
+  ,"merge_pdf_default_suffix": "একত্রিত"
+  ,"merge_pdf_default_downloads_label": "ডাউনলোড"
+  ,"doc_page_count": "{count, plural, one {# পৃষ্ঠা} other {# পৃষ্ঠা}}"
+  ,"@doc_page_count": {"description": "Page count label for a PDF.", "placeholders": {"count": {"type": "int"}}}
 
-  "doc_page_count": "{count, plural, one {# পৃষ্ঠা} other {# পৃষ্ঠা}}",
-  "@doc_page_count": {
-    "placeholders": { "count": { "type": "int" } }
-  },
+  ,"selection_limit_error": "আপনি সর্বোচ্চ {count, plural, one {#টি ফাইল} other {#টি ফাইল}} নির্বাচন করতে পারেন।"
+  ,"@selection_limit_error": {"description": "Shown when user exceeds maximum selectable files.", "placeholders": {"count": {"type": "int"}}}
 
-  "selection_limit_error": "আপনি সর্বোচ্চ {count, plural, one {#টি ফাইল} other {#টি ফাইল}} নির্বাচন করতে পারেন।",
-  "@selection_limit_error": {
-    "placeholders": { "count": { "type": "int" } }
-  },
+  ,"compress_pdf_title": "PDF সংকোচন করুন"
+  ,"compress_pdf_description": "স্মার্ট কমপ্রেশন দিয়ে PDF-এর আকার কমান, গুণমান সমন্বয় করুন, সংরক্ষণস্থল নির্বাচন করুন এবং ফাইলের নাম পরিবর্তন করুন। যেকোনো সময় PDF যোগ করুন এবং দ্রুত একটি অপ্টিমাইজড ডকুমেন্ট তৈরি করুন।"
+  ,"compress_pdf_no_pdf_selected": "কোনো PDF নির্বাচিত হয়নি। দয়া করে একটি নির্বাচন করুন।"
+  ,"compress_pdf_select_level_label": "সংকোচনের স্তর নির্বাচন করুন:"
+  ,"compress_pdf_high": "উচ্চ সংকোচন"
+  ,"compress_pdf_medium": "মধ্যম সংকোচন"
+  ,"compress_pdf_low": "নিম্ন সংকোচন"
+  ,"compress_pdf_high_sub": "সবচেয়ে ছোট আকার, কম গুণমান"
+  ,"compress_pdf_medium_sub": "মধ্যম আকার, মধ্যম গুণমান"
+  ,"compress_pdf_low_sub": "সবচেয়ে বড় আকার, ভালো গুণমান"
+  ,"compress_pdf_button": "সংকোচন"
+  ,"compress_pdf_compressing": "সংকোচন করা হচ্ছে..."
+  ,"compress_pdf_select_first_error": "প্রথমে একটি PDF নির্বাচন করুন"
+  ,"compress_pdf_result_pattern": "\"{original}\" ({level}) → {result} সংকোচন করা হয়েছে"
+  ,"@compress_pdf_result_pattern": {"description": "Snackbar pattern after compression.", "placeholders": {"original": {"type": "String"}, "level": {"type": "String"}, "result": {"type": "String"}}}
 
-  "compress_pdf_title": "PDF সংকোচন করুন",
-  "compress_pdf_description": "স্মার্ট কমপ্রেশন দিয়ে PDF-এর আকার কমান, গুণমান সমন্বয় করুন, সংরক্ষণস্থল নির্বাচন করুন এবং ফাইলের নাম পরিবর্তন করুন।",
-  "compress_pdf_no_pdf_selected": "কোনো PDF নির্বাচিত হয়নি। দয়া করে একটি নির্বাচন করুন।",
-  "compress_pdf_select_level_label": "সংকোচনের স্তর নির্বাচন করুন:",
-  "compress_pdf_high": "উচ্চ সংকোচন",
-  "compress_pdf_medium": "মধ্যম সংকোচন",
-  "compress_pdf_low": "নিম্ন সংকোচন",
-  "compress_pdf_high_sub": "সবচেয়ে ছোট আকার, কম গুণমান",
-  "compress_pdf_medium_sub": "মধ্যম আকার, মধ্যম গুণমান",
-  "compress_pdf_low_sub": "সবচেয়ে বড় আকার, ভালো গুণমান",
-  "compress_pdf_button": "সংকোচন",
-  "compress_pdf_compressing": "সংকোচন করা হচ্ছে...",
-  "compress_pdf_select_first_error": "প্রথমে একটি PDF নির্বাচন করুন",
-  "compress_pdf_result_pattern": "\"{original}\" ({level}) → {result} সংকোচন করা হয়েছে",
-  "@compress_pdf_result_pattern": {
-    "placeholders": {
-      "original": { "type": "String" },
-      "level": { "type": "String" },
-      "result": { "type": "String" }
-    }
-  },
+  ,"sign_pdf_title": "PDF স্বাক্ষর করুন"
+  ,"sign_pdf_description": "PDF বা ছবিতে আপনার ডিজিটাল স্বাক্ষর যোগ করুন। স্বাক্ষর আঁকুন বা গ্যালারি থেকে আমদানি করুন, যেকোনো জায়গায় বসান এবং সংরক্ষণ করুন।"
+  ,"sign_pdf_no_file": "কোনো ফাইল নির্বাচিত হয়নি। দয়া করে একটি নির্বাচন করুন।"
+  ,"sign_pdf_select_first_error": "প্রথমে একটি PDF বা ছবি নির্বাচন করুন"
+  ,"sign_pdf_continue_button": "চালিয়ে যান"
 
-  "volume_internal_storage": "অভ্যন্তরীণ সংরক্ষণ",
-  "volume_sd_card": "SD কার্ড",
-  "volume_generic_storage": "স্টোরেজ",
+  ,"signature_sheet_title": "স্বাক্ষর আঁকুন"
+  ,"signature_sheet_clear": "মুছুন"
+  ,"signature_sheet_import": "আমদানি করুন"
+  ,"signature_sheet_add": "স্বাক্ষর যোগ করুন"
 
-  "folder_children_files_label": "{count}টি ফাইল",
-  "@folder_children_files_label": {
-    "placeholders": { "count": { "type": "int" } }
-  },
+  ,"protect_pdf_success_snackbar": "{fileName} সফলভাবে সুরক্ষিত করা হয়েছে"
+  ,"@protect_pdf_success_snackbar": {"description": "Snackbar message after successful protection (override duplicates).", "placeholders": {"fileName": {"type": "String"}}}
 
-  "new_folder_create_button": "তৈরি করুন",
+  ,"volume_internal_storage": "অভ্যন্তরীণ সংরক্ষণ"
+  ,"volume_sd_card": "SD কার্ড"
+  ,"volume_generic_storage": "স্টোরেজ"
 
-  "recent_files_search_seed_1": "আমার বাড়ির সনদপত্র",
-  "recent_files_search_seed_2": "কাজের দস্তাবেজ",
-  "recent_files_search_seed_3": "সুপারিশপত্র",
-  "recent_files_search_seed_4": "বিক্রয় প্রতিবেদন",
-  "recent_files_search_seed_5": "ব্যবসায়িক পরিকল্পনা",
-  "recent_files_search_seed_6": "চাকরির আবেদনপত্র",
-  "recent_files_search_seed_7": "আইনি শর্তাবলী",
-  "recent_files_search_seed_8": "আমার জাতীয় পরিচয়পত্র",
+  ,"folder_children_files_label": "{count}টি ফাইল"
+  ,"@folder_children_files_label": {"placeholders": {"count": {"type": "int"}}}
 
-  "recent_files_search_clear_all_tooltip": "সব মুছুন",
+  ,"new_folder_create_button": "তৈরি করুন"
 
-  "clear_recent_files_title": "সব সাম্প্রতিক ফাইল মুছবেন?",
-  "clear_recent_files_message": "এতে সাম্প্রতিক তালিকা থেকে সব ফাইল সরানো হবে। এই কাজ ফিরিয়ে নেওয়া যাবে না।",
-  "clear_recent_files_confirm": "সব মুছুন",
+  ,"recent_files_search_seed_1": "আমার বাড়ির সনদপত্র"
+  ,"recent_files_search_seed_2": "কাজের দস্তাবেজ"
+  ,"recent_files_search_seed_3": "সুপারিশপত্র"
+  ,"recent_files_search_seed_4": "বিক্রয় প্রতিবেদন"
+  ,"recent_files_search_seed_5": "ব্যবসায়িক পরিকল্পনা"
+  ,"recent_files_search_seed_6": "চাকরির আবেদনপত্র"
+  ,"recent_files_search_seed_7": "আইনি শর্তাবলী"
+  ,"recent_files_search_seed_8": "আমার জাতীয় পরিচয়পত্র"
 
-  "common_edit": "সম্পাদনা করুন",
-  "common_remove": "সরান",
-  "common_open_snackbar": "খোলা হয়েছে",
+  ,"recent_files_search_clear_all_tooltip": "সব মুছুন"
 
-  "selection_action_default": "অ্যাকশন",
-  "selection_selected_label": "{count}টি নির্বাচিত",
-  "@selection_selected_label": {
-    "placeholders": { "count": { "type": "int" } }
-  },
+  ,"clear_recent_files_title": "সব সাম্প্রতিক ফাইল মুছবেন?"
+  ,"clear_recent_files_message": "এতে সাম্প্রতিক তালিকা থেকে সব ফাইল সরানো হবে। এই কাজ ফিরিয়ে নেওয়া যাবে না।"
+  ,"clear_recent_files_confirm": "সব মুছুন"
 
-  "settings_language_item_title": "ভাষা",
-  "settings_language_item_subtitle": "আপনার পছন্দের ভাষা নির্বাচন করুন",
-  "settings_default_save_location_title": "ডিফল্ট সংরক্ষণস্থান",
-  "settings_default_save_location_subtitle": "সব PDF কোথায় সংরক্ষণ হবে তা নির্বাচন করুন",
-  "settings_dark_mode_title": "ডার্ক মোড",
-  "settings_dark_mode_subtitle": "লাইট এবং ডার্ক থিমের মধ্যে পরিবর্তন করুন",
-  "settings_file_naming_title": "ফাইল নামকরণ নীতি",
-  "settings_file_naming_subtitle": "নতুন ফাইল কীভাবে স্বয়ংক্রিয়ভাবে নামকরণ হবে সেট করুন",
-  "settings_pdf_compression_title": "PDF সংকোচন",
-  "settings_pdf_compression_subtitle": "নতুন ফাইল স্বয়ংক্রিয়ভাবে কিভাবে সংকুচিত হবে সেট করুন",
-  "settings_filter_options_title": "ফিল্টার বিকল্প",
-  "settings_filter_options_subtitle": "অ্যাপ ডিফল্টভাবে কোন ফিল্টার ব্যবহার করবে তা নির্বাচন করুন",
-  "settings_grid_view_layout_title": "গ্রিড ভিউ লেআউট",
-  "settings_grid_view_layout_subtitle": "ফাইল এবং ফোল্ডার কীভাবে প্রদর্শিত হবে তা নিয়ন্ত্রণ করুন",
-  "settings_pdf_content_fit_title": "PDF কনটেন্ট ফিট মোড",
-  "settings_pdf_content_fit_subtitle": "ছবি এবং PDF কীভাবে প্রদর্শিত হবে তা নির্বাচন করুন",
-  "settings_help_center_title": "সহায়তা কেন্দ্র",
-  "settings_help_center_subtitle": "সহায়তা, প্রশ্নোত্তর এবং তথ্য পান",
-  "settings_about_pdf_kit_title": "PDF-Kit সম্পর্কে",
-  "settings_about_pdf_kit_subtitle": "অ্যাপের বিস্তারিত তথ্য দেখুন",
-  "settings_about_us_title": "আমাদের সম্পর্কে",
-  "settings_about_us_subtitle": "আমাদের লক্ষ্য এবং কাজের পদ্ধতি জানুন",
+  ,"common_edit": "সম্পাদনা করুন"
+  ,"common_remove": "সরান"
+  ,"common_open_snackbar": "খোলা হয়েছে"
 
-  "language_settings_page_title": "ভাষা সেটিংস",
-  "language_settings_choose_label": "অ্যাপের ভাষা নির্বাচন করুন",
-  "language_option_english": "English",
-  "language_option_hindi": "हिन्दी (Hindi)",
-  "language_option_spanish": "Español (Spanish)",
-  "language_option_arabic": "العربية (Arabic)",
-  "language_option_bengali": "বাংলা (Bengali)",
-  "language_option_german": "Deutsch (German)",
-  "language_option_french": "Français (French)",
-  "language_option_japanese": "日本語 (Japanese)",
-  "language_option_portuguese": "Português (Portuguese)",
-  "language_option_chinese": "中文 (Chinese)",
-  "language_settings_applied_snackbar": "ভাষা আপডেট করা হয়েছে",
+  ,"selection_action_default": "অ্যাকশন"
+  ,"selection_selected_label": "{count}টি নির্বাচিত"
+  ,"@selection_selected_label": {"placeholders": {"count": {"type": "int"}}}
+  ,"settings_language_item_title": "ভাষা"
+  ,"settings_language_item_subtitle": "আপনার পছন্দের ভাষা নির্বাচন করুন"
+  ,"settings_default_save_location_title": "ডিফল্ট সংরক্ষণস্থান"
+  ,"settings_default_save_location_subtitle": "সব PDF কোথায় সংরক্ষণ হবে তা নির্বাচন করুন"
+  ,"settings_dark_mode_title": "থিম"
+  ,"settings_dark_mode_subtitle": "লাইট, ডার্ক এবং সিস্টেম থিমের মধ্যে পরিবর্তন করুন"
+  ,"theme_settings_page_title": "থিম সেটিংস"
+  ,"theme_settings_info_message": "আপনার পছন্দের থিম নির্বাচন করুন। সিস্টেম থিম আপনার ডিভাইসের সেটিংস অনুযায়ী স্বয়ংক্রিয়ভাবে পরিবর্তিত হবে।"
+  ,"theme_settings_choose_label": "থিম নির্বাচন করুন"
+  ,"theme_settings_light_title": "লাইট থিম"
+  ,"theme_settings_light_subtitle": "অ্যাপ ইন্টারফেসের জন্য হালকা রং ব্যবহার করুন"
+  ,"theme_settings_dark_title": "ডার্ক থিম"
+  ,"theme_settings_dark_subtitle": "অ্যাপ ইন্টারফেসের জন্য গাঢ় রং ব্যবহার করুন"
+  ,"theme_settings_system_title": "সিস্টেম ডিফল্ট"
+  ,"theme_settings_system_subtitle": "ডিভাইসের সিস্টেম সেটিংস অনুসরণ করুন"
+  ,"settings_file_naming_title": "ফাইল নামকরণ নীতি"
+  ,"settings_file_naming_subtitle": "নতুন ফাইল কীভাবে স্বয়ংক্রিয়ভাবে নামকরণ হবে সেট করুন"
+  ,"settings_pdf_compression_title": "PDF সংকোচন"
+  ,"settings_pdf_compression_subtitle": "নতুন ফাইল স্বয়ংক্রিয়ভাবে কিভাবে সংকুচিত হবে সেট করুন"
+  ,"settings_filter_options_title": "ফিল্টার বিকল্প"
+  ,"settings_filter_options_subtitle": "অ্যাপ ডিফল্টভাবে কোন ফিল্টার ব্যবহার করবে তা নির্বাচন করুন"
+  ,"settings_grid_view_layout_title": "গ্রিড ভিউ লেআউট"
+  ,"settings_grid_view_layout_subtitle": "ফাইল এবং ফোল্ডার কীভাবে প্রদর্শিত হবে তা নিয়ন্ত্রণ করুন"
+  ,"settings_pdf_content_fit_title": "PDF কনটেন্ট ফিট মোড"
+  ,"settings_pdf_content_fit_subtitle": "ছবি এবং PDF কীভাবে প্রদর্শিত হবে তা নির্বাচন করুন"
+  ,"settings_help_center_title": "সহায়তা কেন্দ্র"
+  ,"settings_help_center_subtitle": "সহায়তা, প্রশ্নোত্তর এবং তথ্য পান"
+  ,"settings_about_pdf_kit_title": "PDF-Kit সম্পর্কে"
+  ,"settings_about_pdf_kit_subtitle": "অ্যাপের বিস্তারিত তথ্য দেখুন"
+  ,"settings_about_us_title": "আমাদের সম্পর্কে"
 
-  "show_pdf_no_path": "কোনো পথ নেই",
-  "show_pdf_prefix": "PDF দেখান: {path}",
-  "@show_pdf_prefix": {
-    "placeholders": { "path": { "type": "String" } }
-  },
-
-  "onboarding_title": "অনবোর্ডিং",
-  "all_files_title": "সব ফাইল ও ফোল্ডার",
-  "search_files_title": "ফাইল অনুসন্ধান",
-  "preferences_title": "পছন্দসমূহ",
-  "contact_us_title": "যোগাযোগ করুন",
-  "about_app_title": "অ্যাপ সম্পর্কে",
-  "take_image_title": "ছবি তুলুন",
-  "add_watermark_title": "ওয়াটারমার্ক যোগ করুন",
-  "add_signature_title": "ডিজিটাল স্বাক্ষর যোগ করুন",
-
-  "not_found_page_title": "পৃষ্ঠা পাওয়া যায়নি",
-  "not_found_page_route_undefined": "কোনো রুট নির্ধারিত নেই: {route}",
-  "@not_found_page_route_undefined": {
-    "placeholders": { "route": { "type": "String" } }
-  },
-
-  "not_found_go_home_button": "হোমে যান",
-
-  "action_watermark_label": "ওয়াটারমার্ক",
-  "action_esign_label": "eSign PDF",
-  "action_split_label": "PDF বিভক্ত করুন",
-  "action_merge_label": "PDF একত্রিত করুন",
-  "action_protect_label": "PDF সুরক্ষিত করুন",
-  "action_compress_label": "PDF সংকোচন করুন",
-  "action_all_tools_label": "সব টুল",
-  "action_coming_soon_toast": "{feature} শীঘ্রই আসছে",
-  "@action_coming_soon_toast": {
-    "placeholders": { "feature": { "type": "String" } }
-  },
-
+  ,"action_watermark_label": "ওয়াটারমার্ক"
+  ,"action_esign_label": "PDF স্বাক্ষর"
+  ,"action_split_label": "PDF বিভক্ত করুন"
+  ,"action_merge_label": "PDF একত্রিত করুন"
+  ,"action_protect_label": "PDF সুরক্ষিত করুন"
+  ,"action_compress_label": "PDF সংকোচন করুন"
+  ,"action_all_tools_label": "সব টুল"
+  ,"action_coming_soon_toast": "{feature} শীঘ্রই আসছে"
+  ,"@action_coming_soon_toast": {"placeholders": {"feature": {"type": "String"}}}
+  ,"settings_about_us_subtitle": "আমাদের লক্ষ্য এবং কাজের পদ্ধতি জানুন"
+  ,"language_settings_page_title": "ভাষা সেটিংস"
+  ,"language_settings_choose_label": "অ্যাপের ভাষা নির্বাচন করুন"
+  ,"language_option_english": "English"
+  ,"language_option_hindi": "हिन्दी (Hindi)"
+  ,"language_option_spanish": "Español (Spanish)"
+  ,"language_option_arabic": "العربية (Arabic)"
+  ,"language_option_bengali": "বাংলা (Bengali)"
+  ,"language_option_german": "Deutsch (German)"
+  ,"language_option_french": "Français (French)"
+  ,"language_option_japanese": "日本語 (Japanese)"
+  ,"language_option_portuguese": "Português (Portuguese)"
+  ,"language_option_chinese": "中文 (Chinese)"
+  ,"language_settings_applied_snackbar": "ভাষা আপডেট করা হয়েছে"
+  ,"show_pdf_no_path": "কোনো পথ নেই"
+  ,"show_pdf_prefix": "PDF দেখান: {path}"
+  ,"@show_pdf_prefix": {"placeholders": {"path": {"type": "String"}}}
+  ,"onboarding_title": "অনবোর্ডিং"
+  ,"all_files_title": "সব ফাইল ও ফোল্ডার"
+  ,"search_files_title": "ফাইল অনুসন্ধান"
+  ,"preferences_title": "পছন্দসমূহ"
+  ,"contact_us_title": "যোগাযোগ করুন"
+  ,"about_app_title": "অ্যাপ সম্পর্কে"
+  ,"take_image_title": "ছবি তুলুন"
+  ,"add_watermark_title": "ওয়াটারমার্ক যোগ করুন"
+  ,"add_signature_title": "ডিজিটাল স্বাক্ষর যোগ করুন"
+  ,"not_found_page_title": "পৃষ্ঠা পাওয়া যায়নি"
+  ,"not_found_page_route_undefined": "কোনো রুট নির্ধারিত নেই: {route}"
+  ,"@not_found_page_route_undefined": {"placeholders": {"route": {"type": "String"}}}
+  ,"not_found_go_home_button": "হোমে যান",
   "selection_max_info": "সর্বোচ্চ: {count}",
   "@selection_max_info": {
+    "description": "Info message in selection sheet showing the maximum selectable files.",
     "placeholders": { "count": { "type": "int" } }
   },
+"selection_sheet_title": "নির্বাচিত ফাইল",
+"@selection_sheet_title": {
+  "description": "Title of the bottom sheet showing currently selected files."
+},
 
-  "selection_sheet_title": "নির্বাচিত ফাইল",
-  "@selection_sheet_title": {},
+"selection_sheet_empty": "কোনো ফাইল নির্বাচিত হয়নি",
+"@selection_sheet_empty": {
+  "description": "Message shown when there are no files selected in the sheet."
+},
 
-  "selection_sheet_empty": "কোনো ফাইল নির্বাচিত হয়নি",
-  "@selection_sheet_empty": {},
-
-  "selection_folder_items_single": "{count}টি আইটেম",
-  "@selection_folder_items_single": {
-    "placeholders": { "count": { "type": "int" } }
-  },
-
-  "selection_folder_items_multiple": "{count}টি আইটেম",
-  "@selection_folder_items_multiple": {
-    "placeholders": { "count": { "type": "int" } }
-  },
-
-  "selection_folder_collapse_tooltip": "সংকুচিত করুন",
-  "@selection_folder_collapse_tooltip": {},
-
-  "selection_folder_expand_tooltip": "বিস্তৃত করুন",
-  "@selection_folder_expand_tooltip": {},
-
-  "selection_limit_error_single": "আপনি সর্বোচ্চ {count}টি ফাইল নির্বাচন করতে পারেন।",
-  "@selection_limit_error_single": {
-    "placeholders": { "count": { "type": "int" } }
-  },
-
-  "selection_limit_error_multiple": "আপনি সর্বোচ্চ {count}টি ফাইল নির্বাচন করতে পারেন।",
-  "@selection_limit_error_multiple": {
-    "placeholders": { "count": { "type": "int" } }
+"selection_folder_items_single": "{count}টি আইটেম",
+"@selection_folder_items_single": {
+  "description": "Label for a folder group when it has exactly one selected item.",
+  "placeholders": {
+    "count": { "type": "int" }
   }
+},
+
+"selection_folder_items_multiple": "{count}টি আইটেম",
+"@selection_folder_items_multiple": {
+  "description": "Label for a folder group when it has more than one selected item.",
+  "placeholders": {
+    "count": { "type": "int" }
+  }
+},
+
+"selection_folder_collapse_tooltip": "সংকুচিত করুন",
+"@selection_folder_collapse_tooltip": {
+  "description": "Tooltip for collapse button in selection folder group."
+},
+
+"selection_folder_expand_tooltip": "বিস্তৃত করুন",
+"@selection_folder_expand_tooltip": {
+  "description": "Tooltip for expand button in selection folder group."
+},
+
+"onboarding_screen1_title": "আপনার ফাইল, সম্পূর্ণ ব্যক্তিগত",
+"onboarding_screen1_subtitle": "পুরোপুরি অফলাইনে কাজ করুন নিশ্চিত মনে।\nআপনার ডিভাইস থেকে কিছুই বাইরে যায় না — আপনার ডেটা নিরাপদ এবং একান্তই আপনার।",
+
+"onboarding_screen2_title": "আপনার সব PDF টুল এক জায়গায়",
+"onboarding_screen2_subtitle": "ফাইল ও ফোল্ডার ম্যানেজ করুন, PDF এডিট করুন, ওয়াটারমার্ক দিন, কম্প্রেস, স্প্লিট, মার্জ, প্রোটেক্ট এবং আনলক করুন — সবই একটি সহজ অ্যাপে।",
+
+"onboarding_screen3_title": "আপনার পছন্দের ভাষা বেছে নিন",
+"onboarding_screen3_subtitle": "অ্যাপটি আপনার পছন্দের ভাষায় ব্যবহার করুন।\nআমরা ইংরেজি, হিন্দি, স্প্যানিশ, ফ্রেঞ্চ, বাংলা সহ ১০টিরও বেশি ভাষা সমর্থন করি।",
+
+"onboarding_screen4_title": "আপনার ভাষা নির্বাচন করুন",
+"onboarding_screen4_subtitle": "শুরু করতে নিচের বিকল্পগুলো থেকে যেকোনো ভাষা বেছে নিন।",
+
+"onboarding_button_skip": "এড়িয়ে যান",
+"onboarding_button_next": "পরবর্তী",
+"onboarding_button_get_started": "শুরু করুন",
+"onboarding_button_back": "ফিরে যান"
 }

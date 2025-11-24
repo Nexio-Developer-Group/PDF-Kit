@@ -45,7 +45,7 @@
 
   "files_sort_filter_tooltip": "فرز / تصفية",
   "files_enable_selection_tooltip": "تفعيل التحديد",
-  "files_select_all_page_tooltip": "تحديد الكل",
+  "files_select_all_page_tooltip": "تحديد الكل في الصفحة",
   "files_clear_page_tooltip": "مسح هذه الصفحة",
   "files_more_tooltip": "المزيد",
   "files_create_new_folder_tooltip": "إنشاء مجلد جديد",
@@ -122,6 +122,7 @@
   "protect_pdf_title": "حماية PDF",
   "protect_pdf_description": "قم بتعيين كلمة مرور لحماية مستندك. ستكون كلمة المرور مطلوبة للوصول إلى الملف. إذا نسيتها، سيصبح الملف غير قابل للوصول نهائياً.",
   "protect_pdf_selected_file_label": "الملف المحدد",
+  "protect_pdf_no_pdf_selected": "لم يتم تحديد PDF",
   "protect_pdf_add_pdf_file": "إضافة ملف PDF",
   "protect_pdf_password_label": "كلمة المرور",
   "protect_pdf_confirm_password_label": "تأكيد كلمة المرور",
@@ -132,11 +133,15 @@
   "protect_pdf_error_enter_password": "يرجى إدخال كلمة المرور",
   "protect_pdf_error_passwords_mismatch": "كلمتا المرور غير متطابقتين",
 
-  "protect_pdf_success_snackbar": "تمت حماية {fileName} بنجاح",
-  "@protect_pdf_success_snackbar": {
-    "description": "رسالة حماية ناجحة.",
-    "placeholders": { "fileName": { "type": "String" } }
-  },
+  "unlock_pdf_title": "إلغاء قفل PDF",
+  "unlock_pdf_description": "أدخل كلمة المرور لإزالة الحماية من هذا الملف. بمجرد إلغاء القفل، يمكن فتح الملف دون كلمة مرور.",
+  "unlock_pdf_selected_file_label": "الملف المحدد",
+  "unlock_pdf_no_pdf_selected": "لم يتم تحديد PDF",
+  "unlock_pdf_password_label": "أدخل كلمة المرور",
+  "unlock_pdf_password_hint": "أدخل كلمة مرور PDF",
+  "unlock_pdf_button": "إلغاء القفل",
+  "unlock_pdf_error_enter_password": "يرجى إدخال كلمة المرور",
+  "action_unlock_label": "إلغاء قفل PDF",
 
   "doc_menu_open": "فتح",
   "doc_menu_rename": "إعادة تسمية",
@@ -144,7 +149,6 @@
   "doc_menu_share": "مشاركة",
   "doc_menu_edit": "تعديل",
   "doc_menu_remove": "إزالة",
-
   "doc_rotation_degrees": "{degrees}°",
   "@doc_rotation_degrees": {
     "description": "زاوية تدوير الصفحة.",
@@ -156,7 +160,6 @@
     "description": "رسالة خطأ عامة.",
     "placeholders": { "message": { "type": "String" } }
   },
-
   "errors_failed_to_load_recent": "فشل تحميل الملفات الحديثة.",
   "errors_unable_to_load_folders": "تعذر تحميل المجلدات.",
 
@@ -173,229 +176,231 @@
     "description": "نسخة من merge_pdf_destination_snackbar.",
     "placeholders": { "folderName": { "type": "String" } }
   },
-
   "snackbar_error": "خطأ: {message}",
   "@snackbar_error": {
     "description": "رسالة خطأ عامة.",
     "placeholders": { "message": { "type": "String" } }
   },
-
   "snackbar_success_merge": "تم الدمج بنجاح في {fileName}",
   "@snackbar_success_merge": {
     "description": "نسخة من merge_pdf_success_snackbar.",
     "placeholders": { "fileName": { "type": "String" } }
   },
-
   "snackbar_success_protect": "تمت حماية {fileName} بنجاح",
   "@snackbar_success_protect": {
     "description": "نسخة من protect_pdf_success_snackbar.",
     "placeholders": { "fileName": { "type": "String" } }
-  },
+  }
 
-  "home_brand_title": "PDF كيت",
-  "home_get_started_title": "ابدأ باستخدام ملفات PDF الخاصة بك",
-  "home_get_started_message": "قم بمسح المستندات ضوئياً أو استيراد الملفات لعرضها هنا.",
-  "home_get_started_scan": "مسح مستند",
-  "home_get_started_import": "استيراد PDF",
+  ,"home_brand_title": "PDF كيت"
+  ,"home_get_started_title": "ابدأ باستخدام ملفات PDF الخاصة بك"
+  ,"home_get_started_message": "قم بمسح المستندات ضوئياً أو استيراد الملفات لعرضها هنا."
+  ,"home_get_started_scan": "مسح مستند"
+  ,"home_get_started_import": "استيراد PDF"
 
-  "recent_files_view_all_tooltip": "عرض جميع الملفات الحديثة",
+  ,"recent_files_view_all_tooltip": "عرض جميع الملفات الحديثة"
 
-  "common_rename_coming_soon": "ميزة إعادة التسمية قريباً",
+  ,"common_rename_coming_soon": "ميزة إعادة التسمية قريباً"
 
-  "files_root_label": "جذر النظام",
+  ,"files_root_label": "جذر النظام"
 
-  "merge_pdf_default_file_name": "مستند مدمج",
-  "merge_pdf_default_suffix": "مدمج",
-  "merge_pdf_default_downloads_label": "التنزيلات",
+  ,"merge_pdf_default_file_name": "مستند مدمج"
+  ,"merge_pdf_default_suffix": "مدمج"
+  ,"merge_pdf_default_downloads_label": "التنزيلات"
+  ,"doc_page_count": "{count, plural, one {صفحة واحدة} other {# صفحات}}"
+  ,"@doc_page_count": {"description": "عدد صفحات PDF.", "placeholders": {"count": {"type": "int"}}}
 
-  "doc_page_count": "{count, plural, one {صفحة واحدة} other {# صفحات}}",
-  "@doc_page_count": {
-    "description": "عدد صفحات PDF.",
-    "placeholders": { "count": { "type": "int" } }
-  },
+  ,"selection_limit_error": "يمكنك تحديد ما يصل إلى {count, plural, one {ملف واحد} other {# ملفات}}."
+  ,"@selection_limit_error": {"description": "عند تجاوز الحد الأقصى للتحديد.", "placeholders": {"count": {"type": "int"}}}
 
-  "selection_limit_error": "يمكنك تحديد ما يصل إلى {count, plural, one {ملف واحد} other {# ملفات}}.",
-  "@selection_limit_error": {
-    "description": "عند تجاوز الحد الأقصى للتحديد.",
-    "placeholders": { "count": { "type": "int" } }
-  },
+  ,"compress_pdf_title": "ضغط PDF"
+  ,"compress_pdf_description": "قلّل حجم PDF باستخدام ضغط ذكي، واضبط الجودة، واختر موقع الحفظ، وأعد تسمية الملف. أضف ملفات PDF في أي وقت وأنشئ مستنداً محسّناً بسرعة."
+  ,"compress_pdf_no_pdf_selected": "لم يتم تحديد أي PDF. يرجى اختيار ملف."
+  ,"compress_pdf_select_level_label": "اختر مستوى الضغط:"
+  ,"compress_pdf_high": "ضغط عالي"
+  ,"compress_pdf_medium": "ضغط متوسط"
+  ,"compress_pdf_low": "ضغط منخفض"
+  ,"compress_pdf_high_sub": "أصغر حجم، أقل جودة"
+  ,"compress_pdf_medium_sub": "حجم متوسط، جودة متوسطة"
+  ,"compress_pdf_low_sub": "أكبر حجم، جودة أعلى"
+  ,"compress_pdf_button": "ضغط"
+  ,"compress_pdf_compressing": "جاري الضغط..."
+  ,"compress_pdf_select_first_error": "يرجى اختيار ملف PDF أولاً"
+  ,"compress_pdf_result_pattern": "\"{original}\" ({level}) → {result} تم ضغطه"
+  ,"@compress_pdf_result_pattern": {"description": "رسالة بعد الضغط.", "placeholders": {"original": {"type": "String"}, "level": {"type": "String"}, "result": {"type": "String"}}}
 
-  "compress_pdf_title": "ضغط PDF",
-  "compress_pdf_description": "قلّل حجم PDF باستخدام ضغط ذكي، واضبط الجودة، واختر موقع الحفظ، وأعد تسمية الملف.",
-  "compress_pdf_no_pdf_selected": "لم يتم تحديد أي PDF. يرجى اختيار ملف.",
-  "compress_pdf_select_level_label": "اختر مستوى الضغط:",
-  "compress_pdf_high": "ضغط عالي",
-  "compress_pdf_medium": "ضغط متوسط",
-  "compress_pdf_low": "ضغط منخفض",
-  "compress_pdf_high_sub": "أصغر حجم، أقل جودة",
-  "compress_pdf_medium_sub": "حجم متوسط، جودة متوسطة",
-  "compress_pdf_low_sub": "أكبر حجم، جودة أعلى",
-  "compress_pdf_button": "ضغط",
-  "compress_pdf_compressing": "جاري الضغط...",
-  "compress_pdf_select_first_error": "يرجى اختيار ملف PDF أولاً",
-  "compress_pdf_result_pattern": "\"{original}\" ({level}) → {result} تم ضغطه",
-  "@compress_pdf_result_pattern": {
-    "description": "رسالة بعد الضغط.",
-    "placeholders": {
-      "original": { "type": "String" },
-      "level": { "type": "String" },
-      "result": { "type": "String" }
-    }
-  },
+  ,"sign_pdf_title": "توقيع PDF"
+  ,"sign_pdf_description": "أضف توقيعك الرقمي إلى ملف PDF أو صورة. ارسم توقيعك أو استورده من المكتبة، ضعه في أي مكان تريده واحفظه."
+  ,"sign_pdf_no_file": "لم يتم تحديد ملف. يرجى العودة واختيار ملف."
+  ,"sign_pdf_select_first_error": "يرجى تحديد ملف PDF أو صورة أولاً"
+  ,"sign_pdf_continue_button": "متابعة"
 
-  "volume_internal_storage": "التخزين الداخلي",
-  "volume_sd_card": "بطاقة SD",
-  "volume_generic_storage": "التخزين",
+  ,"signature_sheet_title": "رسم التوقيع"
+  ,"signature_sheet_clear": "مسح"
+  ,"signature_sheet_import": "استيراد"
+  ,"signature_sheet_add": "إضافة توقيع"
 
-  "folder_children_files_label": "{count} ملفات",
-  "@folder_children_files_label": {
-    "placeholders": { "count": { "type": "int" } }
-  },
+  ,"protect_pdf_success_snackbar": "تمت حماية {fileName} بنجاح"
+  ,"@protect_pdf_success_snackbar": {"description": "Snackbar message after successful protection (override duplicates).", "placeholders": {"fileName": {"type": "String"}}}
 
-  "new_folder_create_button": "إنشاء",
+  ,"volume_internal_storage": "التخزين الداخلي"
+  ,"volume_sd_card": "بطاقة SD"
+  ,"volume_generic_storage": "التخزين"
 
-  "recent_files_search_seed_1": "شهادة السكن الخاصة بي",
-  "recent_files_search_seed_2": "مستندات العمل",
-  "recent_files_search_seed_3": "خطاب توصية",
-  "recent_files_search_seed_4": "تقارير المبيعات",
-  "recent_files_search_seed_5": "اقتراح خطة عمل",
-  "recent_files_search_seed_6": "خطاب طلب وظيفة",
-  "recent_files_search_seed_7": "المستندات القانونية وشروط المرجعية",
-  "recent_files_search_seed_8": "بطاقتي الوطنية",
+  ,"folder_children_files_label": "{count} ملفات"
+  ,"@folder_children_files_label": {"placeholders": {"count": {"type": "int"}}}
 
-  "recent_files_search_clear_all_tooltip": "مسح الكل",
+  ,"new_folder_create_button": "إنشاء"
 
-  "clear_recent_files_title": "مسح جميع الملفات الحديثة؟",
-  "clear_recent_files_message": "سيؤدي ذلك إلى إزالة جميع الملفات من قائمة الملفات الحديثة. لا يمكن التراجع عن هذا الإجراء.",
-  "clear_recent_files_confirm": "مسح الكل",
+  ,"recent_files_search_seed_1": "شهادة السكن الخاصة بي"
+  ,"recent_files_search_seed_2": "مستندات العمل"
+  ,"recent_files_search_seed_3": "خطاب توصية"
+  ,"recent_files_search_seed_4": "تقارير المبيعات"
+  ,"recent_files_search_seed_5": "اقتراح خطة عمل"
+  ,"recent_files_search_seed_6": "خطاب طلب وظيفة"
+  ,"recent_files_search_seed_7": "المستندات القانونية وشروط المرجعية"
+  ,"recent_files_search_seed_8": "بطاقتي الوطنية"
 
-  "common_edit": "تعديل",
-  "common_remove": "إزالة",
-  "common_open_snackbar": "تم الفتح",
+  ,"recent_files_search_clear_all_tooltip": "مسح الكل"
 
-  "selection_action_default": "إجراء",
-  "selection_selected_label": "{count} محدد",
-  "@selection_selected_label": {
-    "placeholders": { "count": { "type": "int" } }
-  },
+  ,"clear_recent_files_title": "مسح جميع الملفات الحديثة؟"
+  ,"clear_recent_files_message": "سيؤدي ذلك إلى إزالة جميع الملفات من قائمة الملفات الحديثة. لا يمكن التراجع عن هذا الإجراء."
+  ,"clear_recent_files_confirm": "مسح الكل"
 
-  "settings_language_item_title": "اللغة",
-  "settings_language_item_subtitle": "اختر أي لغة تريد",
-  "settings_default_save_location_title": "موقع الحفظ الافتراضي",
-  "settings_default_save_location_subtitle": "اختر مكان حفظ جميع ملفات PDF",
-  "settings_dark_mode_title": "الوضع الداكن",
-  "settings_dark_mode_subtitle": "التبديل بين الوضعين الداكن والفاتح",
-  "settings_file_naming_title": "نظام تسمية الملفات",
-  "settings_file_naming_subtitle": "حدد كيفية تسمية الملفات الجديدة تلقائياً",
-  "settings_pdf_compression_title": "ضغط PDF",
-  "settings_pdf_compression_subtitle": "حدد كيفية ضغط الملفات الجديدة تلقائياً",
-  "settings_filter_options_title": "خيارات التصفية",
-  "settings_filter_options_subtitle": "اختر الفلاتر التي يطبقها التطبيق بشكل افتراضي",
-  "settings_grid_view_layout_title": "تخطيط عرض الشبكة",
-  "settings_grid_view_layout_subtitle": "تحكم في كيفية ظهور الملفات والمجلدات",
-  "settings_pdf_content_fit_title": "وضع ملاءمة المحتوى",
-  "settings_pdf_content_fit_subtitle": "اختر كيفية ملاءمة الصور وملفات PDF",
-  "settings_help_center_title": "مركز المساعدة",
-  "settings_help_center_subtitle": "احصل على المساعدة والأسئلة الشائعة والإجابات",
-  "settings_about_pdf_kit_title": "حول PDF-Kit",
-  "settings_about_pdf_kit_subtitle": "عرض تفاصيل هذا التطبيق",
-  "settings_about_us_title": "معلومات عنا",
-  "settings_about_us_subtitle": "تعرف على رؤيتنا وطريقة عملنا",
+  ,"common_edit": "تعديل"
+  ,"common_remove": "إزالة"
+  ,"common_open_snackbar": "تم الفتح"
 
-  "language_settings_page_title": "إعدادات اللغة",
-  "language_settings_choose_label": "اختر لغة التطبيق",
-  "language_option_english": "English",
-  "language_option_hindi": "हिन्दी (Hindi)",
-  "language_option_spanish": "Español (Spanish)",
-  "language_option_arabic": "العربية (Arabic)",
-  "language_option_bengali": "বাংলা (Bengali)",
-  "language_option_german": "Deutsch (German)",
-  "language_option_french": "Français (French)",
-  "language_option_japanese": "日本語 (Japanese)",
-  "language_option_portuguese": "Português (Portuguese)",
-  "language_option_chinese": "中文 (Chinese)",
-  "language_settings_applied_snackbar": "تم تحديث اللغة",
+  ,"selection_action_default": "إجراء"
+  ,"selection_selected_label": "{count} محدد"
+  ,"@selection_selected_label": {"placeholders": {"count": {"type": "int"}}}
+  ,"settings_language_item_title": "اللغة"
+  ,"settings_language_item_subtitle": "اختر أي لغة تريد"
+  ,"settings_default_save_location_title": "موقع الحفظ الافتراضي"
+  ,"settings_default_save_location_subtitle": "اختر مكان حفظ جميع ملفات PDF"
+  ,"settings_dark_mode_title": "المظهر"
+  ,"settings_dark_mode_subtitle": "التبديل بين الفاتح والداكن والنظام"
+  ,"theme_settings_page_title": "إعدادات المظهر"
+  ,"theme_settings_info_message": "اختر مظهرك المفضل. سيتم ضبط مظهر النظام تلقائيًا بناءً على إعدادات جهازك."
+  ,"theme_settings_choose_label": "اختيار المظهر"
+  ,"theme_settings_light_title": "المظهر الفاتح"
+  ,"theme_settings_light_subtitle": "استخدام ألوان فاتحة لواجهة التطبيق"
+  ,"theme_settings_dark_title": "المظهر الداكن"
+  ,"theme_settings_dark_subtitle": "استخدام ألوان داكنة لواجهة التطبيق"
+  ,"theme_settings_system_title": "افتراضي النظام"
+  ,"theme_settings_system_subtitle": "اتباع إعدادات نظام الجهاز"
+  ,"settings_file_naming_title": "نظام تسمية الملفات"
+  ,"settings_file_naming_subtitle": "حدد كيفية تسمية الملفات الجديدة تلقائياً"
+  ,"settings_pdf_compression_title": "ضغط PDF"
+  ,"settings_pdf_compression_subtitle": "حدد كيفية ضغط الملفات الجديدة تلقائياً"
+  ,"settings_filter_options_title": "خيارات التصفية"
+  ,"settings_filter_options_subtitle": "اختر الفلاتر التي يطبقها التطبيق بشكل افتراضي"
+  ,"settings_grid_view_layout_title": "تخطيط عرض الشبكة"
+  ,"settings_grid_view_layout_subtitle": "تحكم في كيفية ظهور الملفات والمجلدات"
+  ,"settings_pdf_content_fit_title": "وضع ملاءمة المحتوى"
+  ,"settings_pdf_content_fit_subtitle": "اختر كيفية ملاءمة الصور وملفات PDF"
+  ,"settings_help_center_title": "مركز المساعدة"
+  ,"settings_help_center_subtitle": "احصل على المساعدة والأسئلة الشائعة والإجابات"
+  ,"settings_about_pdf_kit_title": "حول PDF-Kit"
+  ,"settings_about_pdf_kit_subtitle": "عرض تفاصيل هذا التطبيق"
+  ,"settings_about_us_title": "معلومات عنا"
 
-  "show_pdf_no_path": "لا يوجد مسار",
-  "show_pdf_prefix": "عرض PDF: {path}",
-  "@show_pdf_prefix": {
-    "placeholders": { "path": { "type": "String" } }
-  },
-
-  "onboarding_title": "التمهيد",
-  "all_files_title": "كل الملفات والمجلدات",
-  "search_files_title": "بحث عن الملفات",
-  "preferences_title": "التفضيلات",
-  "contact_us_title": "اتصل بنا",
-  "about_app_title": "حول التطبيق",
-  "take_image_title": "التقاط صورة",
-  "add_watermark_title": "إضافة علامة مائية",
-  "add_signature_title": "إضافة توقيع رقمي",
-
-  "not_found_page_title": "الصفحة غير موجودة",
-  "not_found_page_route_undefined": "لا يوجد مسار معرف لـ: {route}",
-  "@not_found_page_route_undefined": {
-    "placeholders": { "route": { "type": "String" } }
-  },
-  "not_found_go_home_button": "الرجوع إلى الرئيسية",
-
-  "action_watermark_label": "علامة مائية",
-  "action_esign_label": "توقيع PDF",
-  "action_split_label": "تقسيم PDF",
-  "action_merge_label": "دمج PDF",
-  "action_protect_label": "حماية PDF",
-  "action_compress_label": "ضغط PDF",
-  "action_all_tools_label": "جميع الأدوات",
-  "action_coming_soon_toast": "{feature} قريباً",
-  "@action_coming_soon_toast": {
-    "placeholders": { "feature": { "type": "String" } }
-  },
-
+  ,"action_watermark_label": "علامة مائية"
+  ,"action_esign_label": "توقيع PDF"
+  ,"action_split_label": "تقسيم PDF"
+  ,"action_merge_label": "دمج PDF"
+  ,"action_protect_label": "حماية PDF"
+  ,"action_compress_label": "ضغط PDF"
+  ,"action_all_tools_label": "جميع الأدوات"
+  ,"action_coming_soon_toast": "{feature} قريباً"
+  ,"@action_coming_soon_toast": {"placeholders": {"feature": {"type": "String"}}}
+  ,"settings_about_us_subtitle": "تعرف على رؤيتنا وطريقة عملنا"
+  ,"language_settings_page_title": "إعدادات اللغة"
+  ,"language_settings_choose_label": "اختر لغة التطبيق"
+  ,"language_option_english": "English"
+  ,"language_option_hindi": "हिन्दी (Hindi)"
+  ,"language_option_spanish": "Español (Spanish)"
+  ,"language_option_arabic": "العربية (Arabic)"
+  ,"language_option_bengali": "বাংলা (Bengali)"
+  ,"language_option_german": "Deutsch (German)"
+  ,"language_option_french": "Français (French)"
+  ,"language_option_japanese": "日本語 (Japanese)"
+  ,"language_option_portuguese": "Português (Portuguese)"
+  ,"language_option_chinese": "中文 (Chinese)"
+  ,"language_settings_applied_snackbar": "تم تحديث اللغة"
+  ,"show_pdf_no_path": "لا يوجد مسار"
+  ,"show_pdf_prefix": "عرض PDF: {path}"
+  ,"@show_pdf_prefix": {"placeholders": {"path": {"type": "String"}}}
+  ,"onboarding_title": "التمهيد"
+  ,"all_files_title": "كل الملفات والمجلدات"
+  ,"search_files_title": "بحث عن الملفات"
+  ,"preferences_title": "التفضيلات"
+  ,"contact_us_title": "اتصل بنا"
+  ,"about_app_title": "حول التطبيق"
+  ,"take_image_title": "التقاط صورة"
+  ,"add_watermark_title": "إضافة علامة مائية"
+  ,"add_signature_title": "إضافة توقيع رقمي"
+  ,"not_found_page_title": "الصفحة غير موجودة"
+  ,"not_found_page_route_undefined": "لا يوجد مسار معرف لـ: {route}"
+  ,"@not_found_page_route_undefined": {"placeholders": {"route": {"type": "String"}}}
+  ,"not_found_go_home_button": "الرجوع إلى الرئيسية",
   "selection_max_info": "الحد الأقصى: {count}",
   "@selection_max_info": {
-    "description": "أقصى عدد يمكن تحديده.",
+    "description": "Info message in selection sheet showing the maximum selectable files.",
     "placeholders": { "count": { "type": "int" } }
   },
+"selection_sheet_title": "الملفات المحددة",
+"@selection_sheet_title": {
+  "description": "Title of the bottom sheet showing currently selected files."
+},
 
-  "selection_sheet_title": "الملفات المحددة",
-  "@selection_sheet_title": {
-    "description": "عنوان نافذة الملفات المحددة."
-  },
+"selection_sheet_empty": "لا توجد ملفات محددة",
+"@selection_sheet_empty": {
+  "description": "Message shown when there are no files selected in the sheet."
+},
 
-  "selection_sheet_empty": "لا توجد ملفات محددة",
-  "@selection_sheet_empty": {
-    "description": "عندما لا تكون هناك ملفات محددة."
-  },
-
-  "selection_folder_items_single": "{count} عنصر",
-  "@selection_folder_items_single": {
-    "description": "عندما يحتوي المجلد على عنصر واحد محدد.",
-    "placeholders": { "count": { "type": "int" } }
-  },
-
-  "selection_folder_items_multiple": "{count} عناصر",
-  "@selection_folder_items_multiple": {
-    "description": "عندما يحتوي المجلد على عدة عناصر محددة.",
-    "placeholders": { "count": { "type": "int" } }
-  },
-
-  "selection_folder_collapse_tooltip": "طي",
-  "@selection_folder_collapse_tooltip": {
-    "description": "زر طي مجموعة الملفات."
-  },
-
-  "selection_folder_expand_tooltip": "فتح",
-  "@selection_folder_expand_tooltip": {
-    "description": "زر توسيع مجموعة الملفات."
-  },
-
-  "selection_limit_error_single": "يمكنك تحديد ملف واحد كحد أقصى.",
-  "@selection_limit_error_single": {
-    "placeholders": { "count": { "type": "int" } }
-  },
-
-  "selection_limit_error_multiple": "يمكنك تحديد ما يصل إلى {count} ملفات.",
-  "@selection_limit_error_multiple": {
-    "placeholders": { "count": { "type": "int" } }
+"selection_folder_items_single": "{count} عنصر",
+"@selection_folder_items_single": {
+  "description": "Label for a folder group when it has exactly one selected item.",
+  "placeholders": {
+    "count": { "type": "int" }
   }
+},
+
+"selection_folder_items_multiple": "{count} عناصر",
+"@selection_folder_items_multiple": {
+  "description": "Label for a folder group when it has more than one selected item.",
+  "placeholders": {
+    "count": { "type": "int" }
+  }
+},
+
+"selection_folder_collapse_tooltip": "طي",
+"@selection_folder_collapse_tooltip": {
+  "description": "Tooltip for collapse button in selection folder group."
+},
+
+"selection_folder_expand_tooltip": "فتح",
+"@selection_folder_expand_tooltip": {
+  "description": "Tooltip for expand button in selection folder group."
+},
+
+"onboarding_screen1_title": "ملفاتك، خاصة تماماً",
+"onboarding_screen1_subtitle": "اعمل دون اتصال بالإنترنت ببال مرتاح.\nلا شيء يغادر جهازك - تظل بياناتك آمنة ومحمية وشخصية لك.",
+
+"onboarding_screen2_title": "جميع أدوات PDF في مكان واحد",
+"onboarding_screen2_subtitle": "أدر الملفات والمجلدات، عدّل ملفات PDF، أضف العلامات المائية، اضغط، قسّم، ادمج، احمِ، وألغِ القفل والمزيد - كل ذلك داخل تطبيق سلس وسهل الاستخدام.",
+
+"onboarding_screen3_title": "اختر لغتك المفضلة",
+"onboarding_screen3_subtitle": "استخدم التطبيق بأي لغة تريدها.\nنحن ندعم أكثر من 10 لغات، بما في ذلك الإنجليزية والهندية والإسبانية والفرنسية والبنغالية والمزيد.",
+
+"onboarding_screen4_title": "حدد لغتك",
+"onboarding_screen4_subtitle": "اختر أي لغة من الخيارات أدناه للبدء.",
+
+"onboarding_button_skip": "تخطي",
+"onboarding_button_next": "التالي",
+"onboarding_button_get_started": "البدء",
+"onboarding_button_back": "رجوع",
+"onboarding_tagline": "مجموعة الأدوات الكاملة لكل مهمة PDF."
+
 }

@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:pdf_kit/models/file_model.dart';
 import 'package:pdf_kit/presentation/component/document_tile.dart';
@@ -18,101 +19,13 @@ class ProtectPdfPage extends StatefulWidget {
 
 class _ProtectPdfPageState extends State<ProtectPdfPage> {
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _confirmPasswordController =
-      TextEditingController();
-  bool _isPasswordVisible = false;
-  bool _isConfirmPasswordVisible = false;
+  bool _isPasswordVisible = true;
   bool _isProtecting = false;
 
   @override
   void dispose() {
     _passwordController.dispose();
-    _confirmPasswordController.dispose();
     super.dispose();
-  }
-
-  // String _displayName(FileInfo f) {
-  //   try {
-  //     final dynamic maybeName = (f as dynamic).name;
-  //     if (maybeName is String && maybeName.trim().isNotEmpty) return maybeName;
-  //   } catch (_) {}
-  //   return p.basenameWithoutExtension(f.path);
-  // }
-
-  /// 💾 Store protected file and source file to recent files
-  Future<void> _storeRecentFiles(
-    FileInfo protectedFile,
-    FileInfo sourceFile,
-  ) async {
-    debugPrint('');
-    debugPrint('═══════════════════════════════════════════════════════');
-    debugPrint('🔒 [ProtectPDF] Starting storage of recent files');
-    debugPrint('═══════════════════════════════════════════════════════');
-
-    try {
-      // 1️⃣ Add protected file first (most recent)
-      debugPrint(
-        '📝 [ProtectPDF] Storing protected file: ${protectedFile.name}',
-      );
-      debugPrint('   Path: ${protectedFile.path}');
-      debugPrint('   Size: ${protectedFile.readableSize}');
-
-      final protectedResult = await RecentFilesService.addRecentFile(
-        protectedFile,
-      );
-
-      protectedResult.fold(
-        (error) {
-          debugPrint('❌ [ProtectPDF] Failed to store protected file: $error');
-        },
-        (updatedFiles) {
-          debugPrint('✅ [ProtectPDF] Protected file stored successfully');
-          debugPrint('   Total files in storage: ${updatedFiles.length}');
-        },
-      );
-
-      debugPrint('');
-      debugPrint('📚 [ProtectPDF] Storing source file:');
-      debugPrint('   ${sourceFile.name}');
-
-      // 2️⃣ Add source file
-      final result = await RecentFilesService.addRecentFile(sourceFile);
-
-      result.fold(
-        (error) {
-          debugPrint('   ❌ Failed: $error');
-        },
-        (updatedFiles) {
-          debugPrint('   ✅ Stored (Total: ${updatedFiles.length})');
-        },
-      );
-
-      debugPrint('');
-      debugPrint('🎉 [ProtectPDF] All files storage completed!');
-      debugPrint('═══════════════════════════════════════════════════════');
-      debugPrint('');
-
-      // Verify storage by reading back
-      debugPrint('🔍 [ProtectPDF] Verifying storage...');
-      final verifyResult = await RecentFilesService.getRecentFiles();
-      verifyResult.fold(
-        (error) {
-          debugPrint('❌ [ProtectPDF] Verification failed: $error');
-        },
-        (files) {
-          debugPrint('✅ [ProtectPDF] Verification successful!');
-          debugPrint('   Files in storage: ${files.length}');
-          for (var i = 0; i < files.length; i++) {
-            debugPrint('   ${i + 1}. ${files[i].name}');
-          }
-        },
-      );
-      debugPrint('');
-    } catch (e) {
-      debugPrint('❌ [ProtectPDF] Error storing recent files: $e');
-      debugPrint('═══════════════════════════════════════════════════════');
-      debugPrint('');
-    }
   }
 
   Future<void> _handleProtect(
@@ -124,16 +37,6 @@ class _ProtectPdfPageState extends State<ProtectPdfPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(t.t('protect_pdf_error_enter_password')),
-          backgroundColor: Theme.of(context).colorScheme.error,
-        ),
-      );
-      return;
-    }
-
-    if (_passwordController.text != _confirmPasswordController.text) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(t.t('protect_pdf_error_passwords_mismatch')),
           backgroundColor: Theme.of(context).colorScheme.error,
         ),
       );
@@ -165,17 +68,23 @@ class _ProtectPdfPageState extends State<ProtectPdfPage> {
         );
       },
       (protectedPath) async {
-        // Create FileInfo for protected file
-        final protectedFile = FileInfo(
-          name: "atatat",
+        // Get updated file stats after protection
+        final protectedFileOnDisk = File(protectedPath);
+        final stats = await protectedFileOnDisk.stat();
+
+        // Update the file info with new metadata
+        final updatedFile = FileInfo(
+          name: p.basename(protectedPath),
           path: protectedPath,
-          size: 324,
-          extension: "meow",
-          lastModified: DateTime.now(),
+          size: stats.size,
+          extension: 'pdf',
+          lastModified: stats.modified,
+          mimeType: 'application/pdf',
+          parentDirectory: p.dirname(protectedPath),
         );
 
-        // ✅ Store recent files after successful protection
-        await _storeRecentFiles(protectedFile, file);
+        // ✅ Store protected file to recent files
+        await RecentFilesService.addRecentFile(updatedFile);
 
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
@@ -260,34 +169,27 @@ class _ProtectPdfPageState extends State<ProtectPdfPage> {
                     const SizedBox(height: 12),
                     DocEntryCard(
                       info: files.first,
-                      showActions: true,
-                      onRemove: () => selection.removeFile(files.first.path),
-                      onOpen: () => context.pushNamed(
-                        AppRouteName.showPdf,
-                        queryParameters: {'path': files.first.path},
-                      ),
+                      showActions: false,
+                      selectable: false,
+                      reorderable: false,
+                      onOpen: null,
                     ),
                     const SizedBox(height: 24),
-                  ],
-
-                  // Add PDF Button (only show if no file selected)
-                  if (!hasFile) ...[
-                    _AddPdfButton(
-                      onTap: () {
-                        final params = <String, String>{
-                          'actionText': t.t('common_select'),
-                          'singleSelection': 'true',
-                        };
-                        if (widget.selectionId != null) {
-                          params['selectionId'] = widget.selectionId!;
-                        }
-                        context.pushNamed(
-                          AppRouteName.filesRootFullscreen,
-                          queryParameters: params,
-                        );
-                      },
+                  ] else ...[
+                    // No file selected - show placeholder
+                    Row(
+                      children: [
+                        const Icon(Icons.picture_as_pdf_outlined, size: 32),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            t.t('protect_pdf_no_pdf_selected'),
+                            style: theme.textTheme.bodyMedium,
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 32),
+                    const SizedBox(height: 28),
                   ],
 
                   // Password Fields (only show if file is selected)
@@ -316,49 +218,6 @@ class _ProtectPdfPageState extends State<ProtectPdfPage> {
                           onPressed: () {
                             setState(
                               () => _isPasswordVisible = !_isPasswordVisible,
-                            );
-                          },
-                        ),
-                        border: const OutlineInputBorder(
-                          borderSide: BorderSide(color: Colors.grey),
-                        ),
-                        enabledBorder: const OutlineInputBorder(
-                          borderSide: BorderSide(color: Colors.grey),
-                        ),
-                        focusedBorder: const OutlineInputBorder(
-                          borderSide: BorderSide(
-                            color: Color(0xFF5B7FFF),
-                            width: 2,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-                    Text(
-                      t.t('protect_pdf_confirm_password_label'),
-                      style: theme.textTheme.titleSmall?.copyWith(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.black,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    TextField(
-                      controller: _confirmPasswordController,
-                      obscureText: !_isConfirmPasswordVisible,
-                      decoration: InputDecoration(
-                        hintText: t.t('protect_pdf_password_hint_obscured'),
-                        suffixIcon: IconButton(
-                          icon: Icon(
-                            _isConfirmPasswordVisible
-                                ? Icons.visibility
-                                : Icons.visibility_off,
-                            color: const Color(0xFF5B7FFF),
-                          ),
-                          onPressed: () {
-                            setState(
-                              () => _isConfirmPasswordVisible =
-                                  !_isConfirmPasswordVisible,
                             );
                           },
                         ),
@@ -422,59 +281,6 @@ class _ProtectPdfPageState extends State<ProtectPdfPage> {
               : null,
         );
       },
-    );
-  }
-}
-
-class _AddPdfButton extends StatelessWidget {
-  const _AddPdfButton({required this.onTap});
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final t = AppLocalizations.of(context);
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
-      child: Container(
-        width: double.infinity,
-        height: 120,
-        decoration: BoxDecoration(
-          color: theme.colorScheme.primary.withOpacity(0.06),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: theme.colorScheme.primary.withOpacity(0.3),
-            width: 2,
-            style: BorderStyle.solid,
-          ),
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: theme.colorScheme.primary.withOpacity(0.1),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                Icons.add_rounded,
-                color: theme.colorScheme.primary,
-                size: 32,
-              ),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              t.t('protect_pdf_add_pdf_file'),
-              style: theme.textTheme.titleMedium?.copyWith(
-                color: theme.colorScheme.primary,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }

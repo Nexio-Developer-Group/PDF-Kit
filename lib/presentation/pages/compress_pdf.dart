@@ -8,7 +8,6 @@ import 'package:pdf_kit/service/pdf_compress_service.dart';
 import 'package:dartz/dartz.dart' show Either; // avoid State name clash
 import 'package:pdf_kit/service/pdf_merge_service.dart'
     show CustomException; // for Either left type
-import 'package:pdf_kit/core/localization/app_localizations.dart';
 
 class CompressPdfPage extends StatefulWidget {
   final String? selectionId;

@@ -35,9 +35,27 @@ ShellRoute buildSelectionShellRoute({
         onAction: (files) {
           if (selectionId != null) {
             // Decide target route based on actionText
-            if (actionText?.toLowerCase() == 'compress') {
+            final action = actionText?.toLowerCase() ?? '';
+            
+            // Check for specific actions in order (most specific first)
+            if (action.contains('unlock')) {
+              rootNavKey.currentContext!.pushNamed(
+                AppRouteName.unlockPdf,
+                queryParameters: {'selectionId': selectionId},
+              );
+            } else if (action.contains('protect')) {
+              rootNavKey.currentContext!.pushNamed(
+                AppRouteName.protectPdf,
+                queryParameters: {'selectionId': selectionId},
+              );
+            } else if (action.contains('compress')) {
               rootNavKey.currentContext!.pushNamed(
                 AppRouteName.compressPdf,
+                queryParameters: {'selectionId': selectionId},
+              );
+            } else if (action.contains('sign')) {
+              rootNavKey.currentContext!.pushNamed(
+                AppRouteName.signPdf,
                 queryParameters: {'selectionId': selectionId},
               );
             } else {
@@ -58,9 +76,25 @@ ShellRoute buildSelectionShellRoute({
               manager.clear(); // cleanup after use
             } else {
               // Fallback decides route by actionText
-              if (actionText?.toLowerCase() == 'compress') {
+              final action = actionText?.toLowerCase() ?? '';
+              if (action.contains('compress')) {
                 rootNavKey.currentContext!.pushNamed(
                   AppRouteName.compressPdf,
+                  extra: files,
+                );
+              } else if (action.contains('sign')) {
+                rootNavKey.currentContext!.pushNamed(
+                  AppRouteName.signPdf,
+                  extra: files,
+                );
+              } else if (action.contains('protect')) {
+                rootNavKey.currentContext!.pushNamed(
+                  AppRouteName.protectPdf,
+                  extra: files,
+                );
+              } else if (action.contains('unlock')) {
+                rootNavKey.currentContext!.pushNamed(
+                  AppRouteName.unlockPdf,
                   extra: files,
                 );
               } else {

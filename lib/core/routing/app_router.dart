@@ -15,10 +15,22 @@ final _settingsNavKey = GlobalKey<NavigatorState>(debugLabel: 'settings');
 
 final appRouter = GoRouter(
   navigatorKey: _rootNavKey,
-  initialLocation: '/',
+  initialLocation: '/splash',
   errorBuilder: (context, state) =>
       NotFoundPage(routeName: state.uri.toString()),
   routes: [
+    GoRoute(
+      name: AppRouteName.splash,
+      path: '/splash',
+      parentNavigatorKey: _rootNavKey,
+      builder: (context, state) => const PdfKitSplashPage(),
+    ),
+    GoRoute(
+      name: AppRouteName.onboardingShell,
+      path: '/onboarding-shell',
+      parentNavigatorKey: _rootNavKey,
+      builder: (context, state) => const OnboardingShellPage(),
+    ),
     GoRoute(
       name: AppRouteName.recentFiles,
       path: '/recent-files',
@@ -36,6 +48,13 @@ final appRouter = GoRouter(
       path: '/settings/language',
       parentNavigatorKey: _rootNavKey,
       builder: (context, state) => const LanguageSettingsPage(),
+    ),
+
+    GoRoute(
+      name: 'theme-settings',
+      path: '/settings/theme',
+      parentNavigatorKey: _rootNavKey,
+      builder: (context, state) => const ThemeSettingsPage(),
     ),
 
     buildHomeShellRoute(
@@ -64,7 +83,12 @@ final appRouter = GoRouter(
       name: AppRouteName.addSignature,
       path: '/pdf/signature',
       parentNavigatorKey: _rootNavKey,
-      builder: (context, state) => const AddSignaturePage(),
+      builder: (context, state) => Scaffold(
+        appBar: AppBar(title: const Text('Add Signature')),
+        body: const Center(
+          child: Text('Please use the Sign PDF feature from the home page.'),
+        ),
+      ),
     ),
 
     GoRoute(
@@ -111,6 +135,28 @@ final appRouter = GoRouter(
     ),
 
     GoRoute(
+      name: AppRouteName.unlockPdf,
+      path: '/pdf/unlock',
+      parentNavigatorKey: _rootNavKey,
+      builder: (context, state) {
+        final selectionId = state.uri.queryParameters['selectionId'];
+        if (selectionId != null) {
+          // reuse provider from SelectionManager cache
+          final provider = Get.find<SelectionManager>().of(selectionId);
+          return ChangeNotifierProvider<SelectionProvider>.value(
+            value: provider,
+            child: UnlockPdfPage(selectionId: selectionId),
+          );
+        }
+        // fallback: create a fresh provider scoped to this route
+        return ChangeNotifierProvider(
+          create: (_) => SelectionProvider(),
+          child: const UnlockPdfPage(),
+        );
+      },
+    ),
+
+    GoRoute(
       // explicit URL path for the folder picker
       path: '/folder-picker',
       name: AppRouteName.folderPickScreen,
@@ -140,6 +186,28 @@ final appRouter = GoRouter(
         return ChangeNotifierProvider(
           create: (_) => SelectionProvider(),
           child: const CompressPdfPage(),
+        );
+      },
+    ),
+
+    GoRoute(
+      name: AppRouteName.signPdf,
+      path: '/pdf/sign',
+      parentNavigatorKey: _rootNavKey,
+      builder: (context, state) {
+        final selectionId = state.uri.queryParameters['selectionId'];
+        if (selectionId != null) {
+          try {
+            final provider = Get.find<SelectionManager>().of(selectionId);
+            return ChangeNotifierProvider<SelectionProvider>.value(
+              value: provider,
+              child: SignPdfPage(selectionId: selectionId),
+            );
+          } catch (_) {}
+        }
+        return ChangeNotifierProvider(
+          create: (_) => SelectionProvider(),
+          child: const SignPdfPage(),
         );
       },
     ),
@@ -291,16 +359,9 @@ class AddWatermarkPage extends StatelessWidget {
   }
 }
 
-class AddSignaturePage extends StatelessWidget {
-  const AddSignaturePage({super.key});
-  @override
-  Widget build(BuildContext context) {
-    final t = AppLocalizations.of(context);
-    return Scaffold(body: Center(child: Text(t.t('add_signature_title'))));
-  }
-}
-
+// Removed placeholder AddSignaturePage; real implementation lives in pages/add_signature_page.dart
 // Removed placeholder CompressPdfPage; real implementation lives in pages/compress_pdf.dart
+// Removed placeholder SignPdfPage; real implementation lives in pages/sign_pdf_page.dart
 
 class NotFoundPage extends StatelessWidget {
   final String? routeName;

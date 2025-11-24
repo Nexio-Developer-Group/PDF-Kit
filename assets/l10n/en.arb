@@ -117,6 +117,7 @@
   "protect_pdf_title": "Protect PDF",
   "protect_pdf_description": "Set a password to protect your scan. This password will be required if you or the person you provide the scanned document wants to access the file. If you forget the password, then this file will not be accessible forever.",
   "protect_pdf_selected_file_label": "Selected File",
+  "protect_pdf_no_pdf_selected": "No PDF selected",
   "protect_pdf_add_pdf_file": "Add PDF File",
   "protect_pdf_password_label": "Password",
   "protect_pdf_confirm_password_label": "Confirm Password",
@@ -126,11 +127,16 @@
   "protect_pdf_button": "Protect",
   "protect_pdf_error_enter_password": "Please enter a password",
   "protect_pdf_error_passwords_mismatch": "Passwords do not match",
-  "protect_pdf_success_snackbar": "Successfully protected {fileName}",
-  "@protect_pdf_success_snackbar": {
-    "description": "Snackbar message after successful protection.",
-    "placeholders": {"fileName": {"type": "String"}}
-  },
+
+  "unlock_pdf_title": "Unlock PDF",
+  "unlock_pdf_description": "Enter the password to remove protection from this PDF. Once unlocked, the file can be opened without a password.",
+  "unlock_pdf_selected_file_label": "Selected File",
+  "unlock_pdf_no_pdf_selected": "No PDF selected",
+  "unlock_pdf_password_label": "Enter Password",
+  "unlock_pdf_password_hint": "Enter PDF password",
+  "unlock_pdf_button": "Unlock",
+  "unlock_pdf_error_enter_password": "Please enter the password",
+  "action_unlock_label": "Unlock PDF",
 
   "doc_menu_open": "Open",
   "doc_menu_rename": "Rename",
@@ -218,6 +224,17 @@
   ,"compress_pdf_result_pattern": "Compressed \"{original}\" ({level}) → {result}"
   ,"@compress_pdf_result_pattern": {"description": "Snackbar pattern after compression.", "placeholders": {"original": {"type": "String"}, "level": {"type": "String"}, "result": {"type": "String"}}}
 
+  ,"sign_pdf_title": "Sign PDF"
+  ,"sign_pdf_description": "Add your digital signature to a PDF or image. Draw your signature or import from library, place it anywhere you want, and save."
+  ,"sign_pdf_no_file": "No file selected. Go back and choose one."
+  ,"sign_pdf_select_first_error": "Select a PDF or image first"
+  ,"sign_pdf_continue_button": "Continue"
+
+  ,"signature_sheet_title": "Draw Signature"
+  ,"signature_sheet_clear": "Clear"
+  ,"signature_sheet_import": "Import"
+  ,"signature_sheet_add": "Add Signature"
+
   ,"protect_pdf_success_snackbar": "Successfully protected {fileName}"
   ,"@protect_pdf_success_snackbar": {"description": "Snackbar message after successful protection (override duplicates).", "placeholders": {"fileName": {"type": "String"}}}
 
@@ -256,8 +273,17 @@
   ,"settings_language_item_subtitle": "Select any language you want"
   ,"settings_default_save_location_title": "Default Save Location"
   ,"settings_default_save_location_subtitle": "Choose where all PDFs will be saved"
-  ,"settings_dark_mode_title": "Dark Mode"
-  ,"settings_dark_mode_subtitle": "Switch between light and dark themes"
+  ,"settings_dark_mode_title": "Theme"
+  ,"settings_dark_mode_subtitle": "Switch between light, dark, and system themes"
+  ,"theme_settings_page_title": "Theme Settings"
+  ,"theme_settings_info_message": "Choose your preferred theme. System theme will automatically adjust based on your device settings."
+  ,"theme_settings_choose_label": "Select Theme"
+  ,"theme_settings_light_title": "Light Theme"
+  ,"theme_settings_light_subtitle": "Use light colors for the app interface"
+  ,"theme_settings_dark_title": "Dark Theme"
+  ,"theme_settings_dark_subtitle": "Use dark colors for the app interface"
+  ,"theme_settings_system_title": "System Default"
+  ,"theme_settings_system_subtitle": "Follow device system theme settings"
   ,"settings_file_naming_title": "File Naming Scheme"
   ,"settings_file_naming_subtitle": "Set how new files are named automatically"
   ,"settings_pdf_compression_title": "PDF Compression"
@@ -354,17 +380,6 @@
   "description": "Tooltip for expand button in selection folder group."
 },
 
-"selection_max_info": "Max: {count}",
-"@selection_max_info": {
-  "description": "Info message in selection sheet showing the maximum selectable files.",
-  "placeholders": {
-    "count": { "type": "int" }
-  }
-},
-
-
-
-
 "selection_limit_error_single": "You can select at most {count} file.",
 "@selection_limit_error_single": {
   "description": "Shown when user exceeds maximum selectable files (exactly 1 allowed).",
@@ -375,8 +390,25 @@
 "@selection_limit_error_multiple": {
   "description": "Shown when user exceeds maximum selectable files (more than 1 allowed).",
   "placeholders": { "count": { "type": "int" } }
-}
+},
 
+"onboarding_screen1_title": "Your Files, Fully Private",
+"onboarding_screen1_subtitle": "Work offline with complete peace of mind.\nNothing leaves your device — your data stays safe, secure, and personal to you.",
+
+"onboarding_screen2_title": "All Your PDF Tools in One Place",
+"onboarding_screen2_subtitle": "Manage files and folders, edit PDFs, add watermarks, compress, split, merge, protect, unlock, and more — all inside a smooth, easy-to-use app.",
+
+"onboarding_screen3_title": "Choose Your Preferred Language",
+"onboarding_screen3_subtitle": "Use the app in any language you like.\nWe support 10+ languages, including English, Hindi, Spanish, French, Bengali, and more.",
+
+"onboarding_screen4_title": "Select Your Language",
+"onboarding_screen4_subtitle": "Choose any language from the options below to get started.",
+
+"onboarding_button_skip": "Skip",
+"onboarding_button_next": "Next",
+"onboarding_button_back": "Back",
+"onboarding_button_get_started": "Get started"
+, "onboarding_tagline": "Your complete toolkit for every PDF task."
 
   
 }

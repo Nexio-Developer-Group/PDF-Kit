@@ -33,7 +33,7 @@ class _HomeTabState extends State<HomeTab> {
             padding: EdgeInsets.symmetric(horizontal: screenPadding.left + 12),
             child: QuickActionsGrid(items: getActions(context)),
           ),
-          const SizedBox(height: 160),
+          const SizedBox(height: 16),
 
           // Only the recent files section should be scrollable now.
           Expanded(
@@ -64,16 +64,28 @@ class _HomeTabState extends State<HomeTab> {
         children: [
           // Left: app glyph
           Container(
-            width: 34,
-            height: 34,
+            width: 40,
+            height: 40,
             decoration: BoxDecoration(
               color: Theme.of(context).colorScheme.primary.withOpacity(0.15),
               shape: BoxShape.circle,
             ),
-            child: Icon(
-              Icons.widgets_rounded,
-              size: 20,
-              color: Theme.of(context).colorScheme.primary,
+            child: ClipOval(
+              child: SizedBox(
+                width: 40,
+                height: 40,
+                child: Image.asset(
+                  'assets/app_icon1.png',
+                  width: 40,
+                  height: 40,
+                  fit: BoxFit.cover,
+                  errorBuilder: (c, e, s) => Icon(
+                    Icons.widgets_rounded,
+                    size: 40,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                ),
+              ),
             ),
           ),
           const SizedBox(width: 12),
@@ -402,7 +414,7 @@ class _GetStartedCard extends StatelessWidget {
           const SizedBox(width: 16),
           Expanded(
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Text(
                   AppLocalizations.of(context).t('home_get_started_title'),

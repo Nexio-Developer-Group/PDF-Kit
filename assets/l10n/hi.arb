@@ -20,7 +20,7 @@
   "common_action": "क्रिया",
   "common_enable_selection": "चयन सक्षम करें",
   "common_select_all_on_page": "इस पृष्ठ पर सभी का चयन करें",
-  "common_clear_page_selection": "इस पृष्ठ को साफ़ करें",
+  "common_clear_page_selection": "इस पृष्ठ का चयन साफ़ करें",
 
   "recent_files_title": "हाल की फ़ाइलें",
   "recent_files_empty_title": "कोई हाल की फ़ाइल नहीं",
@@ -39,10 +39,9 @@
   "files_empty_folder_title": "यह फ़ोल्डर खाली है",
   "files_total_items": "कुल: {count} आइटम",
   "@files_total_items": {
-    "description": "वर्तमान फ़ोल्डर में कुल आइटम दिखाने वाला लेबल।",
+    "description": "वर्तमान फ़ोल्डर में कुल आइटम दर्शाने वाला लेबल।",
     "placeholders": {"count": {"type": "int"}}
   },
-
   "files_sort_filter_tooltip": "क्रमबद्ध करें / फ़िल्टर करें",
   "files_enable_selection_tooltip": "चयन सक्षम करें",
   "files_select_all_page_tooltip": "इस पृष्ठ पर सभी का चयन करें",
@@ -56,16 +55,14 @@
 
   "selection_count_label": "{count} चयनित",
   "@selection_count_label": {
-    "description": "चयन बार में चयनित फ़ाइलों की संख्या दिखाने वाला लेबल।",
+    "description": "चयनित फ़ाइलों की संख्या.",
     "placeholders": {"count": {"type": "int"}}
   },
-
   "selection_pick_sheet_selected": "{count} चयनित",
   "@selection_pick_sheet_selected": {
-    "description": "बॉटम शीट में चयनित फ़ाइलों की संख्या दिखाने वाला हेडर।",
+    "description": "शिट में चयन संख्या.",
     "placeholders": {"count": {"type": "int"}}
   },
-
   "selection_pick_sheet_no_files": "कोई फ़ाइल चयनित नहीं",
   "selection_pick_sheet_close_tooltip": "बंद करें",
   "selection_pick_sheet_remove_tooltip": "हटाएँ",
@@ -80,8 +77,8 @@
   "filter_type_images": "चित्र",
 
   "new_folder_sheet_title": "नया फ़ोल्डर",
-  "new_folder_field_label": "फ़ोल्डर का नाम",
-  "new_folder_field_hint": "फ़ोल्डर का नाम दर्ज करें",
+  "new_folder_field_label": "फ़ोल्डर नाम",
+  "new_folder_field_hint": "फ़ोल्डर नाम दर्ज करें",
 
   "folder_picker_title": "फ़ोल्डर चुनें",
   "folder_picker_select_button": "चुनें",
@@ -91,37 +88,36 @@
   "folder_picker_retry": "पुनः प्रयास करें",
 
   "merge_pdf_title": "PDF मर्ज करें",
-  "merge_pdf_description": "PDF और चित्रों को एक साथ मर्ज करें, क्रम पुनः निर्धारित करने के लिए ड्रैग करें, नाम बदलें, सेव स्थान चुनें, और कभी भी फ़ाइलें जोड़ें या संपादित करें।",
+  "merge_pdf_description": "PDF और चित्रों को एक साथ मर्ज करें, क्रम बदलें, नाम बदलें, सेव स्थान चुनें, और कभी भी फ़ाइलें जोड़ें।",
   "merge_pdf_file_name_label": "फ़ाइल नाम",
   "merge_pdf_file_name_hint": "आउटपुट फ़ाइल नाम दर्ज करें",
   "merge_pdf_save_to_folder_label": "फ़ोल्डर में सेव करें",
   "merge_pdf_files_selected": "{count} फ़ाइलें चयनित",
   "@merge_pdf_files_selected": {
-    "description": "मर्ज हेतु चयनित फ़ाइलों की संख्या दर्शाने वाला लेबल।",
+    "description": "Label showing number of files selected for merging.",
     "placeholders": {"count": {"type": "int"}}
   },
-
-  "merge_pdf_reorder": "पुनः क्रमबद्ध करें",
+  "merge_pdf_reorder": "क्रम बदलें",
   "merge_pdf_done": "पूर्ण",
-  "merge_pdf_add_more_files": "अधिक फ़ाइलें जोड़ें",
+  "merge_pdf_add_more_files": "और फ़ाइलें जोड़ें",
   "merge_pdf_button": "PDF मर्ज करें",
-  "merge_pdf_loading_default_folder": "डिफ़ॉल्ट फ़ोल्डर लोड किया जा रहा है...",
+  "merge_pdf_loading_default_folder": "डिफ़ॉल्ट फ़ोल्डर लोड हो रहा है...",
   "merge_pdf_select_folder_placeholder": "फ़ोल्डर चुनें",
   "merge_pdf_destination_snackbar": "गंतव्य: {folderName}",
   "@merge_pdf_destination_snackbar": {
-    "description": "गंतव्य फ़ोल्डर का स्नैकबार संदेश।",
+    "description": "Snackbar message showing chosen destination folder.",
     "placeholders": {"folderName": {"type": "String"}}
   },
-
   "merge_pdf_success_snackbar": "{fileName} में सफलतापूर्वक मर्ज किया गया",
   "@merge_pdf_success_snackbar": {
-    "description": "सफल मर्ज के बाद स्नैकबार संदेश।",
+    "description": "Snackbar message after successful merge.",
     "placeholders": {"fileName": {"type": "String"}}
   },
 
   "protect_pdf_title": "PDF सुरक्षित करें",
-  "protect_pdf_description": "अपने स्कैन को सुरक्षित रखने हेतु पासवर्ड सेट करें। फ़ाइल खोलने के लिए यह आवश्यक होगा। यदि आप पासवर्ड भूल जाते हैं, तो यह फ़ाइल हमेशा अप्रवेशयोग्य रहेगी।",
+  "protect_pdf_description": "अपनी फ़ाइल को सुरक्षित रखने के लिए पासवर्ड सेट करें। यदि पासवर्ड भूल जाएँ, तो फ़ाइल सुलभ नहीं होगी।",
   "protect_pdf_selected_file_label": "चयनित फ़ाइल",
+  "protect_pdf_no_pdf_selected": "कोई PDF चयनित नहीं",
   "protect_pdf_add_pdf_file": "PDF फ़ाइल जोड़ें",
   "protect_pdf_password_label": "पासवर्ड",
   "protect_pdf_confirm_password_label": "पासवर्ड की पुष्टि करें",
@@ -132,11 +128,15 @@
   "protect_pdf_error_enter_password": "कृपया पासवर्ड दर्ज करें",
   "protect_pdf_error_passwords_mismatch": "पासवर्ड मेल नहीं खाते",
 
-  "protect_pdf_success_snackbar": "{fileName} सफलतापूर्वक सुरक्षित किया गया",
-  "@protect_pdf_success_snackbar": {
-    "description": "सफल सुरक्षा के बाद स्नैकबार संदेश।",
-    "placeholders": {"fileName": {"type": "String"}}
-  },
+  "unlock_pdf_title": "PDF अनलॉक करें",
+  "unlock_pdf_description": "सुरक्षा हटाने हेतु पासवर्ड दर्ज करें। अनलॉक होने के बाद फ़ाइल बिना पासवर्ड खुल सकती है।",
+  "unlock_pdf_selected_file_label": "चयनित फ़ाइल",
+  "unlock_pdf_no_pdf_selected": "कोई PDF चयनित नहीं",
+  "unlock_pdf_password_label": "पासवर्ड दर्ज करें",
+  "unlock_pdf_password_hint": "PDF पासवर्ड दर्ज करें",
+  "unlock_pdf_button": "अनलॉक करें",
+  "unlock_pdf_error_enter_password": "कृपया पासवर्ड दर्ज करें",
+  "action_unlock_label": "PDF अनलॉक करें",
 
   "doc_menu_open": "खोलें",
   "doc_menu_rename": "नाम बदलें",
@@ -144,20 +144,18 @@
   "doc_menu_share": "साझा करें",
   "doc_menu_edit": "संपादित करें",
   "doc_menu_remove": "हटाएँ",
-
   "doc_rotation_degrees": "{degrees}°",
   "@doc_rotation_degrees": {
-    "description": "पृष्ठ के रोटेशन को डिग्री में दर्शाने वाला बैज।",
+    "description": "Badge showing rotation of a page in degrees.",
     "placeholders": {"degrees": {"type": "int"}}
   },
 
   "errors_generic": "त्रुटि: {message}",
   "@errors_generic": {
-    "description": "विवरण सहित सामान्य त्रुटि संदेश।",
+    "description": "Generic error message with details.",
     "placeholders": {"message": {"type": "String"}}
   },
-
-  "errors_failed_to_load_recent": "हाल की फ़ाइलें लोड करने में विफल।",
+  "errors_failed_to_load_recent": "हाल की फ़ाइलें लोड नहीं हो सकीं।",
   "errors_unable_to_load_folders": "फ़ोल्डर लोड करने में असमर्थ।",
 
   "empty_no_files_selected": "कोई फ़ाइल चयनित नहीं",
@@ -170,177 +168,182 @@
   "snackbar_removed_recent": "हाल की फ़ाइलों से हटाया गया",
   "snackbar_destination_folder": "गंतव्य: {folderName}",
   "@snackbar_destination_folder": {
-    "description": "merge_pdf_destination_snackbar की प्रति।",
+    "description": "Duplicate of merge_pdf_destination_snackbar (can consolidate).",
     "placeholders": {"folderName": {"type": "String"}}
   },
-
   "snackbar_error": "त्रुटि: {message}",
   "@snackbar_error": {
-    "description": "सामान्य स्नैकबार त्रुटि संदेश।",
+    "description": "Generic snackbar error message.",
     "placeholders": {"message": {"type": "String"}}
   },
-
   "snackbar_success_merge": "{fileName} में सफलतापूर्वक मर्ज किया गया",
   "@snackbar_success_merge": {
-    "description": "merge_pdf_success_snackbar की प्रति।",
+    "description": "Duplicate of merge_pdf_success_snackbar (can consolidate).",
     "placeholders": {"fileName": {"type": "String"}}
   },
-
   "snackbar_success_protect": "{fileName} सफलतापूर्वक सुरक्षित किया गया",
   "@snackbar_success_protect": {
-    "description": "protect_pdf_success_snackbar की प्रति।",
+    "description": "Duplicate of protect_pdf_success_snackbar (can consolidate).",
     "placeholders": {"fileName": {"type": "String"}}
-  },
+  }
 
-  "home_brand_title": "PDF किट",
-  "home_get_started_title": "अपनी PDF के साथ प्रारंभ करें",
-  "home_get_started_message": "दस्तावेज़ स्कैन करें या फ़ाइलें आयात करें ताकि वे यहाँ दिखाई दें।",
-  "home_get_started_scan": "दस्तावेज़ स्कैन करें",
-  "home_get_started_import": "PDF आयात करें",
+  ,"home_brand_title": "PDF किट"
+  ,"home_get_started_title": "अपनी PDF से प्रारंभ करें"
+  ,"home_get_started_message": "दस्तावेज़ स्कैन करें या फ़ाइलें आयात करें ताकि वे यहाँ दिखाई दें।"
+  ,"home_get_started_scan": "दस्तावेज़ स्कैन करें"
+  ,"home_get_started_import": "PDF आयात करें"
 
-  "recent_files_view_all_tooltip": "सभी हाल की फ़ाइलें देखें",
+  ,"recent_files_view_all_tooltip": "सभी हाल की फ़ाइलें देखें"
 
-  "common_rename_coming_soon": "नाम बदलने का फ़ीचर जल्द आ रहा है",
+  ,"common_rename_coming_soon": "नाम बदलने का फ़ीचर शीघ्र उपलब्ध होगा"
 
-  "files_root_label": "रूट",
+  ,"files_root_label": "रूट"
 
-  "merge_pdf_default_file_name": "मर्ज किया गया दस्तावेज़",
-  "merge_pdf_default_suffix": "मर्ज किया गया",
-  "merge_pdf_default_downloads_label": "डाउनलोड",
-  "doc_page_count": "{count, plural, one {# पृष्ठ} other {# पृष्ठ}}",
-  "@doc_page_count": {
-    "description": "PDF के पृष्ठों की संख्या का लेबल।",
-    "placeholders": {"count": {"type": "int"}}
-  },
+  ,"merge_pdf_default_file_name": "मर्ज किया गया दस्तावेज़"
+  ,"merge_pdf_default_suffix": "मर्ज किया गया"
+  ,"merge_pdf_default_downloads_label": "डाउनलोड"
+  ,"doc_page_count": "{count, plural, one {# पृष्ठ} other {# पृष्ठ}}"
+  ,"@doc_page_count": {"description": "Page count label for a PDF.", "placeholders": {"count": {"type": "int"}}}
 
-  "selection_limit_error": "आप अधिकतम {count, plural, one {# फ़ाइल} other {# फ़ाइलें}} का चयन कर सकते हैं।",
-  "@selection_limit_error": {
-    "description": "जब उपयोगकर्ता चयन सीमा से अधिक चुनता है।",
-    "placeholders": {"count": {"type": "int"}}
-  },
+  ,"selection_limit_error": "आप अधिकतम {count, plural, one {# फ़ाइल} other {# फ़ाइलें}} चुन सकते हैं।"
+  ,"@selection_limit_error": {"description": "Shown when user exceeds maximum selectable files.", "placeholders": {"count": {"type": "int"}}}
 
-  "compress_pdf_title": "PDF संपीड़ित करें",
-  "compress_pdf_description": "स्मार्ट संपीड़न के साथ PDF का आकार कम करें, गुणवत्ता समायोजित करें, सेव स्थान चुनें, और फ़ाइल का नाम बदलें। कभी भी PDF जोड़ें और हल्का, अनुकूलित दस्तावेज़ बनाएँ।",
-  "compress_pdf_no_pdf_selected": "कोई PDF चयनित नहीं। वापस जाएँ और एक चुनें।",
-  "compress_pdf_select_level_label": "संपीड़न स्तर चुनें:",
-  "compress_pdf_high": "उच्च संपीड़न",
-  "compress_pdf_medium": "मध्यम संपीड़न",
-  "compress_pdf_low": "निम्न संपीड़न",
-  "compress_pdf_high_sub": "सबसे छोटा आकार, कम गुणवत्ता",
-  "compress_pdf_medium_sub": "मध्यम आकार, मध्यम गुणवत्ता",
-  "compress_pdf_low_sub": "सबसे बड़ा आकार, बेहतर गुणवत्ता",
-  "compress_pdf_button": "संपीड़ित करें",
-  "compress_pdf_compressing": "संपीड़ित किया जा रहा है...",
-  "compress_pdf_select_first_error": "पहले एक PDF चुनें",
-  "compress_pdf_result_pattern": "\"{original}\" ({level}) → {result} संपीड़ित किया गया",
-  "@compress_pdf_result_pattern": {
-    "description": "संपीड़न के बाद स्नैकबार पैटर्न।",
-    "placeholders": {"original": {"type": "String"}, "level": {"type": "String"}, "result": {"type": "String"}}
-  },
+  ,"compress_pdf_title": "PDF संपीड़ित करें"
+  ,"compress_pdf_description": "स्मार्ट संपीड़न के साथ PDF का आकार कम करें, गुणवत्ता समायोजित करें, सेव स्थान चुनें और फ़ाइल का नाम बदलें। PDF कभी भी जोड़ें और जल्दी से एक हल्का, अनुकूलित दस्तावेज़ बनाएँ।"
+  ,"compress_pdf_no_pdf_selected": "कोई PDF चयनित नहीं। वापस जाएँ और चुनें।"
+  ,"compress_pdf_select_level_label": "संपीड़न स्तर चुनें:"
+  ,"compress_pdf_high": "उच्च संपीड़न"
+  ,"compress_pdf_medium": "मध्यम संपीड़न"
+  ,"compress_pdf_low": "निम्न संपीड़न"
+  ,"compress_pdf_high_sub": "सबसे छोटा आकार, कम गुणवत्ता"
+  ,"compress_pdf_medium_sub": "मध्यम आकार, मध्यम गुणवत्ता"
+  ,"compress_pdf_low_sub": "सबसे बड़ा आकार, बेहतर गुणवत्ता"
+  ,"compress_pdf_button": "संपीड़ित करें"
+  ,"compress_pdf_compressing": "संपीड़ित किया जा रहा है..."
+  ,"compress_pdf_select_first_error": "पहले एक PDF चुनें"
+  ,"compress_pdf_result_pattern": "\"{original}\" ({level}) → {result} संपीड़ित"
+  ,"@compress_pdf_result_pattern": {"description": "Snackbar pattern after compression.", "placeholders": {"original": {"type": "String"}, "level": {"type": "String"}, "result": {"type": "String"}}}
 
-  "volume_internal_storage": "आंतरिक संग्रहण",
-  "volume_sd_card": "SD कार्ड",
-  "volume_generic_storage": "संग्रहण",
+  ,"sign_pdf_title": "PDF पर हस्ताक्षर करें"
+  ,"sign_pdf_description": "PDF या छवि में अपना डिजिटल हस्ताक्षर जोड़ें। अपना हस्ताक्षर ड्रा करें या लाइब्रेरी से आयात करें, इसे कहीं भी रखें, और सहेजें।"
+  ,"sign_pdf_no_file": "कोई फ़ाइल चयनित नहीं। वापस जाएँ और चुनें।"
+  ,"sign_pdf_select_first_error": "पहले एक PDF या छवि चुनें"
+  ,"sign_pdf_continue_button": "जारी रखें"
 
-  "folder_children_files_label": "{count} फ़ाइलें",
-  "@folder_children_files_label": {
-    "placeholders": {"count": {"type": "int"}}
-  },
+  ,"signature_sheet_title": "हस्ताक्षर ड्रा करें"
+  ,"signature_sheet_clear": "साफ़ करें"
+  ,"signature_sheet_import": "आयात करें"
+  ,"signature_sheet_add": "हस्ताक्षर जोड़ें"
 
-  "new_folder_create_button": "बनाएँ",
+  ,"protect_pdf_success_snackbar": "{fileName} सफलतापूर्वक सुरक्षित किया गया"
+  ,"@protect_pdf_success_snackbar": {"description": "Snackbar message after successful protection (override duplicates).", "placeholders": {"fileName": {"type": "String"}}}
 
-  "recent_files_search_seed_1": "मेरा गृह प्रमाणपत्र",
-  "recent_files_search_seed_2": "कार्य दस्तावेज़",
-  "recent_files_search_seed_3": "अनुशंसा पत्र",
-  "recent_files_search_seed_4": "बिक्री रिपोर्ट दस्तावेज़",
-  "recent_files_search_seed_5": "व्यवसाय योजना प्रस्ताव",
-  "recent_files_search_seed_6": "नौकरी आवेदन पत्र",
-  "recent_files_search_seed_7": "कानूनी और संदर्भ की शर्तें",
-  "recent_files_search_seed_8": "मेरी राष्ट्रीय पहचान पत्र",
+  ,"volume_internal_storage": "आंतरिक संग्रहण"
+  ,"volume_sd_card": "SD कार्ड"
+  ,"volume_generic_storage": "संग्रहण"
 
-  "recent_files_search_clear_all_tooltip": "सभी साफ़ करें",
+  ,"folder_children_files_label": "{count} फ़ाइलें"
+  ,"@folder_children_files_label": {"placeholders": {"count": {"type": "int"}}}
 
-  "clear_recent_files_title": "सभी हाल की फ़ाइलें साफ़ करें?",
-  "clear_recent_files_message": "यह आपकी हाल की फ़ाइलों की सूची से सभी फ़ाइलें हटा देगा। यह क्रिया पूर्ववत नहीं की जा सकती।",
-  "clear_recent_files_confirm": "सभी साफ़ करें",
+  ,"new_folder_create_button": "बनाएँ"
 
-  "common_edit": "संपादित करें",
-  "common_remove": "हटाएँ",
-  "common_open_snackbar": "खोला गया",
+  ,"recent_files_search_seed_1": "मेरा गृह प्रमाण पत्र"
+  ,"recent_files_search_seed_2": "कार्य दस्तावेज़"
+  ,"recent_files_search_seed_3": "अनुशंसा पत्र"
+  ,"recent_files_search_seed_4": "बिक्री रिपोर्ट दस्तावेज़"
+  ,"recent_files_search_seed_5": "व्यवसाय योजना प्रस्ताव"
+  ,"recent_files_search_seed_6": "नौकरी आवेदन पत्र"
+  ,"recent_files_search_seed_7": "कानूनी और संदर्भ की शर्तें"
+  ,"recent_files_search_seed_8": "मेरा राष्ट्रीय पहचान पत्र"
 
-  "selection_action_default": "क्रिया",
-  "selection_selected_label": "{count} चयनित",
-  "@selection_selected_label": {
-    "placeholders": {"count": {"type": "int"}}
-  },
-  "settings_language_item_title": "भाषा",
-  "settings_language_item_subtitle": "किसी भी भाषा का चयन करें",
-  "settings_default_save_location_title": "डिफ़ॉल्ट सेव स्थान",
-  "settings_default_save_location_subtitle": "जहाँ सभी PDF सेव होंगी चुनें",
-  "settings_dark_mode_title": "डार्क मोड",
-  "settings_dark_mode_subtitle": "लाइट और डार्क थीम के बीच स्विच करें",
-  "settings_file_naming_title": "फ़ाइल नामकरण योजना",
-  "settings_file_naming_subtitle": "नई फ़ाइलों का नाम स्वतः कैसे हो सेट करें",
-  "settings_pdf_compression_title": "PDF संपीड़न",
-  "settings_pdf_compression_subtitle": "नई फ़ाइलों को स्वतः कैसे संपीड़ित करें सेट करें",
-  "settings_filter_options_title": "फ़िल्टर विकल्प",
-  "settings_filter_options_subtitle": "डिफ़ॉल्ट रूप से ऐप कौन से फ़िल्टर लागू करे चुनें",
-  "settings_grid_view_layout_title": "ग्रिड लेआउट",
-  "settings_grid_view_layout_subtitle": "फ़ाइलें और फ़ोल्डर कैसे दिखें नियंत्रित करें",
-  "settings_pdf_content_fit_title": "PDF कंटेंट फिट मोड",
-  "settings_pdf_content_fit_subtitle": "चित्र और PDF कैसे फिट हों चुनें",
-  "settings_help_center_title": "सहायता केंद्र",
-  "settings_help_center_subtitle": "सहायता, अक्सर पूछे जाने वाले प्रश्न और उत्तर पाएँ",
-  "settings_about_pdf_kit_title": "PDF-Kit के बारे में",
-  "settings_about_pdf_kit_subtitle": "इस ऐप के विवरण देखें",
-  "settings_about_us_title": "हमारे बारे में",
-  "settings_about_us_subtitle": "हमारी दृष्टि और कार्य शैली जानें",
-  "language_settings_page_title": "भाषा सेटिंग्स",
-  "language_settings_choose_label": "ऐप भाषा चुनें",
-  "language_option_english": "English",
-  "language_option_hindi": "हिन्दी (Hindi)",
-  "language_option_spanish": "Español (Spanish)",
-  "language_option_arabic": "العربية (Arabic)",
-  "language_option_bengali": "বাংলা (Bengali)",
-  "language_option_german": "Deutsch (German)",
-  "language_option_french": "Français (French)",
-  "language_option_japanese": "日本語 (Japanese)",
-  "language_option_portuguese": "Português (Portuguese)",
-  "language_option_chinese": "中文 (Chinese)",
-  "language_settings_applied_snackbar": "भाषा अपडेट की गई",
-  "show_pdf_no_path": "कोई पथ नहीं",
-  "show_pdf_prefix": "PDF दिखाएँ: {path}",
-  "@show_pdf_prefix": {"placeholders": {"path": {"type": "String"}}},
-  "onboarding_title": "ऑनबोर्डिंग",
-  "all_files_title": "सभी फ़ाइलें और फ़ोल्डर",
-  "search_files_title": "फ़ाइलें खोजें",
-  "preferences_title": "प्राथमिकताएँ",
-  "contact_us_title": "संपर्क करें",
-  "about_app_title": "ऐप के बारे में",
-  "take_image_title": "चित्र लें",
-  "add_watermark_title": "वॉटरमार्क जोड़ें",
-  "add_signature_title": "डिजिटल हस्ताक्षर जोड़ें",
-  "not_found_page_title": "पृष्ठ नहीं मिला",
-  "not_found_page_route_undefined": "इसके लिए कोई रूट परिभाषित नहीं: {route}",
-  "@not_found_page_route_undefined": {"placeholders": {"route": {"type": "String"}}},
-  "not_found_go_home_button": "होम जाएँ",
+  ,"recent_files_search_clear_all_tooltip": "सभी साफ़ करें"
 
-  "action_watermark_label": "वॉटरमार्क",
-  "action_esign_label": "eSign PDF",
-  "action_split_label": "PDF विभाजित करें",
-  "action_merge_label": "PDF मर्ज करें",
-  "action_protect_label": "PDF सुरक्षित करें",
-  "action_compress_label": "PDF संपीड़ित करें",
-  "action_all_tools_label": "सभी उपकरण",
-  "action_coming_soon_toast": "{feature} जल्द आ रहा है",
-  "@action_coming_soon_toast": {"placeholders": {"feature": {"type": "String"}}},
+  ,"clear_recent_files_title": "सभी हाल की फ़ाइलें साफ़ करें?"
+  ,"clear_recent_files_message": "यह आपकी हाल की फ़ाइलों की सूची से सभी फ़ाइलें हटा देगा। यह क्रिया पूर्ववत नहीं की जा सकती।"
+  ,"clear_recent_files_confirm": "सभी साफ़ करें"
 
+  ,"common_edit": "संपादित करें"
+  ,"common_remove": "हटाएँ"
+  ,"common_open_snackbar": "खोला गया"
+
+  ,"selection_action_default": "क्रिया"
+  ,"selection_selected_label": "{count} चयनित"
+  ,"@selection_selected_label": {"placeholders": {"count": {"type": "int"}}}
+  ,"settings_language_item_title": "भाषा"
+  ,"settings_language_item_subtitle": "अपनी पसंदीदा भाषा चुनें"
+  ,"settings_default_save_location_title": "डिफ़ॉल्ट सेव स्थान"
+  ,"settings_default_save_location_subtitle": "सभी PDF कहाँ सेव होंगी चुनें"
+  ,"settings_dark_mode_title": "थीम"
+  ,"settings_dark_mode_subtitle": "लाइट, डार्क या सिस्टम थीम चुनें"
+  ,"theme_settings_page_title": "थीम सेटिंग्स"
+  ,"theme_settings_info_message": "अपनी पसंदीदा थीम चुनें। सिस्टम थीम आपके डिवाइस सेटिंग्स के अनुसार बदलेगी।"
+  ,"theme_settings_choose_label": "थीम चुनें"
+  ,"theme_settings_light_title": "लाइट थीम"
+  ,"theme_settings_light_subtitle": "ऐप इंटरफ़ेस के लिए हल्के रंगों का उपयोग करें"
+  ,"theme_settings_dark_title": "डार्क थीम"
+  ,"theme_settings_dark_subtitle": "ऐप इंटरफ़ेस के लिए गहरे रंगों का उपयोग करें"
+  ,"theme_settings_system_title": "सिस्टम डिफ़ॉल्ट"
+  ,"theme_settings_system_subtitle": "डिवाइस सेटिंग्स का अनुसरण करें"
+  ,"settings_file_naming_title": "फ़ाइल नामकरण योजना"
+  ,"settings_file_naming_subtitle": "नई फ़ाइलें स्वचालित रूप से कैसे नामित हों"
+  ,"settings_pdf_compression_title": "PDF संपीड़न"
+  ,"settings_pdf_compression_subtitle": "नई फ़ाइलें स्वचालित रूप से कैसे संपीड़ित हों"
+  ,"settings_filter_options_title": "फ़िल्टर विकल्प"
+  ,"settings_filter_options_subtitle": "डिफ़ॉल्ट फ़िल्टर चुनें"
+  ,"settings_grid_view_layout_title": "ग्रिड दृश्य"
+  ,"settings_grid_view_layout_subtitle": "फ़ाइलें और फ़ोल्डर कैसे दिखें"
+  ,"settings_pdf_content_fit_title": "PDF सामग्री फ़िट मोड"
+  ,"settings_pdf_content_fit_subtitle": "चित्र और PDF कैसे फिट हों"
+  ,"settings_help_center_title": "सहायता केंद्र"
+  ,"settings_help_center_subtitle": "मदद, प्रश्न और उत्तर"
+  ,"settings_about_pdf_kit_title": "About PDF-Kit"
+  ,"settings_about_pdf_kit_subtitle": "इस ऐप का विवरण देखें"
+  ,"settings_about_us_title": "हमारे बारे में"
+
+  ,"action_watermark_label": "वॉटरमार्क"
+  ,"action_esign_label": "eSign PDF"
+  ,"action_split_label": "PDF विभाजित करें"
+  ,"action_merge_label": "PDF मर्ज करें"
+  ,"action_protect_label": "PDF सुरक्षित करें"
+  ,"action_compress_label": "PDF संपीड़ित करें"
+  ,"action_all_tools_label": "सभी उपकरण"
+  ,"action_coming_soon_toast": "{feature} शीघ्र उपलब्ध होगा"
+  ,"@action_coming_soon_toast": {"placeholders": {"feature": {"type": "String"}}}
+  ,"settings_about_us_subtitle": "हमारी दृष्टि और कार्य शैली जानें"
+  ,"language_settings_page_title": "भाषा सेटिंग्स"
+  ,"language_settings_choose_label": "ऐप भाषा चुनें"
+  ,"language_option_english": "English"
+  ,"language_option_hindi": "हिन्दी (Hindi)"
+  ,"language_option_spanish": "Español (Spanish)"
+  ,"language_option_arabic": "العربية (Arabic)"
+  ,"language_option_bengali": "বাংলা (Bengali)"
+  ,"language_option_german": "Deutsch (German)"
+  ,"language_option_french": "Français (French)"
+  ,"language_option_japanese": "日本語 (Japanese)"
+  ,"language_option_portuguese": "Português (Portuguese)"
+  ,"language_option_chinese": "中文 (Chinese)"
+  ,"language_settings_applied_snackbar": "भाषा अपडेट की गई"
+  ,"show_pdf_no_path": "कोई पथ नहीं"
+  ,"show_pdf_prefix": "PDF दिखाएँ: {path}"
+  ,"@show_pdf_prefix": {"placeholders": {"path": {"type": "String"}}}
+  ,"onboarding_title": "ऑनबोर्डिंग"
+  ,"all_files_title": "सभी फ़ाइलें और फ़ोल्डर"
+  ,"search_files_title": "फ़ाइलें खोजें"
+  ,"preferences_title": "प्राथमिकताएँ"
+  ,"contact_us_title": "हमसे संपर्क करें"
+  ,"about_app_title": "ऐप के बारे में"
+  ,"take_image_title": "चित्र लें"
+  ,"add_watermark_title": "वॉटरमार्क जोड़ें"
+  ,"add_signature_title": "डिजिटल हस्ताक्षर जोड़ें"
+  ,"not_found_page_title": "पृष्ठ नहीं मिला"
+  ,"not_found_page_route_undefined": "इसके लिए कोई रूट परिभाषित नहीं: {route}"
+  ,"@not_found_page_route_undefined": {"placeholders": {"route": {"type": "String"}}}
+  ,"not_found_go_home_button": "होम जाएँ",
   "selection_max_info": "अधिकतम: {count}",
   "@selection_max_info": {
     "description": "Info message in selection sheet showing the maximum selectable files.",
     "placeholders": { "count": { "type": "int" } }
   },
-
 "selection_sheet_title": "चयनित फ़ाइलें",
 "@selection_sheet_title": {
   "description": "Title of the bottom sheet showing currently selected files."
@@ -377,28 +380,23 @@
   "description": "Tooltip for expand button in selection folder group."
 },
 
-"selection_max_info": "अधिकतम: {count}",
-"@selection_max_info": {
-  "description": "Info message in selection sheet showing the maximum selectable files.",
-  "placeholders": {
-    "count": { "type": "int" }
-  }
-},
+"onboarding_screen1_title": "आपकी फ़ाइलें, पूर्णतः निजी",
+"onboarding_screen1_subtitle": "पूरी तरह ऑफ़लाइन कार्य करें। आपका कोई भी डेटा आपके उपकरण से बाहर नहीं जाता — सब कुछ सुरक्षित और व्यक्तिगत रहता है।",
 
+"onboarding_screen2_title": "सभी PDF उपकरण एक ही जगह",
+"onboarding_screen2_subtitle": "फ़ाइलों और फ़ोल्डरों का प्रबंधन करें, PDF संपादित करें, वॉटरमार्क जोड़ें, संपीड़ित करें, विभाजित करें, मर्ज करें, सुरक्षित करें और बहुत कुछ — वह भी सरल ऐप में।",
 
+"onboarding_screen3_title": "अपनी पसंदीदा भाषा चुनें",
+"onboarding_screen3_subtitle": "ऐप को किसी भी भाषा में उपयोग करें। हम 10+ भाषाओं का समर्थन करते हैं — अंग्रेज़ी, हिन्दी, स्पेनिश, फ़्रेंच, बांग्ला और कई अन्य।",
 
+"onboarding_screen4_title": "अपनी भाषा चुनें",
+"onboarding_screen4_subtitle": "नीचे दिए गए विकल्पों में से किसी भी भाषा का चयन करें और प्रारंभ करें।",
 
-"selection_limit_error_single": "आप अधिकतम {count} फ़ाइल चुन सकते हैं.",
-"@selection_limit_error_single": {
-  "description": "Shown when user exceeds maximum selectable files (exactly 1 allowed).",
-  "placeholders": { "count": { "type": "int" } }
-},
-
-"selection_limit_error_multiple": "आप अधिकतम {count} फ़ाइलें चुन सकते हैं.",
-"@selection_limit_error_multiple": {
-  "description": "Shown when user exceeds maximum selectable files (more than 1 allowed).",
-  "placeholders": { "count": { "type": "int" } }
-}
+"onboarding_button_skip": "छोड़ें",
+"onboarding_button_next": "आगे",
+"onboarding_button_get_started": "प्रारंभ करें",
+"onboarding_button_back": "वापस"
+, "onboarding_tagline": "हर PDF कार्य के लिए आपका संपूर्ण टूलकिट।"
 
 
 }

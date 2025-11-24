@@ -15,14 +15,6 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
-  bool darkMode = false;
-  String defaultSaveLocation = "Internal storage";
-  String fileNamingScheme = "Auto-increment";
-  String pdfCompression = "Balanced";
-  String filterOptions = "All files";
-  String gridLayout = "Adaptive";
-  String contentFit = "Fit width";
-
   @override
   Widget build(BuildContext context) {
     final t = AppLocalizations.of(context);
@@ -58,14 +50,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
         id: 'dark_mode',
         title: t.t('settings_dark_mode_title'),
         subtitle: t.t('settings_dark_mode_subtitle'),
-        type: SettingsItemType.toggle,
-        leadingIcon: Icons.dark_mode,
-        switchValue: darkMode,
-        onChanged: (value) {
-          setState(() {
-            darkMode = value;
-          });
-          // also update theme provider if you have one
+        type: SettingsItemType.navigation,
+        leadingIcon: Icons.palette_outlined,
+        onTap: () {
+          context.push('/settings/theme');
         },
       ),
       SettingsItem(
@@ -166,16 +154,28 @@ class _SettingsScreenState extends State<SettingsScreen> {
         children: [
           // Left: app glyph
           Container(
-            width: 34,
-            height: 34,
+            width: 40,
+            height: 40,
             decoration: BoxDecoration(
               color: Theme.of(context).colorScheme.primary.withOpacity(0.15),
               shape: BoxShape.circle,
             ),
-            child: Icon(
-              Icons.widgets_rounded,
-              size: 20,
-              color: Theme.of(context).colorScheme.primary,
+            child: ClipOval(
+              child: SizedBox(
+                width: 40,
+                height: 40,
+                child: Image.asset(
+                  'assets/app_icon1.png',
+                  width: 40,
+                  height: 40,
+                  fit: BoxFit.cover,
+                  errorBuilder: (c, e, s) => Icon(
+                    Icons.widgets_rounded,
+                    size: 40,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                ),
+              ),
             ),
           ),
           const SizedBox(width: 12),

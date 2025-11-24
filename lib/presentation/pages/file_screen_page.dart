@@ -294,16 +294,28 @@ class _AndroidFilesScreenState extends State<AndroidFilesScreen> {
       child: Row(
         children: [
           Container(
-            width: 34,
-            height: 34,
+            width: 40,
+            height: 40,
             decoration: BoxDecoration(
               color: Theme.of(context).colorScheme.primary.withOpacity(0.15),
               shape: BoxShape.circle,
             ),
-            child: Icon(
-              Icons.widgets_rounded,
-              size: 20,
-              color: Theme.of(context).colorScheme.primary,
+            child: ClipOval(
+              child: SizedBox(
+                width: 40,
+                height: 40,
+                child: Image.asset(
+                  'assets/app_icon1.png',
+                  width: 40,
+                  height: 40,
+                  fit: BoxFit.cover,
+                  errorBuilder: (c, e, s) => Icon(
+                    Icons.widgets_rounded,
+                    size: 40,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                ),
+              ),
             ),
           ),
           const SizedBox(width: 12),
@@ -368,7 +380,13 @@ class _AndroidFilesScreenState extends State<AndroidFilesScreen> {
     children: _roots
         .map(
           (d) => ListTile(
-            leading: const Icon(Icons.sd_storage),
+            leading: Image.asset(
+              'assets/app_icon.png',
+              width: 24,
+              height: 24,
+              fit: BoxFit.contain,
+              errorBuilder: (c, e, s) => const Icon(Icons.sd_storage),
+            ),
             title: Text(d.path),
             onTap: () => _openFolder(d.path),
           ),

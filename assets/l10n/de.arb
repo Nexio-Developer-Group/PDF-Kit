@@ -122,6 +122,7 @@
   "protect_pdf_title": "PDF schützen",
   "protect_pdf_description": "Legen Sie ein Passwort fest, um Ihre Datei zu schützen. Es wird benötigt, um auf das Dokument zuzugreifen. Wenn Sie das Passwort vergessen, bleibt die Datei dauerhaft unzugänglich.",
   "protect_pdf_selected_file_label": "Ausgewählte Datei",
+  "protect_pdf_no_pdf_selected": "Kein PDF ausgewählt",
   "protect_pdf_add_pdf_file": "PDF-Datei hinzufügen",
   "protect_pdf_password_label": "Passwort",
   "protect_pdf_confirm_password_label": "Passwort bestätigen",
@@ -132,11 +133,15 @@
   "protect_pdf_error_enter_password": "Bitte Passwort eingeben",
   "protect_pdf_error_passwords_mismatch": "Passwörter stimmen nicht überein",
 
-  "protect_pdf_success_snackbar": "{fileName} erfolgreich geschützt",
-  "@protect_pdf_success_snackbar": {
-    "description": "Snackbar nach erfolgreichem Schutz.",
-    "placeholders": { "fileName": { "type": "String" } }
-  },
+  "unlock_pdf_title": "PDF entsperren",
+  "unlock_pdf_description": "Geben Sie das Passwort ein, um den Schutz von diesem PDF zu entfernen. Sobald entsperrt, kann die Datei ohne Passwort geöffnet werden.",
+  "unlock_pdf_selected_file_label": "Ausgewählte Datei",
+  "unlock_pdf_no_pdf_selected": "Kein PDF ausgewählt",
+  "unlock_pdf_password_label": "Passwort eingeben",
+  "unlock_pdf_password_hint": "PDF-Passwort eingeben",
+  "unlock_pdf_button": "Entsperren",
+  "unlock_pdf_error_enter_password": "Bitte Passwort eingeben",
+  "action_unlock_label": "PDF entsperren",
 
   "doc_menu_open": "Öffnen",
   "doc_menu_rename": "Umbenennen",
@@ -144,7 +149,6 @@
   "doc_menu_share": "Teilen",
   "doc_menu_edit": "Bearbeiten",
   "doc_menu_remove": "Entfernen",
-
   "doc_rotation_degrees": "{degrees}°",
   "@doc_rotation_degrees": {
     "description": "Anzeige der Drehung in Grad.",
@@ -156,7 +160,6 @@
     "description": "Allgemeine Fehlermeldung mit Details.",
     "placeholders": { "message": { "type": "String" } }
   },
-
   "errors_failed_to_load_recent": "Zuletzt verwendete Dateien konnten nicht geladen werden.",
   "errors_unable_to_load_folders": "Ordner konnten nicht geladen werden.",
 
@@ -173,231 +176,232 @@
     "description": "Duplikat von merge_pdf_destination_snackbar.",
     "placeholders": { "folderName": { "type": "String" } }
   },
-
   "snackbar_error": "Fehler: {message}",
   "@snackbar_error": {
     "description": "Allgemeine Snackbar-Fehlermeldung.",
     "placeholders": { "message": { "type": "String" } }
   },
-
   "snackbar_success_merge": "Erfolgreich zusammengeführt in {fileName}",
   "@snackbar_success_merge": {
     "description": "Duplikat von merge_pdf_success_snackbar.",
     "placeholders": { "fileName": { "type": "String" } }
   },
-
   "snackbar_success_protect": "{fileName} erfolgreich geschützt",
   "@snackbar_success_protect": {
     "description": "Duplikat von protect_pdf_success_snackbar.",
     "placeholders": { "fileName": { "type": "String" } }
-  },
+  }
 
-  "home_brand_title": "PDF Kit",
-  "home_get_started_title": "Beginnen Sie mit Ihren PDFs",
-  "home_get_started_message": "Scannen oder importieren Sie Dateien, um sie hier anzuzeigen.",
-  "home_get_started_scan": "Dokument scannen",
-  "home_get_started_import": "PDF importieren",
+  ,"home_brand_title": "PDF Kit"
+  ,"home_get_started_title": "Beginnen Sie mit Ihren PDFs"
+  ,"home_get_started_message": "Scannen oder importieren Sie Dateien, um sie hier anzuzeigen."
+  ,"home_get_started_scan": "Dokument scannen"
+  ,"home_get_started_import": "PDF importieren"
 
-  "recent_files_view_all_tooltip": "Alle zuletzt verwendeten Dateien anzeigen",
+  ,"recent_files_view_all_tooltip": "Alle zuletzt verwendeten Dateien anzeigen"
 
-  "common_rename_coming_soon": "Die Umbenennungsfunktion kommt bald",
+  ,"common_rename_coming_soon": "Die Umbenennungsfunktion kommt bald"
 
-  "files_root_label": "root",
+  ,"files_root_label": "root"
 
-  "merge_pdf_default_file_name": "Zusammengeführtes Dokument",
-  "merge_pdf_default_suffix": "Zusammengeführt",
-  "merge_pdf_default_downloads_label": "Downloads",
+  ,"merge_pdf_default_file_name": "Zusammengeführtes Dokument"
+  ,"merge_pdf_default_suffix": "Zusammengeführt"
+  ,"merge_pdf_default_downloads_label": "Downloads"
+  ,"doc_page_count": "{count, plural, one {# Seite} other {# Seiten}}"
+  ,"@doc_page_count": {"description": "Seitenanzahl eines PDFs.", "placeholders": {"count": {"type": "int"}}}
 
-  "doc_page_count": "{count, plural, one {# Seite} other {# Seiten}}",
-  "@doc_page_count": {
-    "description": "Seitenanzahl eines PDFs.",
-    "placeholders": { "count": { "type": "int" } }
-  },
+  ,"selection_limit_error": "Sie können höchstens {count, plural, one {# Datei} other {# Dateien}} auswählen."
+  ,"@selection_limit_error": {"description": "Wird angezeigt, wenn das Auswahlmaximum überschritten wird.", "placeholders": {"count": {"type": "int"}}}
 
-  "selection_limit_error": "Sie können höchstens {count, plural, one {# Datei} other {# Dateien}} auswählen.",
-  "@selection_limit_error": {
-    "description": "Wird angezeigt, wenn das Auswahlmaximum überschritten wird.",
-    "placeholders": { "count": { "type": "int" } }
-  },
+  ,"compress_pdf_title": "PDF komprimieren"
+  ,"compress_pdf_description": "Reduzieren Sie die Größe des PDFs mit intelligenter Kompression, passen Sie die Qualität an, wählen Sie einen Speicherort und benennen Sie die Datei um. Fügen Sie jederzeit PDFs hinzu und erstellen Sie schnell ein optimiertes Dokument."
+  ,"compress_pdf_no_pdf_selected": "Kein PDF ausgewählt. Bitte zuerst auswählen."
+  ,"compress_pdf_select_level_label": "Kompressionsstufe auswählen:"
+  ,"compress_pdf_high": "Hohe Kompression"
+  ,"compress_pdf_medium": "Mittlere Kompression"
+  ,"compress_pdf_low": "Niedrige Kompression"
+  ,"compress_pdf_high_sub": "Kleinste Größe, geringste Qualität"
+  ,"compress_pdf_medium_sub": "Mittlere Größe, mittlere Qualität"
+  ,"compress_pdf_low_sub": "Größte Größe, beste Qualität"
+  ,"compress_pdf_button": "Komprimieren"
+  ,"compress_pdf_compressing": "Komprimierung läuft..."
+  ,"compress_pdf_select_first_error": "Bitte zuerst ein PDF auswählen"
+  ,"compress_pdf_result_pattern": "\"{original}\" ({level}) → {result} komprimiert"
+  ,"@compress_pdf_result_pattern": {"description": "Snackbar-Muster nach Komprimierung.", "placeholders": {"original": {"type": "String"}, "level": {"type": "String"}, "result": {"type": "String"}}}
 
-  "compress_pdf_title": "PDF komprimieren",
-  "compress_pdf_description": "Reduzieren Sie die Größe des PDFs mit intelligenter Kompression, passen Sie die Qualität an, wählen Sie einen Speicherort und benennen Sie die Datei um.",
-  "compress_pdf_no_pdf_selected": "Kein PDF ausgewählt. Bitte zuerst auswählen.",
-  "compress_pdf_select_level_label": "Kompressionsstufe auswählen:",
-  "compress_pdf_high": "Hohe Kompression",
-  "compress_pdf_medium": "Mittlere Kompression",
-  "compress_pdf_low": "Niedrige Kompression",
-  "compress_pdf_high_sub": "Kleinste Größe, geringste Qualität",
-  "compress_pdf_medium_sub": "Mittlere Größe, mittlere Qualität",
-  "compress_pdf_low_sub": "Größte Größe, beste Qualität",
-  "compress_pdf_button": "Komprimieren",
-  "compress_pdf_compressing": "Komprimierung läuft...",
-  "compress_pdf_select_first_error": "Bitte zuerst ein PDF auswählen",
-  "compress_pdf_result_pattern": "\"{original}\" ({level}) → {result} komprimiert",
-  "@compress_pdf_result_pattern": {
-    "description": "Snackbar-Muster nach Komprimierung.",
-    "placeholders": {
-      "original": { "type": "String" },
-      "level": { "type": "String" },
-      "result": { "type": "String" }
-    }
-  },
+  ,"sign_pdf_title": "PDF unterschreiben"
+  ,"sign_pdf_description": "Fügen Sie einem PDF oder Bild Ihre digitale Unterschrift hinzu. Zeichnen Sie Ihre Unterschrift oder importieren Sie sie aus der Galerie, platzieren Sie sie beliebig und speichern Sie."
+  ,"sign_pdf_no_file": "Keine Datei ausgewählt. Bitte zuerst auswählen."
+  ,"sign_pdf_select_first_error": "Bitte zuerst ein PDF oder Bild auswählen"
+  ,"sign_pdf_continue_button": "Weiter"
 
-  "volume_internal_storage": "Interner Speicher",
-  "volume_sd_card": "SD-Karte",
-  "volume_generic_storage": "Speicher",
+  ,"signature_sheet_title": "Unterschrift zeichnen"
+  ,"signature_sheet_clear": "Löschen"
+  ,"signature_sheet_import": "Importieren"
+  ,"signature_sheet_add": "Unterschrift hinzufügen"
 
-  "folder_children_files_label": "{count} Datei(en)",
-  "@folder_children_files_label": {
-    "placeholders": { "count": { "type": "int" } }
-  },
+  ,"protect_pdf_success_snackbar": "{fileName} erfolgreich geschützt"
+  ,"@protect_pdf_success_snackbar": {"description": "Snackbar message after successful protection (override duplicates).", "placeholders": {"fileName": {"type": "String"}}}
 
-  "new_folder_create_button": "Erstellen",
+  ,"volume_internal_storage": "Interner Speicher"
+  ,"volume_sd_card": "SD-Karte"
+  ,"volume_generic_storage": "Speicher"
 
-  "recent_files_search_seed_1": "Mein Wohnsitznachweis",
-  "recent_files_search_seed_2": "Arbeitsdokumente",
-  "recent_files_search_seed_3": "Empfehlungsschreiben",
-  "recent_files_search_seed_4": "Verkaufsberichte",
-  "recent_files_search_seed_5": "Geschäftsplanvorschlag",
-  "recent_files_search_seed_6": "Bewerbungsschreiben",
-  "recent_files_search_seed_7": "Rechtsdokumente & Referenzbedingungen",
-  "recent_files_search_seed_8": "Mein Personalausweis",
+  ,"folder_children_files_label": "{count} Datei(en)"
+  ,"@folder_children_files_label": {"placeholders": {"count": {"type": "int"}}}
 
-  "recent_files_search_clear_all_tooltip": "Alles löschen",
+  ,"new_folder_create_button": "Erstellen"
 
-  "clear_recent_files_title": "Alle zuletzt verwendeten Dateien löschen?",
-  "clear_recent_files_message": "Dies entfernt alle Elemente aus der Liste der zuletzt verwendeten Dateien. Diese Aktion ist nicht umkehrbar.",
-  "clear_recent_files_confirm": "Alles löschen",
+  ,"recent_files_search_seed_1": "Mein Wohnsitznachweis"
+  ,"recent_files_search_seed_2": "Arbeitsdokumente"
+  ,"recent_files_search_seed_3": "Empfehlungsschreiben"
+  ,"recent_files_search_seed_4": "Verkaufsberichte"
+  ,"recent_files_search_seed_5": "Geschäftsplanvorschlag"
+  ,"recent_files_search_seed_6": "Bewerbungsschreiben"
+  ,"recent_files_search_seed_7": "Rechtsdokumente & Referenzbedingungen"
+  ,"recent_files_search_seed_8": "Mein Personalausweis"
 
-  "common_edit": "Bearbeiten",
-  "common_remove": "Entfernen",
-  "common_open_snackbar": "Geöffnet",
+  ,"recent_files_search_clear_all_tooltip": "Alles löschen"
 
-  "selection_action_default": "Aktion",
-  "selection_selected_label": "{count} ausgewählt",
-  "@selection_selected_label": {
-    "placeholders": { "count": { "type": "int" } }
-  },
+  ,"clear_recent_files_title": "Alle zuletzt verwendeten Dateien löschen?"
+  ,"clear_recent_files_message": "Dies entfernt alle Elemente aus der Liste der zuletzt verwendeten Dateien. Diese Aktion ist nicht umkehrbar."
+  ,"clear_recent_files_confirm": "Alles löschen"
 
-  "settings_language_item_title": "Sprache",
-  "settings_language_item_subtitle": "Beliebige Sprache auswählen",
-  "settings_default_save_location_title": "Standard-Speicherort",
-  "settings_default_save_location_subtitle": "Wählen Sie aus, wo alle PDFs gespeichert werden sollen",
-  "settings_dark_mode_title": "Dunkelmodus",
-  "settings_dark_mode_subtitle": "Zwischen hellem und dunklem Design wechseln",
-  "settings_file_naming_title": "Dateibenennungsschema",
-  "settings_file_naming_subtitle": "Legen Sie fest, wie neue Dateien automatisch benannt werden",
-  "settings_pdf_compression_title": "PDF-Kompression",
-  "settings_pdf_compression_subtitle": "Legen Sie fest, wie neue Dateien automatisch komprimiert werden",
-  "settings_filter_options_title": "Filteroptionen",
-  "settings_filter_options_subtitle": "Wählen Sie aus, welche Filter standardmäßig angewendet werden",
-  "settings_grid_view_layout_title": "Rasterlayout",
-  "settings_grid_view_layout_subtitle": "Steuern Sie die Darstellung von Dateien und Ordnern",
-  "settings_pdf_content_fit_title": "PDF-Inhalt-Anpassungsmodus",
-  "settings_pdf_content_fit_subtitle": "Wählen Sie, wie Bilder und PDFs angepasst werden sollen",
-  "settings_help_center_title": "Hilfezentrum",
-  "settings_help_center_subtitle": "Erhalten Sie Hilfe, FAQs und Antworten",
-  "settings_about_pdf_kit_title": "Über PDF-Kit",
-  "settings_about_pdf_kit_subtitle": "Details zu dieser App anzeigen",
-  "settings_about_us_title": "Über uns",
-  "settings_about_us_subtitle": "Erfahren Sie mehr über unsere Vision und Arbeitsweise",
+  ,"common_edit": "Bearbeiten"
+  ,"common_remove": "Entfernen"
+  ,"common_open_snackbar": "Geöffnet"
 
-  "language_settings_page_title": "Spracheinstellungen",
-  "language_settings_choose_label": "App-Sprache auswählen",
-  "language_option_english": "English",
-  "language_option_hindi": "हिन्दी (Hindi)",
-  "language_option_spanish": "Español (Spanish)",
-  "language_option_arabic": "العربية (Arabic)",
-  "language_option_bengali": "বাংলা (Bengali)",
-  "language_option_german": "Deutsch (German)",
-  "language_option_french": "Français (French)",
-  "language_option_japanese": "日本語 (Japanese)",
-  "language_option_portuguese": "Português (Portuguese)",
-  "language_option_chinese": "中文 (Chinese)",
-  "language_settings_applied_snackbar": "Sprache aktualisiert",
+  ,"selection_action_default": "Aktion"
+  ,"selection_selected_label": "{count} ausgewählt"
+  ,"@selection_selected_label": {"placeholders": {"count": {"type": "int"}}}
+  ,"settings_language_item_title": "Sprache"
+  ,"settings_language_item_subtitle": "Beliebige Sprache auswählen"
+  ,"settings_default_save_location_title": "Standard-Speicherort"
+  ,"settings_default_save_location_subtitle": "Wählen Sie aus, wo alle PDFs gespeichert werden sollen"
+  ,"settings_dark_mode_title": "Design"
+  ,"settings_dark_mode_subtitle": "Zwischen hellem, dunklem und System-Design wechseln"
+  ,"theme_settings_page_title": "Design-Einstellungen"
+  ,"theme_settings_info_message": "Wählen Sie Ihr bevorzugtes Design. Das Systemdesign passt sich automatisch Ihren Geräteeinstellungen an."
+  ,"theme_settings_choose_label": "Design auswählen"
+  ,"theme_settings_light_title": "Helles Design"
+  ,"theme_settings_light_subtitle": "Helle Farben für die App-Oberfläche verwenden"
+  ,"theme_settings_dark_title": "Dunkles Design"
+  ,"theme_settings_dark_subtitle": "Dunkle Farben für die App-Oberfläche verwenden"
+  ,"theme_settings_system_title": "Systemstandard"
+  ,"theme_settings_system_subtitle": "Den Systemeinstellungen des Geräts folgen"
+  ,"settings_file_naming_title": "Dateibenennungsschema"
+  ,"settings_file_naming_subtitle": "Legen Sie fest, wie neue Dateien automatisch benannt werden"
+  ,"settings_pdf_compression_title": "PDF-Kompression"
+  ,"settings_pdf_compression_subtitle": "Legen Sie fest, wie neue Dateien automatisch komprimiert werden"
+  ,"settings_filter_options_title": "Filteroptionen"
+  ,"settings_filter_options_subtitle": "Wählen Sie aus, welche Filter standardmäßig angewendet werden"
+  ,"settings_grid_view_layout_title": "Rasterlayout"
+  ,"settings_grid_view_layout_subtitle": "Steuern Sie die Darstellung von Dateien und Ordnern"
+  ,"settings_pdf_content_fit_title": "PDF-Inhalt-Anpassungsmodus"
+  ,"settings_pdf_content_fit_subtitle": "Wählen Sie, wie Bilder und PDFs angepasst werden sollen"
+  ,"settings_help_center_title": "Hilfezentrum"
+  ,"settings_help_center_subtitle": "Erhalten Sie Hilfe, FAQs und Antworten"
+  ,"settings_about_pdf_kit_title": "Über PDF-Kit"
+  ,"settings_about_pdf_kit_subtitle": "Details zu dieser App anzeigen"
+  ,"settings_about_us_title": "Über uns"
 
-  "show_pdf_no_path": "kein Pfad",
-  "show_pdf_prefix": "PDF anzeigen: {path}",
-  "@show_pdf_prefix": {
-    "placeholders": { "path": { "type": "String" } }
-  },
-
-  "onboarding_title": "Einführung",
-  "all_files_title": "Alle Dateien & Ordner",
-  "search_files_title": "Dateien suchen",
-  "preferences_title": "Einstellungen",
-  "contact_us_title": "Kontaktieren Sie uns",
-  "about_app_title": "Über die App",
-  "take_image_title": "Bild aufnehmen",
-  "add_watermark_title": "Wasserzeichen hinzufügen",
-  "add_signature_title": "Digitale Signatur hinzufügen",
-
-  "not_found_page_title": "Seite nicht gefunden",
-  "not_found_page_route_undefined": "Keine Route definiert für: {route}",
-  "@not_found_page_route_undefined": {
-    "placeholders": { "route": { "type": "String" } }
-  },
-  "not_found_go_home_button": "Zur Startseite",
-
-  "action_watermark_label": "Wasserzeichen",
-  "action_esign_label": "PDF signieren",
-  "action_split_label": "PDF teilen",
-  "action_merge_label": "PDF zusammenführen",
-  "action_protect_label": "PDF schützen",
-  "action_compress_label": "PDF komprimieren",
-  "action_all_tools_label": "Alle Werkzeuge",
-  "action_coming_soon_toast": "{feature} kommt bald",
-  "@action_coming_soon_toast": {
-    "placeholders": { "feature": { "type": "String" } }
-  },
-
+  ,"action_watermark_label": "Wasserzeichen"
+  ,"action_esign_label": "PDF signieren"
+  ,"action_split_label": "PDF teilen"
+  ,"action_merge_label": "PDF zusammenführen"
+  ,"action_protect_label": "PDF schützen"
+  ,"action_compress_label": "PDF komprimieren"
+  ,"action_all_tools_label": "Alle Werkzeuge"
+  ,"action_coming_soon_toast": "{feature} kommt bald"
+  ,"@action_coming_soon_toast": {"placeholders": {"feature": {"type": "String"}}}
+  ,"settings_about_us_subtitle": "Erfahren Sie mehr über unsere Vision und Arbeitsweise"
+  ,"language_settings_page_title": "Spracheinstellungen"
+  ,"language_settings_choose_label": "App-Sprache auswählen"
+  ,"language_option_english": "English"
+  ,"language_option_hindi": "हिन्दी (Hindi)"
+  ,"language_option_spanish": "Español (Spanish)"
+  ,"language_option_arabic": "العربية (Arabic)"
+  ,"language_option_bengali": "বাংলা (Bengali)"
+  ,"language_option_german": "Deutsch (German)"
+  ,"language_option_french": "Français (French)"
+  ,"language_option_japanese": "日本語 (Japanese)"
+  ,"language_option_portuguese": "Português (Portuguese)"
+  ,"language_option_chinese": "中文 (Chinese)"
+  ,"language_settings_applied_snackbar": "Sprache aktualisiert"
+  ,"show_pdf_no_path": "kein Pfad"
+  ,"show_pdf_prefix": "PDF anzeigen: {path}"
+  ,"@show_pdf_prefix": {"placeholders": {"path": {"type": "String"}}}
+  ,"onboarding_title": "Einführung"
+  ,"all_files_title": "Alle Dateien & Ordner"
+  ,"search_files_title": "Dateien suchen"
+  ,"preferences_title": "Einstellungen"
+  ,"contact_us_title": "Kontaktieren Sie uns"
+  ,"about_app_title": "Über die App"
+  ,"take_image_title": "Bild aufnehmen"
+  ,"add_watermark_title": "Wasserzeichen hinzufügen"
+  ,"add_signature_title": "Digitale Signatur hinzufügen"
+  ,"not_found_page_title": "Seite nicht gefunden"
+  ,"not_found_page_route_undefined": "Keine Route definiert für: {route}"
+  ,"@not_found_page_route_undefined": {"placeholders": {"route": {"type": "String"}}}
+  ,"not_found_go_home_button": "Zur Startseite",
   "selection_max_info": "Maximal: {count}",
   "@selection_max_info": {
-    "description": "Information über die maximale Anzahl auswählbarer Dateien.",
+    "description": "Info message in selection sheet showing the maximum selectable files.",
     "placeholders": { "count": { "type": "int" } }
   },
+"selection_sheet_title": "Ausgewählte Dateien",
+"@selection_sheet_title": {
+  "description": "Title of the bottom sheet showing currently selected files."
+},
 
-  "selection_sheet_title": "Ausgewählte Dateien",
-  "@selection_sheet_title": {
-    "description": "Titel der unteren Auswahlansicht."
-  },
+"selection_sheet_empty": "Keine Dateien ausgewählt",
+"@selection_sheet_empty": {
+  "description": "Message shown when there are no files selected in the sheet."
+},
 
-  "selection_sheet_empty": "Keine Dateien ausgewählt",
-  "@selection_sheet_empty": {
-    "description": "Meldung, wenn keine Dateien ausgewählt sind."
-  },
-
-  "selection_folder_items_single": "{count} Element",
-  "@selection_folder_items_single": {
-    "description": "Label, wenn ein Ordner genau ein ausgewähltes Element hat.",
-    "placeholders": { "count": { "type": "int" } }
-  },
-
-  "selection_folder_items_multiple": "{count} Elemente",
-  "@selection_folder_items_multiple": {
-    "description": "Label, wenn ein Ordner mehrere ausgewählte Elemente hat.",
-    "placeholders": { "count": { "type": "int" } }
-  },
-
-  "selection_folder_collapse_tooltip": "Einklappen",
-  "@selection_folder_collapse_tooltip": {
-    "description": "Tooltip zum Einklappen eines Ordners."
-  },
-
-  "selection_folder_expand_tooltip": "Ausklappen",
-  "@selection_folder_expand_tooltip": {
-    "description": "Tooltip zum Ausklappen eines Ordners."
-  },
-
-  "selection_limit_error_single": "Sie können höchstens {count} Datei auswählen.",
-  "@selection_limit_error_single": {
-    "description": "Wird angezeigt, wenn nur 1 Datei erlaubt ist.",
-    "placeholders": { "count": { "type": "int" } }
-  },
-
-  "selection_limit_error_multiple": "Sie können höchstens {count} Dateien auswählen.",
-  "@selection_limit_error_multiple": {
-    "description": "Wird angezeigt, wenn mehr als 1 Datei erlaubt ist.",
-    "placeholders": { "count": { "type": "int" } }
+"selection_folder_items_single": "{count} Element",
+"@selection_folder_items_single": {
+  "description": "Label for a folder group when it has exactly one selected item.",
+  "placeholders": {
+    "count": { "type": "int" }
   }
+},
+
+"selection_folder_items_multiple": "{count} Elemente",
+"@selection_folder_items_multiple": {
+  "description": "Label for a folder group when it has more than one selected item.",
+  "placeholders": {
+    "count": { "type": "int" }
+  }
+},
+
+"selection_folder_collapse_tooltip": "Einklappen",
+"@selection_folder_collapse_tooltip": {
+  "description": "Tooltip for collapse button in selection folder group."
+},
+
+"selection_folder_expand_tooltip": "Ausklappen",
+"@selection_folder_expand_tooltip": {
+  "description": "Tooltip for expand button in selection folder group."
+},
+
+"onboarding_screen1_title": "Ihre Dateien, völlig privat",
+"onboarding_screen1_subtitle": "Arbeiten Sie offline mit einem sicheren Gefühl.\nNichts verlässt Ihr Gerät – Ihre Daten bleiben sicher und persönlich.",
+
+"onboarding_screen2_title": "Alle Ihre PDF-Tools an einem Ort",
+"onboarding_screen2_subtitle": "Verwalten Sie Dateien und Ordner, bearbeiten Sie PDFs, fügen Sie Wasserzeichen hinzu, komprimieren, teilen, zusammenführen, schützen, entsperren Sie und mehr – alles in einer einfachen App.",
+
+"onboarding_screen3_title": "Wählen Sie Ihre bevorzugte Sprache",
+"onboarding_screen3_subtitle": "Nutzen Sie die App in der Sprache Ihrer Wahl.\nWir unterstützen über 10 Sprachen, darunter Englisch, Hindi, Spanisch, Französisch, Bengali und mehr.",
+
+"onboarding_screen4_title": "Wählen Sie Ihre Sprache",
+"onboarding_screen4_subtitle": "Wählen Sie eine beliebige Sprache aus den Optionen unten, um zu beginnen.",
+
+"onboarding_button_skip": "Überspringen",
+"onboarding_button_next": "Weiter",
+"onboarding_button_get_started": "Loslegen",
+"onboarding_button_back": "Zurück"
+, "onboarding_tagline": "Ihr komplettes Toolkit für jede PDF-Aufgabe."
+
+
 }

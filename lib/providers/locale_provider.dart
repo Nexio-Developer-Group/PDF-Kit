@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:pdf_kit/core/utility/storage_utility.dart';
+import 'package:pdf_kit/core/constants.dart';
 
 class LocaleProvider extends ChangeNotifier {
-  static const _key = 'app_language_code';
+  static const _key = Constants.prefsLanguageKey;
   Locale? _locale;
   Locale? get locale => _locale;
 

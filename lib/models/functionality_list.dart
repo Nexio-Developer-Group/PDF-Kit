@@ -25,12 +25,31 @@ List<Functionality> getActions(BuildContext context) {
       label: t('action_esign_label'),
       icon: Icons.edit_document, // if not available, use Icons.edit_note
       color: Colors.pink,
-      onPressed: (ctx) => _toast(
-        ctx,
-        t(
-          'action_coming_soon_toast',
-        ).replaceAll('{feature}', t('action_esign_label')),
-      ),
+      onPressed: (context) async {
+        // create a mapped selection provider and navigate to sign screen
+        final selectionId = 'sign_${DateTime.now().microsecondsSinceEpoch}';
+        // ensure SelectionManager is available and create provider in cache
+        try {
+          final mgr = Get.find<SelectionManager>();
+          mgr.of(selectionId);
+        } catch (_) {
+          // if DI not initialized, still continue with navigation
+        }
+
+        final result = await context.pushNamed(
+          AppRouteName.filesRootFullscreen,
+          queryParameters: {
+            'selectionId': selectionId,
+            'actionText': t('sign_pdf_title'),
+            'max': '1', // Limit to 1 file (PDF or image)
+          },
+        );
+
+        // If the sign screen returned `true`, request recent files to refresh.
+        if (result == true) {
+          RecentFilesSection.refreshNotifier.value++;
+        }
+      },
     ),
     Functionality(
       id: 'split',
@@ -88,7 +107,7 @@ List<Functionality> getActions(BuildContext context) {
       icon: Icons.lock_outline,
       color: Colors.green,
       onPressed: (context) async {
-        // create a mapped selection provider and navigate to merge screen
+        // create a mapped selection provider and navigate to file selection
         final selectionId = 'protect_${DateTime.now().microsecondsSinceEpoch}';
         // ensure SelectionManager is available and create provider in cache
         try {
@@ -99,11 +118,48 @@ List<Functionality> getActions(BuildContext context) {
         }
 
         final result = await context.pushNamed(
-          AppRouteName.protectPdf,
-          queryParameters: {'selectionId': selectionId},
+          AppRouteName.filesRootFullscreen,
+          queryParameters: {
+            'selectionId': selectionId,
+            'actionText': t('protect_pdf_title'),
+            'max': '1', // Limit to 1 PDF file
+          },
         );
 
-        // If the merge screen returned `true`, request recent files to refresh.
+        // If the protect screen returned `true`, request recent files to refresh.
+        if (result == true) {
+          RecentFilesSection.refreshNotifier.value++;
+        }
+      },
+    ),
+
+    // unlock pdf
+    Functionality(
+      id: 'unlock',
+      label: t('action_unlock_label'),
+      icon: Icons.lock_open,
+      color: Colors.teal,
+      onPressed: (context) async {
+        // create a mapped selection provider and navigate to file selection
+        final selectionId = 'unlock_${DateTime.now().microsecondsSinceEpoch}';
+        // ensure SelectionManager is available and create provider in cache
+        try {
+          final mgr = Get.find<SelectionManager>();
+          mgr.of(selectionId);
+        } catch (_) {
+          // if DI not initialized, still continue with navigation
+        }
+
+        final result = await context.pushNamed(
+          AppRouteName.filesRootFullscreen,
+          queryParameters: {
+            'selectionId': selectionId,
+            'actionText': t('unlock_pdf_title'),
+            'max': '1', // Limit to 1 PDF file
+          },
+        );
+
+        // If the unlock screen returned `true`, request recent files to refresh.
         if (result == true) {
           RecentFilesSection.refreshNotifier.value++;
         }

@@ -272,7 +272,6 @@ class _MergePdfPageState extends State<MergePdfPage> {
                           style: theme.textTheme.headlineMedium?.copyWith(
                             fontSize: 28,
                             fontWeight: FontWeight.bold,
-                            color: Colors.black,
                           ),
                         ),
                         const SizedBox(height: 16),
@@ -280,7 +279,6 @@ class _MergePdfPageState extends State<MergePdfPage> {
                           t.t('merge_pdf_description'),
                           style: theme.textTheme.bodyMedium?.copyWith(
                             fontSize: 14,
-                            color: Colors.black87,
                             height: 1.5,
                           ),
                         ),

@@ -1,16 +1,12 @@
 // lib/service/pdf_compress_service.dart
 import 'dart:io';
-import 'dart:ui' as ui;
 import 'package:dartz/dartz.dart';
 import 'package:path/path.dart' as p;
-import 'package:pdf/widgets.dart' as pw;
-import 'package:pdf/pdf.dart';
-import 'package:simple_pdf_compression/simple_pdf_compression.dart'
-    as pdf_compress;
 import 'package:path_provider/path_provider.dart';
+import 'package:syncfusion_flutter_pdf/pdf.dart' as sf;
+import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:pdf_kit/models/file_model.dart';
-import 'package:pdf_kit/service/pdf_merge_service.dart'
-    show CustomException; // reuse exception
+import 'package:pdf_kit/service/pdf_merge_service.dart' show CustomException;
 
 /// Service for compressing a single selected file (PDF or image).
 /// If an image is provided it is first converted into a one-page PDF, then compressed.
@@ -38,32 +34,6 @@ class PdfCompressService {
         );
       }
 
-      // Determine quality (0..100) -> higher number = less compression
-      int quality;
-      if (level == 0) {
-        quality = 40; // High compression
-      } else if (level == 1) {
-        quality = 60; // Medium
-      } else {
-        quality = 80; // Low compression (retain more quality)
-      }
-
-      // Convert image to a temporary PDF if needed
-      File sourcePdfFile;
-      if (isPdf) {
-        sourcePdfFile = File(fileInfo.path);
-      } else {
-        sourcePdfFile = await _imageToSinglePagePdf(File(fileInfo.path));
-      }
-
-      // Perform compression (library returns a File saved to temp directory)
-      final compressor = pdf_compress.PDFCompression();
-      final compressedPdf = await compressor.compressPdf(
-        sourcePdfFile,
-        thresholdSize: 200 * 1024, // avoid compressing tiny PDFs aggressively
-        quality: quality, // mapped from level
-      );
-
       // Decide destination
       final Directory targetDir = await _resolveDestination(
         destinationPath: destinationPath,
@@ -80,25 +50,37 @@ class PdfCompressService {
       } else {
         suffix = 'compressed_low';
       }
-      final newName = _uniqueFileName(
-        baseDir: targetDir.path,
-        baseName: '${originalBase}_$suffix',
-      );
 
-      final targetPath = p.join(targetDir.path, newName);
+      File outputFile;
 
-      // Move (copy + delete) compressed file to destination
-      final outputFile = await File(compressedPdf.path).copy(targetPath);
+      if (isPdf) {
+        // Compress PDF using Syncfusion
+        outputFile = await _compressPdf(
+          file: File(fileInfo.path),
+          level: level,
+          targetDir: targetDir,
+          baseName: '${originalBase}_$suffix',
+        );
+      } else {
+        // Compress image using flutter_image_compress
+        outputFile = await _compressImage(
+          file: File(fileInfo.path),
+          level: level,
+          targetDir: targetDir,
+          baseName: '${originalBase}_$suffix',
+          extension: fileInfo.extension.toLowerCase(),
+        );
+      }
 
       // Gather stats
       final stats = await outputFile.stat();
       final resultInfo = FileInfo(
         name: p.basename(outputFile.path),
         path: outputFile.path,
-        extension: 'pdf',
+        extension: isPdf ? 'pdf' : fileInfo.extension.toLowerCase(),
         size: stats.size,
         lastModified: stats.modified,
-        mimeType: 'application/pdf',
+        mimeType: isPdf ? 'application/pdf' : fileInfo.mimeType,
         parentDirectory: p.dirname(outputFile.path),
       );
 
@@ -113,44 +95,106 @@ class PdfCompressService {
     }
   }
 
-  /// Convert a single image file into a one-page PDF and return the temp PDF [File].
-  static Future<File> _imageToSinglePagePdf(File imageFile) async {
-    final bytes = await imageFile.readAsBytes();
-
-    // Obtain dimensions using dart:ui descriptor
-    final ui.ImmutableBuffer buffer = await ui.ImmutableBuffer.fromUint8List(
-      bytes,
-    );
-    final ui.ImageDescriptor descriptor = await ui.ImageDescriptor.encoded(
-      buffer,
-    );
-    final width = descriptor.width.toDouble();
-    final height = descriptor.height.toDouble();
-    descriptor.dispose();
-    buffer.dispose();
-
-    final pdfDoc = pw.Document();
-    final image = pw.MemoryImage(bytes);
-
-    // Convert pixel dimensions to PDF points (approx 72/96 multiplier)
-    final pageWidth = width * 72 / 96;
-    final pageHeight = height * 72 / 96;
-
-    pdfDoc.addPage(
-      pw.Page(
-        pageFormat: PdfPageFormat(pageWidth, pageHeight),
-        build: (_) => pw.Center(child: pw.Image(image, fit: pw.BoxFit.contain)),
-      ),
+  /// Compress PDF using Syncfusion Flutter PDF
+  static Future<File> _compressPdf({
+    required File file,
+    required int level,
+    required Directory targetDir,
+    required String baseName,
+  }) async {
+    // Load the existing PDF document
+    final sf.PdfDocument document = sf.PdfDocument(
+      inputBytes: await file.readAsBytes(),
     );
 
-    final tempDir = await getTemporaryDirectory();
-    final outPath = p.join(
-      tempDir.path,
-      'img_to_pdf_${DateTime.now().millisecondsSinceEpoch}.pdf',
+    // Disable incremental update so the file is fully rewritten (smaller output)
+    document.fileStructure.incrementalUpdate = false;
+
+    // Map your level (0/1/2) to Syncfusion compression levels
+    if (level == 0) {
+      // High compression (slower, smaller)
+      document.compressionLevel = sf.PdfCompressionLevel.best;
+    } else if (level == 1) {
+      // Medium
+      document.compressionLevel = sf.PdfCompressionLevel.normal;
+    } else {
+      // Low compression (faster, bigger)
+      document.compressionLevel = sf.PdfCompressionLevel.bestSpeed;
+    }
+
+    // Save compressed bytes
+    final List<int> bytes = await document.save();
+    document.dispose();
+
+    // Generate unique filename and save
+    final newName = _uniqueFileName(
+      baseDir: targetDir.path,
+      baseName: baseName,
     );
-    final outFile = File(outPath);
-    await outFile.writeAsBytes(await pdfDoc.save());
-    return outFile;
+    final targetPath = p.join(targetDir.path, newName);
+    final outputFile = File(targetPath);
+    await outputFile.writeAsBytes(bytes);
+
+    return outputFile;
+  }
+
+  /// Compress image using flutter_image_compress
+  static Future<File> _compressImage({
+    required File file,
+    required int level,
+    required Directory targetDir,
+    required String baseName,
+    required String extension,
+  }) async {
+    // Determine quality (0..100) -> higher number = less compression
+    int quality;
+    if (level == 0) {
+      quality = 10; // High compression
+    } else if (level == 1) {
+      quality = 60; // Medium
+    } else {
+      quality = 80; // Low compression (retain more quality)
+    }
+
+    // Generate unique filename
+    final String ext = extension.toLowerCase();
+    var candidate = '$baseName.$ext';
+    var idx = 1;
+    while (File(p.join(targetDir.path, candidate)).existsSync()) {
+      candidate = '${baseName}_$idx.$ext';
+      idx++;
+    }
+    final targetPath = p.join(targetDir.path, candidate);
+
+    // Compress the image
+    final XFile? result = await FlutterImageCompress.compressAndGetFile(
+      file.absolute.path,
+      targetPath,
+      quality: quality,
+      format: _getCompressFormat(ext),
+    );
+
+    if (result == null) {
+      throw Exception('Image compression failed');
+    }
+
+    return File(result.path);
+  }
+
+  /// Get compression format based on file extension
+  static CompressFormat _getCompressFormat(String ext) {
+    switch (ext) {
+      case 'png':
+        return CompressFormat.png;
+      case 'webp':
+        return CompressFormat.webp;
+      case 'heic':
+        return CompressFormat.heic;
+      case 'jpg':
+      case 'jpeg':
+      default:
+        return CompressFormat.jpeg;
+    }
   }
 
   static bool _isImage(FileInfo f) {

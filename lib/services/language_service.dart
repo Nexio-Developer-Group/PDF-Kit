@@ -1,7 +1,8 @@
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:pdf_kit/core/constants.dart';
 
 class LanguageService {
-  static const _key = 'app_language_code';
+  static const _key = Constants.prefsLanguageKey;
 
   Future<String?> getSavedLocale() async {
     final prefs = await SharedPreferences.getInstance();

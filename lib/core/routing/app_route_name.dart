@@ -1,6 +1,8 @@
 class AppRouteName {
+  static const splash = 'splash';
   static const recentFiles = 'recentFiles';
   static const onboarding = 'onboarding';
+  static const onboardingShell = 'onboardingShell';
   static const shell = 'hostel_shell';
   static const home = 'home';
   static const filesRoot = 'files.root';
@@ -12,7 +14,9 @@ class AppRouteName {
   static const addSignature = 'pdf.signature';
   static const mergePdf = 'pdf.merge';
   static const protectPdf = 'pdf.protect';
+  static const unlockPdf = 'pdf.unlock';
   static const compressPdf = 'pdf.compress';
+  static const signPdf = 'pdf.sign';
   static const filesRootFullscreen = 'files.root.fullscreen';
   static const filesFolderFullScreen = 'files.folder.fullscreen';
   static const filesSearchFullscreen = 'files.search.fullscreen'; // NEW
