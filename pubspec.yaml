@@ -31,8 +31,6 @@ dependencies:
   path: ^1.9.1
   signature: ^6.3.0
   image_picker: ^1.1.2
-  syncfusion_flutter_pdf: ^31.2.12
-  syncfusion_flutter_pdfviewer: ^31.2.12
   
   flutter_image_compress: ^2.4.0
   ares_defence_labs_lock_smith_pdf: ^0.0.7

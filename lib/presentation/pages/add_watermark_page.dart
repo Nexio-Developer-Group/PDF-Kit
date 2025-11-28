@@ -6,7 +6,7 @@ import 'package:pdf_kit/presentation/sheets/watermark_config_sheet.dart';
 import 'package:pdf_kit/service/watermark_service.dart';
 import 'package:pdf_kit/service/recent_file_service.dart';
 import 'package:pdf_kit/service/action_callback_manager.dart';
-import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
+import 'package:pdfx/pdfx.dart';
 
 class AddWatermarkPage extends StatefulWidget {
   final String? selectionId;
@@ -19,7 +19,9 @@ class AddWatermarkPage extends StatefulWidget {
 
 class _AddWatermarkPageState extends State<AddWatermarkPage> {
   FileInfo? _selectedPdf;
-  final PdfViewerController _pdfController = PdfViewerController();
+  PdfController? _pdfController;
+  int _currentPage = 1;
+  int _totalPages = 0;
 
   // Watermark configuration
   String? _watermarkText;
@@ -34,6 +36,30 @@ class _AddWatermarkPageState extends State<AddWatermarkPage> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadSelectedFile();
     });
+  }
+
+  Future<void> _initializePdfController() async {
+    if (_selectedPdf == null) return;
+
+    try {
+      setState(() {
+        _pdfController = PdfController(
+          document: PdfDocument.openFile(_selectedPdf!.path),
+        );
+      });
+
+      // Get page count after document loads
+      final document = await PdfDocument.openFile(_selectedPdf!.path);
+      if (mounted) {
+        setState(() {
+          _totalPages = document.pagesCount;
+          _currentPage = 1;
+        });
+      }
+      await document.close();
+    } catch (e) {
+      debugPrint('❌ [AddWatermarkPage] Error initializing PDF: $e');
+    }
   }
 
   Future<void> _loadSelectedFile() async {
@@ -60,6 +86,9 @@ class _AddWatermarkPageState extends State<AddWatermarkPage> {
       setState(() {
         _selectedPdf = provider.files.first;
       });
+
+      // Initialize PDF controller
+      await _initializePdfController();
 
       // Auto-open watermark configuration sheet
       await Future.delayed(const Duration(milliseconds: 300));
@@ -212,7 +241,7 @@ class _AddWatermarkPageState extends State<AddWatermarkPage> {
 
   @override
   void dispose() {
-    _pdfController.dispose();
+    _pdfController?.dispose();
     super.dispose();
   }
 
@@ -222,91 +251,108 @@ class _AddWatermarkPageState extends State<AddWatermarkPage> {
 
     return Scaffold(
       appBar: AppBar(title: Text(t.t('watermark_pdf_title'))),
-      body: _selectedPdf == null
+      body: _selectedPdf == null || _pdfController == null
           ? const Center(child: CircularProgressIndicator())
           : Column(
               children: [
                 Expanded(
-                  child: AnimatedBuilder(
-                    animation: _pdfController,
-                    builder: (context, child) {
-                      final currentPage = _pdfController.pageNumber;
-                      final totalPages = _pdfController.pageCount;
-                      final canGoPrevious = currentPage > 1;
-                      final canGoNext =
-                          totalPages > 0 && currentPage < totalPages;
-
-                      return Stack(
-                        children: [
-                          SfPdfViewer.file(
-                            File(_selectedPdf!.path),
-                            controller: _pdfController,
-                            canShowScrollHead: true,
-                            canShowScrollStatus: true,
-                            scrollDirection: PdfScrollDirection.horizontal,
-                            pageLayoutMode: PdfPageLayoutMode.single,
+                  child: Stack(
+                    children: [
+                      // PDF Viewer with page change listener
+                      PdfView(
+                        controller: _pdfController!,
+                        onPageChanged: (page) {
+                          setState(() {
+                            _currentPage = page;
+                          });
+                        },
+                      ),
+                      // Watermark overlay that scales with the page
+                      if (_watermarkText != null || _watermarkImagePath != null)
+                        Positioned.fill(
+                          child: IgnorePointer(
+                            child: CustomPaint(
+                              painter: WatermarkPreviewPainter(
+                                text: _watermarkText,
+                                imagePath: _watermarkImagePath,
+                                isGridPattern: _isGridPattern,
+                              ),
+                            ),
                           ),
-                          // Watermark preview overlay
-                          if (_watermarkText != null ||
-                              _watermarkImagePath != null)
-                            Positioned.fill(
-                              child: IgnorePointer(
-                                child: CustomPaint(
-                                  painter: WatermarkPreviewPainter(
-                                    text: _watermarkText,
-                                    imagePath: _watermarkImagePath,
-                                    isGridPattern: _isGridPattern,
-                                  ),
-                                ),
+                        ),
+                      // Previous arrow
+                      if (_currentPage > 1)
+                        Positioned(
+                          left: 16,
+                          top: 0,
+                          bottom: 0,
+                          child: Center(
+                            child: IconButton(
+                              icon: const Icon(Icons.arrow_back_ios),
+                              iconSize: 32,
+                              color: Colors.white,
+                              style: IconButton.styleFrom(
+                                backgroundColor: Colors.black.withOpacity(0.5),
+                              ),
+                              onPressed: () {
+                                _pdfController!.previousPage(
+                                  duration: const Duration(milliseconds: 300),
+                                  curve: Curves.easeInOut,
+                                );
+                              },
+                            ),
+                          ),
+                        ),
+                      // Next arrow
+                      if (_currentPage < _totalPages)
+                        Positioned(
+                          right: 16,
+                          top: 0,
+                          bottom: 0,
+                          child: Center(
+                            child: IconButton(
+                              icon: const Icon(Icons.arrow_forward_ios),
+                              iconSize: 32,
+                              color: Colors.white,
+                              style: IconButton.styleFrom(
+                                backgroundColor: Colors.black.withOpacity(0.5),
+                              ),
+                              onPressed: () {
+                                _pdfController!.nextPage(
+                                  duration: const Duration(milliseconds: 300),
+                                  curve: Curves.easeInOut,
+                                );
+                              },
+                            ),
+                          ),
+                        ),
+                      // Page indicator
+                      Positioned(
+                        bottom: 16,
+                        left: 0,
+                        right: 0,
+                        child: Center(
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 8,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.black.withOpacity(0.7),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Text(
+                              '$_currentPage / $_totalPages',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
                               ),
                             ),
-                          // Previous arrow (only show if can go previous)
-                          if (canGoPrevious)
-                            Positioned(
-                              left: 16,
-                              top: 0,
-                              bottom: 0,
-                              child: Center(
-                                child: IconButton(
-                                  icon: const Icon(Icons.arrow_back_ios),
-                                  iconSize: 32,
-                                  color: Colors.white,
-                                  style: IconButton.styleFrom(
-                                    backgroundColor: Colors.black.withOpacity(
-                                      0.5,
-                                    ),
-                                  ),
-                                  onPressed: () {
-                                    _pdfController.previousPage();
-                                  },
-                                ),
-                              ),
-                            ),
-                          // Next arrow (only show if can go next)
-                          if (canGoNext)
-                            Positioned(
-                              right: 16,
-                              top: 0,
-                              bottom: 0,
-                              child: Center(
-                                child: IconButton(
-                                  icon: const Icon(Icons.arrow_forward_ios),
-                                  iconSize: 32,
-                                  color: Colors.white,
-                                  style: IconButton.styleFrom(
-                                    backgroundColor: Colors.black.withOpacity(
-                                      0.5,
-                                    ),
-                                  ),
-                                  onPressed: () {
-                                    _pdfController.nextPage();
-                                  },
-                                ),
-                              ),
-                            ),
-                        ],
-                      );
-                    },
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],

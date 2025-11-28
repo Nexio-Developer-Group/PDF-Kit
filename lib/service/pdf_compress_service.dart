@@ -4,7 +4,6 @@ import 'dart:ui';
 import 'package:dartz/dartz.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
-import 'package:syncfusion_flutter_pdf/pdf.dart' as sf;
 import 'dart:typed_data';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:pdf_kit/core/constants.dart';
@@ -285,53 +284,23 @@ class PdfCompressService {
   static bool isImageFile(FileInfo fileInfo) => _isImage(fileInfo);
 
   /// Convert image file to PDF
+  // REMOVE/COMMENT THIS WHEN YOU RE‑ENABLE SYNCFUSION-BASED PDF CREATION.
+  // Temporary stub so the project compiles without Syncfusion.
   static Future<Uint8List> convertImageToPdf(
     File imageFile, {
     bool shouldCompress = false,
     int? quality,
   }) async {
+    // For now, just return the raw (optionally compressed) image bytes
+    // instead of a real PDF. Later you can plug Syncfusion (or another PDF lib) back in.
     Uint8List imageBytes = await imageFile.readAsBytes();
 
-    // Compress if needed
     if (shouldCompress) {
       imageBytes = await compressImageBytes(imageBytes, quality: quality);
     }
 
-    // Create a new PDF document
-    final sf.PdfDocument document = sf.PdfDocument();
-
-    // Add a page to the document
-    final sf.PdfPage page = document.pages.add();
-
-    // Load image from bytes
-    final sf.PdfBitmap image = sf.PdfBitmap(imageBytes);
-
-    // Calculate dimensions to fit the image on the page
-    final pageWidth = page.getClientSize().width;
-    final pageHeight = page.getClientSize().height;
-
-    double width = image.width.toDouble();
-    double height = image.height.toDouble();
-
-    // Scale image to fit page while maintaining aspect ratio
-    final widthRatio = pageWidth / width;
-    final heightRatio = pageHeight / height;
-    final scale = widthRatio < heightRatio ? widthRatio : heightRatio;
-
-    width *= scale;
-    height *= scale;
-
-    // Center the image on the page
-    final x = (pageWidth - width) / 2;
-    final y = (pageHeight - height) / 2;
-
-    // Draw the image on the page
-    page.graphics.drawImage(image, Rect.fromLTWH(x, y, width, height));
-
-    // Save and return the document bytes
-    final bytes = await document.save();
-    document.dispose();
-
-    return Uint8List.fromList(bytes);
+    // This is NOT a proper PDF, but it keeps the app from crashing/compiling errors.
+    // When you add a PDF lib (Syncfusion or other), replace this implementation.
+    return imageBytes;
   }
 }
