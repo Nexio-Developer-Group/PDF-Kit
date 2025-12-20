@@ -1,4 +1,4 @@
-// search_files_screen.dart
+// file_search_page.dart
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:pdf_kit/models/file_model.dart';
@@ -6,60 +6,72 @@ import 'package:pdf_kit/presentation/component/document_tile.dart';
 import 'package:pdf_kit/presentation/component/folder_tile.dart';
 import 'package:pdf_kit/presentation/layouts/selection_layout.dart';
 import 'package:pdf_kit/presentation/provider/selection_provider.dart';
-import 'package:pdf_kit/service/file_system_serevice.dart';
+import 'package:pdf_kit/providers/file_system_provider.dart'; // [NEW]
 import 'package:pdf_kit/service/open_service.dart';
-import 'package:pdf_kit/presentation/sheets/delete_file_sheet.dart';
-import 'package:pdf_kit/presentation/sheets/rename_file_sheet.dart';
-import 'package:pdf_kit/service/file_service.dart';
-import 'package:pdf_kit/service/recent_file_service.dart';
-import 'package:pdf_kit/presentation/pages/home_page.dart';
 import 'package:pdf_kit/core/app_export.dart';
+import 'package:pdf_kit/presentation/sheets/rename_file_sheet.dart';
+import 'package:pdf_kit/presentation/sheets/delete_file_sheet.dart';
 
 class SearchFilesScreen extends StatefulWidget {
   final String? initialPath;
-  final bool selectable; // NEW
-  final bool isFullscreenRoute; // NEW
-  final String? selectionId;
+  final bool selectable;
   final String? selectionActionText;
+  final String? selectionId;
+  final bool? isFullscreenRoute;
+
   const SearchFilesScreen({
     super.key,
     this.initialPath,
-    this.selectable = false, // NEW
-    this.isFullscreenRoute = false, // NEW
-    this.selectionId,
+    this.selectable = false,
     this.selectionActionText,
+    this.selectionId,
+    this.isFullscreenRoute,
   });
+
   @override
   State<SearchFilesScreen> createState() => _SearchFilesScreenState();
 }
 
 class _SearchFilesScreenState extends State<SearchFilesScreen> {
-  final TextEditingController _controller = TextEditingController();
-  StreamSubscription? _sub;
+  final TextEditingController _searchController = TextEditingController();
+  final FocusNode _searchFocusNode = FocusNode();
 
-  // Results and helpers
-  final List<FileInfo> _results = [];
-  final Set<String> _seen = <String>{};
+  // Local history state - could be moved to provider or persistent storage
+  List<String> _previousSearches = [];
 
-  String _query = '';
-  bool _searching = false;
-  bool _fileDeleted = false; // Track if any file was deleted
+  @override
+  void initState() {
+    super.initState();
+    _searchController.addListener(_onSearchChanged);
+  }
 
-  // Batching to reduce rebuild frequency
-  Timer? _batchTimer;
-  final List<FileInfo> _pending = [];
+  @override
+  void dispose() {
+    _searchController.dispose();
+    _searchFocusNode.dispose();
+    super.dispose();
+  }
 
-  // Fake “Previous Search” seeds for now
-  final List<String> _previous = const [
-    'My Home Certificate',
-    'Work Documents',
-    'Recommendation Letter',
-    'Sales Report Documents',
-    'Business Plan Proposal',
-    'Job Application Letter',
-    'Legal & Terms of Reference',
-    'My National ID Card',
-  ];
+  @override
+  void deactivate() {
+    // Clear search results when leaving the screen
+    context.read<FileSystemProvider>().clearSearch();
+    super.deactivate();
+  }
+
+  Timer? _debounce;
+  void _onSearchChanged() {
+    if (_debounce?.isActive ?? false) _debounce!.cancel();
+    _debounce = Timer(const Duration(milliseconds: 300), () {
+      if (!mounted) return;
+      final query = _searchController.text.trim();
+      final path = widget.initialPath;
+
+      if (path != null) {
+        context.read<FileSystemProvider>().search(path, query);
+      }
+    });
+  }
 
   SelectionProvider? _maybeProvider() {
     try {
@@ -70,378 +82,195 @@ class _SearchFilesScreenState extends State<SearchFilesScreen> {
   }
 
   @override
-  void dispose() {
-    _sub?.cancel();
-    _batchTimer?.cancel();
-    _controller.dispose();
-    // Trigger home page refresh if any file was deleted
-    if (_fileDeleted) {
-      RecentFilesSection.refreshNotifier.value++;
-    }
-    super.dispose();
-  }
-
-  void _start(String q) {
-    _sub?.cancel();
-
-    setState(() {
-      _query = q;
-      _searching = q.isNotEmpty && widget.initialPath != null;
-      // Clear previous results at the start of every new query
-      _results.clear();
-      _seen.clear();
-      _pending.clear();
-    });
-
-    if (q.isEmpty || widget.initialPath == null) {
-      return;
-    }
-
-    final stream = FileSystemService.searchStream(widget.initialPath!, q);
-    _sub = stream.listen(
-      (either) {
-        either.fold(
-          (_) {}, // You can surface an error snackbar if desired
-          (fi) {
-            // Avoid duplicates
-            if (_seen.add(fi.path)) {
-              _pending.add(fi);
-              _scheduleFlush();
-            }
-          },
-        );
-      },
-      onDone: () => setState(() => _searching = false),
-      onError: (_) => setState(() => _searching = false),
-    );
-  }
-
-  void _scheduleFlush() {
-    // Flush batched results ~30fps to avoid flicker
-    _batchTimer ??= Timer(const Duration(milliseconds: 32), () {
-      if (!mounted) return;
-      setState(() {
-        _results.addAll(_pending);
-        _pending.clear();
-      });
-      _batchTimer = null;
-    });
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final hasQuery = _query.isNotEmpty;
-    final noResults = hasQuery && !_searching && _results.isEmpty;
-
-    // The service yields only files, but keep the split in case you later include dirs.
-    final folders = _results.where((e) => e.isDirectory).toList();
-    final files = _results.where((e) => !e.isDirectory).toList();
+    final t = AppLocalizations.of(context);
+    final provider = context.watch<FileSystemProvider>();
+    final results = provider.searchResults;
 
     return Scaffold(
-      body: SafeArea(
-        child: Column(
-          children: [
-            _searchBar(context),
-            if (!hasQuery) _previousSection(context),
-            if (hasQuery && !noResults) Expanded(child: _list(folders, files)),
-            if (noResults) _emptyState(context),
-          ],
+      appBar: AppBar(
+        titleSpacing: 0,
+        leading: const BackButton(),
+        title: TextField(
+          controller: _searchController,
+          focusNode: _searchFocusNode,
+          autofocus: true,
+          decoration: InputDecoration(
+            hintText: t.t('files_search_hint'),
+            border: InputBorder.none,
+          ),
+          textInputAction: TextInputAction.search,
         ),
-      ),
-    );
-  }
-
-  Widget _searchBar(BuildContext context) {
-    final t = AppLocalizations.of(context);
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
-      child: Row(
-        children: [
-          InkWell(
-            borderRadius: BorderRadius.circular(22),
-            onTap: () => Navigator.pop(context),
-            child: const Padding(
-              padding: EdgeInsets.all(8),
-              child: Icon(Icons.arrow_back),
-            ),
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Container(
-              height: 44,
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surfaceContainerHighest
-                    .withAlpha((0.6 * 225).toInt()),
-                borderRadius: BorderRadius.circular(14),
-              ),
-              alignment: Alignment.center,
-              child: TextField(
-                controller: _controller,
-                autofocus: true,
-                onChanged: (q) {
-                  _start(q); // Rebuilds happen inside _start
-                },
-                style: Theme.of(context).textTheme.labelLarge,
-                decoration: InputDecoration(
-                  border: InputBorder.none,
-                  hintText: t.t('files_search_hint'), // ← was hard‑coded
-                  prefixIcon: const Icon(Icons.search, size: 18),
-                  suffixIcon: (_controller.text.isNotEmpty)
-                      ? IconButton(
-                          constraints: const BoxConstraints(
-                            minWidth: 28,
-                            minHeight: 28,
-                          ),
-                          iconSize: 18,
-                          padding: const EdgeInsets.all(5),
-                          tooltip: t.t(
-                            'files_previous_search_clear_all_tooltip',
-                          ),
-                          icon: const Icon(Icons.close),
-                          onPressed: () {
-                            _controller.clear();
-                            _start('');
-                          },
-                        )
-                      : null,
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _previousSection(BuildContext context) {
-    final t = AppLocalizations.of(context);
-
-    return Expanded(
-      child: ListView(
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 6),
-            child: Row(
-              children: [
-                Text(
-                  t.t('recent_files_search_previous_header'),
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-                const Spacer(),
-                IconButton(
-                  onPressed: () {}, // optional: clear all later
-                  icon: const Icon(Icons.close),
-                  tooltip: t.t('files_previous_search_clear_all_tooltip'),
-                ),
-              ],
-            ),
-          ),
-          ..._previous.map(
-            (label) => ListTile(
-              title: Text(label),
-              trailing: const Icon(Icons.close, size: 18),
-              onTap: () {
-                _controller.text = label;
-                _controller.selection = TextSelection.collapsed(
-                  offset: label.length,
-                );
-                _start(label);
+        actions: [
+          if (_searchController.text.isNotEmpty)
+            IconButton(
+              icon: const Icon(Icons.clear),
+              onPressed: () {
+                _searchController.clear();
               },
             ),
-          ),
         ],
       ),
+      body: _buildBody(context, results, _searchController.text.isEmpty),
     );
   }
 
-  Widget _list(List<FileInfo> folders, List<FileInfo> files) {
-    final items = _results;
+  Widget _buildBody(
+    BuildContext context,
+    List<FileInfo> results,
+    bool isEmptyQuery,
+  ) {
+    final t = AppLocalizations.of(context);
     final p = _maybeProvider();
     final enabled = widget.selectable && (p?.isEnabled ?? false);
 
-    return RefreshIndicator(
-      onRefresh: () async {
-        /* unchanged */
-      },
-      child: ListView.builder(
-        key: const PageStorageKey('search_list'),
-        physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.only(bottom: 16),
-        itemCount: items.length,
-        itemBuilder: (context, index) {
-          final f = items[index];
-          return RepaintBoundary(
-            key: ValueKey(f.path),
-            child: Container(
-              margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 12),
-              child: f.isDirectory
-                  ? FolderEntryCard(
-                      info: f,
-                      onTap: () async {
-                        final routeName = widget.isFullscreenRoute
-                            ? 'files.search.fullscreen'
-                            : AppRouteName.filesSearch;
-                        await context.pushNamed(
-                          routeName,
-                          queryParameters: {'path': f.path},
-                        );
-                        // Refresh search results when coming back
-                        if (_query.isNotEmpty && mounted) {
-                          _start(_query);
-                        }
-                      },
-                      onMenuSelected: (_) {},
-                    )
-                  : DocEntryCard(
-                      info: f,
-                      selectable: enabled,
-                      selected: (p?.isSelected(f.path) ?? false),
-                      onToggleSelected: enabled ? () => p?.toggle(f) : null,
-                      onOpen: enabled
-                          ? () => p?.toggle(f)
-                          : () => OpenService.open(f.path),
-                      onLongPress: () {
-                        if (!enabled) p?.enable();
-                        p?.toggle(f);
-                      },
-                      onMenu: (action) => _handleFileMenu(action, f),
-                    ),
+    if (isEmptyQuery) {
+      if (_previousSearches.isNotEmpty) {
+        return ListView(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Text(
+                t.t('recent_files_search_previous_header'),
+                style: Theme.of(context).textTheme.titleSmall,
+              ),
             ),
-          );
-        },
-      ),
-    );
-  }
-
-  Future<void> _handleFileRename(FileInfo file) async {
-    debugPrint('✏️ [SearchFilesScreen] Renaming file: ${file.name}');
-    await showRenameFileSheet(
-      context: context,
-      initialName: file.name,
-      onRename: (newName) async {
-        final result = await FileService.renameFile(file, newName);
-        result.fold(
-          (exception) {
-            debugPrint(
-              '❌ [SearchFilesScreen] Rename failed: ${exception.message}',
-            );
-            if (mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(exception.message),
-                  backgroundColor: Theme.of(context).colorScheme.error,
+            ..._previousSearches.map(
+              (s) => ListTile(
+                leading: const Icon(Icons.history),
+                title: Text(s),
+                onTap: () {
+                  _searchController.text = s;
+                  // Listener will trigger search
+                },
+                trailing: IconButton(
+                  icon: const Icon(Icons.close, size: 18),
+                  onPressed: () {
+                    setState(() {
+                      _previousSearches.remove(s);
+                    });
+                  },
                 ),
-              );
-            }
-          },
-          (renamedFileInfo) {
-            debugPrint(
-              '✅ [SearchFilesScreen] Rename successful: ${renamedFileInfo.name}',
-            );
-            if (mounted) {
-              // Update the search results to reflect the renamed file
-              setState(() {
-                final index = _results.indexWhere((e) => e.path == file.path);
-                if (index != -1) {
-                  _results[index] = renamedFileInfo;
-                  // Update the seen set
-                  _seen.remove(file.path);
-                  _seen.add(renamedFileInfo.path);
-                }
-              });
-              // Trigger home page refresh
-              RecentFilesSection.refreshNotifier.value++;
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('File renamed successfully')),
-              );
-            }
-          },
+              ),
+            ),
+          ],
+        );
+      }
+      // Empty state
+      return Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.search,
+              size: 64,
+              color: Theme.of(context).disabledColor,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              t.t('files_search_type_prompt'),
+              style: TextStyle(color: Theme.of(context).disabledColor),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (results.isEmpty) {
+      return Center(child: Text(t.t('files_search_no_results')));
+    }
+
+    return ListView.builder(
+      itemCount: results.length,
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      itemBuilder: (context, index) {
+        final f = results[index];
+        return Container(
+          margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 12),
+          child: f.isDirectory
+              ? FolderEntryCard(
+                  info: f,
+                  onTap: () async {
+                    if (widget.isFullscreenRoute == true) {
+                      await context.pushNamed(
+                        'files.search.fullscreen', // ensure this route is valid or use generic
+                        queryParameters: {'path': f.path},
+                      );
+                    } else {
+                      await context.pushNamed(
+                        AppRouteName.filesSearch,
+                        queryParameters: {'path': f.path},
+                      );
+                    }
+                  },
+                  onMenuSelected: (_) {}, // Implement folder actions if needed
+                )
+              : DocEntryCard(
+                  info: f,
+                  selectable: enabled,
+                  selected: (p?.isSelected(f.path) ?? false),
+                  onToggleSelected: enabled ? () => p?.toggle(f) : null,
+                  onOpen: enabled
+                      ? () => p?.toggle(f)
+                      : () {
+                          _addToRecentSearches(_searchController.text);
+                          OpenService.open(f.path);
+                        },
+                  onLongPress: () {
+                    if (widget.selectable && !enabled) {
+                      p?.enable();
+                      p?.toggle(f);
+                    }
+                  },
+                  onMenu: (action) => _handleFileMenu(action, f),
+                ),
         );
       },
     );
+  }
+
+  void _addToRecentSearches(String query) {
+    if (query.trim().isEmpty) return;
+    if (!_previousSearches.contains(query)) {
+      setState(() {
+        _previousSearches.insert(0, query);
+        if (_previousSearches.length > 5) _previousSearches.removeLast();
+      });
+    }
   }
 
   Future<void> _handleFileMenu(String action, FileInfo f) async {
     switch (action) {
       case 'open':
         OpenService.open(f.path);
+        _addToRecentSearches(_searchController.text);
         break;
       case 'rename':
-        await _handleFileRename(f);
+        await showRenameFileSheet(
+          context: context,
+          initialName: f.name,
+          onRename: (newName) async {
+            context.read<FileSystemProvider>().renameFile(f, newName).then((_) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Renamed successfully')),
+              );
+            });
+          },
+        );
         break;
       case 'delete':
         await showDeleteFileSheet(
           context: context,
           fileName: f.name,
           onDelete: () async {
-            // Optimistically remove from UI
-            setState(() {
-              _results.removeWhere((e) => e.path == f.path);
-              _seen.remove(f.path);
+            context.read<FileSystemProvider>().deleteFile(f).then((_) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Deleted successfully')),
+              );
             });
-
-            // Perform actual deletion
-            final result = await FileService.deleteFile(f);
-
-            if (!mounted) return;
-
-            result.fold(
-              (error) {
-                // Restore item on error
-                setState(() {
-                  if (_seen.add(f.path)) {
-                    _results.add(f);
-                  }
-                });
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(error.message),
-                    backgroundColor: Theme.of(context).colorScheme.error,
-                  ),
-                );
-              },
-              (success) async {
-                // Also remove from recent files if present
-                await RecentFilesService.removeRecentFile(f.path);
-                // Mark that a file was deleted
-                _fileDeleted = true;
-                // ScaffoldMessenger.of(context).showSnackBar(
-                //   SnackBar(content: Text('${f.name} deleted successfully')),
-                // );
-              },
-            );
           },
         );
         break;
     }
-  }
-
-  Widget _emptyState(BuildContext context) {
-    return Expanded(
-      child: Center(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Image.asset('assets/not_found.png'),
-              const SizedBox(height: 12),
-              Text(
-                'Not Found',
-                style: Theme.of(
-                  context,
-                ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600),
-              ),
-              const SizedBox(height: 8),
-              const Text(
-                "Please search with another keywords.",
-                textAlign: TextAlign.center,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
   }
 }

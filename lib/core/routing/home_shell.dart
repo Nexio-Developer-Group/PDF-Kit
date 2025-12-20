@@ -29,7 +29,7 @@ StatefulShellRoute buildHomeShellRoute({
         navigatorKey: fileNavKey,
         routes: [
           GoRoute(
-            name: AppRouteName.filesRoot,
+          name: AppRouteName.filesRoot,
             path: '/files',
             builder: (context, state) => AndroidFilesScreen(
               initialPath: state.uri.queryParameters['path'],

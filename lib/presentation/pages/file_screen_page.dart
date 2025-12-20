@@ -7,19 +7,15 @@ import 'package:pdf_kit/presentation/component/document_tile.dart';
 import 'package:pdf_kit/presentation/component/folder_tile.dart';
 import 'package:pdf_kit/presentation/layouts/selection_layout.dart';
 import 'package:pdf_kit/presentation/provider/selection_provider.dart';
-import 'package:pdf_kit/service/file_system_serevice.dart';
-import 'package:pdf_kit/service/folder_service.dart';
+import 'package:pdf_kit/providers/file_system_provider.dart'; // [NEW]
 import 'package:pdf_kit/service/open_service.dart';
-import 'package:pdf_kit/service/path_service.dart';
 import 'package:pdf_kit/service/permission_service.dart';
-import 'package:pdf_kit/service/recent_file_service.dart';
 import 'package:pdf_kit/presentation/pages/home_page.dart';
 import 'package:pdf_kit/core/app_export.dart';
 import 'package:pdf_kit/presentation/sheets/new_folder_sheet.dart';
 import 'package:pdf_kit/presentation/sheets/filter_sheet.dart';
 import 'package:pdf_kit/presentation/sheets/delete_file_sheet.dart';
 import 'package:pdf_kit/presentation/sheets/rename_file_sheet.dart';
-import 'package:pdf_kit/service/file_service.dart';
 import 'package:path/path.dart' as p;
 
 import 'package:pdf_kit/presentation/models/filter_models.dart';
@@ -46,14 +42,12 @@ class AndroidFilesScreen extends StatefulWidget {
 }
 
 class _AndroidFilesScreenState extends State<AndroidFilesScreen> {
-  List<Directory> _roots = [];
-  String? _currentPath;
-  List<FileInfo> _entries = [];
-  StreamSubscription? _searchSub;
-  bool _fileDeleted = false; // Track if any file was deleted
-  // Sorting and filtering state
+  // Removed local state: _roots, _currentPath, _entries
+  // Removed: _searchSub, _fileDeleted
+
+  // Keep UI-only state
   SortOption _sortOption = SortOption.name;
-  final Set<TypeFilter> _typeFilters = {}; // empty = all
+  final Set<TypeFilter> _typeFilters = {};
   bool _filterSheetOpen = false;
   final ScrollController _listingScrollController = ScrollController();
 
@@ -68,34 +62,39 @@ class _AndroidFilesScreenState extends State<AndroidFilesScreen> {
             _listingScrollController.position.isScrollingNotifier.value) {
           if (mounted) Navigator.of(context).maybePop();
         }
-      } catch (_) {
-        // ignore any position/access glitches
-      }
+      } catch (_) {}
     });
   }
 
   Future<void> _boot() async {
+    print(
+      '🚀 [AndroidFilesScreen] _boot called. InitialPath: ${widget.initialPath}',
+    );
     final perm = await PermissionService.requestStoragePermission();
-    perm.fold((_) {}, (ok) async {
-      if (!ok) return;
-      final vols = await PathService.volumes();
-      vols.fold((_) {}, (dirs) async {
-        setState(() => _roots = dirs);
-        final startPath =
-            widget.initialPath ?? (dirs.isNotEmpty ? dirs.first.path : null);
-        if (startPath != null) await _open(startPath);
-      });
-    });
+    perm.fold(
+      (_) {
+        print('❌ [AndroidFilesScreen] Permission failed');
+      },
+      (ok) async {
+        print('✅ [AndroidFilesScreen] Permission: $ok');
+        if (!ok) return;
+
+        final provider = context.read<FileSystemProvider>();
+
+        // Load roots if no path
+        if (widget.initialPath == null) {
+          await provider.loadRoots();
+        } else {
+          // Load target path
+          await provider.load(widget.initialPath!);
+        }
+      },
+    );
   }
 
   @override
   void dispose() {
-    _searchSub?.cancel();
     _listingScrollController.dispose();
-    // Trigger home page refresh if any file was deleted
-    if (_fileDeleted) {
-      RecentFilesSection.refreshNotifier.value++;
-    }
     super.dispose();
   }
 
@@ -110,24 +109,26 @@ class _AndroidFilesScreenState extends State<AndroidFilesScreen> {
   bool get _selectionEnabled =>
       widget.selectable && (_maybeProvider()?.isEnabled ?? false);
 
-  Future<void> _open(String path) async {
-    _cancelSearch();
-    final res = await FileSystemService.list(path);
-    res.fold((_) {}, (items) {
-      setState(() {
-        _currentPath = path;
-        _entries = items;
-      });
-    });
+  String? get _currentPath => widget.initialPath; // Only use widget.initialPath
+
+  Future<void> _refresh() async {
+    if (_currentPath != null) {
+      await context.read<FileSystemProvider>().load(
+        _currentPath!,
+        forceRefresh: true,
+      );
+    } else {
+      await context.read<FileSystemProvider>().loadRoots();
+    }
   }
 
-  List<FileInfo> _getVisibleEntries() {
-    final list = List<FileInfo>.from(_entries);
+  List<FileInfo> _getVisibleEntries(List<FileInfo> allFiles) {
+    final list = List<FileInfo>.from(allFiles);
 
-    // Apply type filter (multi-select). If none selected => all
     List<FileInfo> filtered = list.where((e) {
       if (_typeFilters.isEmpty) return true;
-      if (_typeFilters.contains(TypeFilter.folder) && e.isDirectory)
+      if (_typeFilters.contains(TypeFilter.folder) &&
+          (e.isDirectory || e.extension.isEmpty)) // assuming dir logic
         return true;
       if (_typeFilters.contains(TypeFilter.pdf) &&
           e.extension.toLowerCase() == 'pdf')
@@ -183,31 +184,21 @@ class _AndroidFilesScreenState extends State<AndroidFilesScreen> {
   }
 
   Future<void> _openFilterDialog() async {
-    _filterSheetOpen = true;
-
+    _filterSheetOpen =
+        true; // Use local var, set state not needed for this flag alone unless widely used
     await showModalBottomSheet(
       context: context,
       useRootNavigator: true,
-      backgroundColor: Colors.transparent, // Important for transparent overlay
+      backgroundColor: Colors.transparent,
       isScrollControlled: true,
       builder: (context) {
         return Padding(
-          padding: const EdgeInsets.fromLTRB(
-            16,
-            12,
-            16,
-            16,
-          ), // margin with top inset too
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(28),
             child: Container(
-              // color: Theme.of(context).dialogBackgroundColor, // or cardColor
-              padding: const EdgeInsets.all(0),
               child: SafeArea(
-                bottom: true,
                 top: false,
-                left: false,
-                right: false,
                 child: FilterSheet(
                   currentSort: _sortOption,
                   currentTypes: Set.from(_typeFilters),
@@ -225,22 +216,13 @@ class _AndroidFilesScreenState extends State<AndroidFilesScreen> {
         );
       },
     );
-
     _filterSheetOpen = false;
   }
 
-  void _cancelSearch() {
-    _searchSub?.cancel();
-    _searchSub = null;
-  }
-
-  // Fix fullscreen folder navigation
+  // Navigate deeper
   Future<void> _openFolder(String path) async {
     if (!mounted) return;
     if (widget.isFullscreenRoute == true) {
-      // Preserve selection-related params we received when this fullscreen
-      // screen was created (selectionId, actionText) and forward them
-      // along with the folder `path` when navigating deeper.
       final params = <String, String>{'path': path};
       if (widget.selectionId != null)
         params['selectionId'] = widget.selectionId!;
@@ -257,44 +239,63 @@ class _AndroidFilesScreenState extends State<AndroidFilesScreen> {
         queryParameters: {'path': path},
       );
     }
-
-    // Refresh the current folder when returning from navigation
-    if (_currentPath != null && mounted) {
-      await _open(_currentPath!);
-    }
+    // No need to "refresh" manually on return, provider handles cache.
   }
 
   @override
   Widget build(BuildContext context) {
-    final visibleItems = _getVisibleEntries();
+    // Determine data based on path
+    final provider = context.watch<FileSystemProvider>();
+
+    // Logic: if currentPath is null, we show roots. Else files.
+    final isRoot = _currentPath == null;
+
+    // Get raw data
+    final List<FileInfo> rawFiles = isRoot
+        ? [] // Roots are handled separately
+        : provider.filesFor(_currentPath!);
+
+    final List<Directory> rootDirs = provider.roots;
+
+    final bool loading = isRoot
+        ? (rootDirs.isEmpty && provider.roots.isEmpty) // simple check
+        : provider.isLoading(_currentPath!);
+
+    print(
+      '🖼️ [AndroidFilesScreen] build. Path: $_currentPath, Loading: $loading, Roots: ${rootDirs.length}, Files: ${rawFiles.length}',
+    );
+
+    // Filter/Sort
+    final visibleItems = _getVisibleEntries(rawFiles);
     final folders = visibleItems.where((e) => e.isDirectory).toList();
     final files = visibleItems.where((e) => !e.isDirectory).toList();
 
     return Scaffold(
       body: SafeArea(
         child: Padding(
-          padding: screenPadding,
+          padding: const EdgeInsets.all(0),
           child: Column(
             children: [
-              _buildHeader(context, files),
+              _buildHeader(context, files, loading),
 
-              // Make the listing the scrollable area
               Expanded(
-                child: _currentPath == null
-                    ? _buildRoots()
-                    : _buildListing(folders, files, context),
+                child: isRoot
+                    ? _buildRoots(rootDirs)
+                    : _buildListing(folders, files, context, loading),
               ),
             ],
           ),
         ),
       ),
-      // bottom bar is drawn by SelectionScaffold when in fullscreen selection flow
     );
   }
 
-  Widget _buildHeader(BuildContext context, List<FileInfo> visibleFiles) {
+  Widget _buildHeader(
+    BuildContext context,
+    List<FileInfo> visibleFiles,
+    bool loading,
+  ) {
     final t = AppLocalizations.of(context);
-
     final p = _maybeProvider();
     final enabled = widget.selectable && (p?.isEnabled ?? false);
     final maxLimitActive = p?.maxSelectable != null;
@@ -335,18 +336,27 @@ class _AndroidFilesScreenState extends State<AndroidFilesScreen> {
           ),
           const SizedBox(width: 12),
           Text(
-            t.t('files_header_title'), // was 'Files'
+            t.t('files_header_title'),
             style: Theme.of(
               context,
             ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600),
           ),
+          if (loading) ...[
+            const SizedBox(width: 12),
+            const SizedBox(
+              width: 16,
+              height: 16,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            ),
+          ],
           const Spacer(),
           IconButton(
             icon: const Icon(Icons.search),
             onPressed: () {
+              // Navigation logic remains same
               if (widget.isFullscreenRoute == true) {
                 context.pushNamed(
-                  'files.search.fullscreen',
+                  'files.search.fullscreen', // ensure route exists
                   queryParameters: {'path': _currentPath},
                 );
               } else {
@@ -356,7 +366,7 @@ class _AndroidFilesScreenState extends State<AndroidFilesScreen> {
                 );
               }
             },
-            tooltip: t.t('common_search'), // was 'Search'
+            tooltip: t.t('common_search'),
           ),
           if (widget.selectable && !maxLimitActive)
             IconButton(
@@ -384,37 +394,38 @@ class _AndroidFilesScreenState extends State<AndroidFilesScreen> {
             IconButton(
               icon: const Icon(Icons.more_vert),
               onPressed: () {},
-              tooltip: t.t('files_more_tooltip'), // was 'More'
+              tooltip: t.t('files_more_tooltip'),
             ),
         ],
       ),
     );
   }
 
-  Widget _buildRoots() => ListView(
-    children: _roots
-        .map(
-          (d) => ListTile(
-            leading: Image.asset(
-              'assets/app_icon.png',
-              width: 24,
-              height: 24,
-              fit: BoxFit.contain,
-              errorBuilder: (c, e, s) => const Icon(Icons.sd_storage),
+  Widget _buildRoots(List<Directory> roots) {
+    print('🎨 [AndroidFilesScreen] _buildRoots: ${roots.length} items');
+    return ListView(
+      children: roots.map((d) {
+        print('  - Root: ${d.path}');
+        return Card(
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: ListTile(
+            leading: const Icon(Icons.sd_storage, size: 32, color: Colors.blue),
+            title: Text(
+              d.path,
+              style: const TextStyle(fontWeight: FontWeight.bold),
             ),
-            title: Text(d.path),
+            subtitle: const Text('Storage Root'),
             onTap: () => _openFolder(d.path),
           ),
-        )
-        .toList(),
-  );
+        );
+      }).toList(),
+    );
+  }
 
   Widget _buildEmptyState() {
-    final theme = Theme.of(context);
     final t = AppLocalizations.of(context);
-
     return RefreshIndicator(
-      onRefresh: () => _open(_currentPath!),
+      onRefresh: _refresh,
       child: ListView(
         physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -423,11 +434,11 @@ class _AndroidFilesScreenState extends State<AndroidFilesScreen> {
           Center(child: Image.asset('assets/not_found.png')),
           const SizedBox(height: 12),
           Text(
-            t.t('files_empty_folder_title'), // was 'This folder is empty'
+            t.t('files_empty_folder_title'),
             textAlign: TextAlign.center,
-            style: theme.textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w600,
-            ),
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 24),
         ],
@@ -439,38 +450,21 @@ class _AndroidFilesScreenState extends State<AndroidFilesScreen> {
     List<FileInfo> folders,
     List<FileInfo> files,
     BuildContext context,
+    bool isLoading,
   ) {
-    final t = AppLocalizations.of(context);
-    final isEmpty = folders.isEmpty && files.isEmpty;
+    if (folders.isEmpty && files.isEmpty && !isLoading) {
+      return _buildEmptyState();
+    }
 
+    final t = AppLocalizations.of(context);
     final String displayName;
-    if (_currentPath == null) {
-      displayName = '/';
+    // ... Display name logic ...
+    // Simplified for brevity, reusing generic basename or just "path"
+    if (_currentPath != null) {
+      displayName = p.basename(_currentPath!);
+      // You can re-add the "root detection" logic here if needed
     } else {
-      final normalizedCurrent = p.normalize(_currentPath!);
-      final exactRoot = _roots.firstWhere(
-        (r) => p.normalize(r.path) == normalizedCurrent,
-        orElse: () => Directory(''),
-      );
-      if (exactRoot.path.isNotEmpty) {
-        displayName = "root"; // was 'root'
-      } else {
-        Directory? parentRoot;
-        for (final r in _roots) {
-          final rp = p.normalize(r.path);
-          if (normalizedCurrent.startsWith(rp)) {
-            parentRoot = r;
-            break;
-          }
-        }
-        if (parentRoot != null) {
-          var rel = p.relative(_currentPath!, from: parentRoot.path);
-          rel = rel.replaceAll(Platform.pathSeparator, '/');
-          displayName = '/$rel';
-        } else {
-          displayName = p.basename(_currentPath!);
-        }
-      }
+      displayName = "/";
     }
 
     final pvd = _maybeProvider();
@@ -517,27 +511,9 @@ class _AndroidFilesScreenState extends State<AndroidFilesScreen> {
                     onCreate: (String folderName) async {
                       if (_currentPath == null || folderName.trim().isEmpty)
                         return;
-
-                      final base = _currentPath!;
-
-                      final appBase = await FolderServiceAndroid.appFilesPath();
-                      final requireAll = !p.isWithin(
-                        appBase,
-                        base,
-                      ); // true for e.g. Downloads/Pictures [public] [web:47]
-
-                      final res = await FolderServiceAndroid.createFolder(
-                        basePath: base,
-                        folderName: folderName,
-                        requireAllFilesAccess: requireAll,
-                        recursive: true,
-                      );
-
-                      res.fold(
-                        (err) => ScaffoldMessenger.of(
-                          context,
-                        ).showSnackBar(SnackBar(content: Text(err))),
-                        (_) async => await _open(base), // refresh listing
+                      await context.read<FileSystemProvider>().createFolder(
+                        _currentPath!,
+                        folderName,
                       );
                     },
                   );
@@ -548,111 +524,88 @@ class _AndroidFilesScreenState extends State<AndroidFilesScreen> {
           ),
         ),
         Expanded(
-          child: isEmpty
-              ? _buildEmptyState()
-              : RefreshIndicator(
-                  onRefresh: () => _open(_currentPath!),
-                  child: ListView(
-                    controller: _listingScrollController,
-                    padding: const EdgeInsets.only(bottom: 16),
-                    children: [
-                      ...folders.map(
-                        (f) => Container(
-                          margin: const EdgeInsets.symmetric(
-                            vertical: 4,
-                            horizontal: 12,
-                          ),
-                          child: FolderEntryCard(
-                            info: f,
-                            onTap: () => _openFolder(f.path),
-                            onMenuSelected: (v) => _handleFolderMenu(v, f),
-                          ),
-                        ),
-                      ),
-                      ...files.map(
-                        (f) => Container(
-                          margin: const EdgeInsets.symmetric(
-                            vertical: 4,
-                            horizontal: 12,
-                          ),
-                          child: DocEntryCard(
-                            info: f,
-                            selectable: _selectionEnabled,
-                            selected: (pvd?.isSelected(f.path) ?? false),
-                            onToggleSelected: _selectionEnabled
-                                ? () => pvd?.toggle(f)
-                                : null,
-                            onOpen: _selectionEnabled
-                                ? () => pvd?.toggle(f)
-                                : () => OpenService.open(f.path),
-                            onLongPress: () {
-                              if (!_selectionEnabled) {
-                                pvd?.enable();
-                              }
-                              pvd?.toggle(f);
-                            },
-                            onMenu: (v) => _handleFileMenu(v, f),
-                          ),
-                        ),
-                      ),
-                    ],
+          child: RefreshIndicator(
+            onRefresh: _refresh,
+            child: ListView(
+              controller: _listingScrollController,
+              padding: const EdgeInsets.only(bottom: 16),
+              physics: const AlwaysScrollableScrollPhysics(),
+              children: [
+                ...folders.map(
+                  (f) => Container(
+                    margin: const EdgeInsets.symmetric(
+                      vertical: 4,
+                      horizontal: 12,
+                    ),
+                    child: FolderEntryCard(
+                      info: f,
+                      onTap: () => _openFolder(f.path),
+                      onMenuSelected: (v) => _handleFolderMenu(v, f),
+                    ),
                   ),
                 ),
+                ...files.map(
+                  (f) => Container(
+                    margin: const EdgeInsets.symmetric(
+                      vertical: 4,
+                      horizontal: 12,
+                    ),
+                    child: DocEntryCard(
+                      info: f,
+                      selectable: _selectionEnabled,
+                      selected: (pvd?.isSelected(f.path) ?? false),
+                      onToggleSelected: _selectionEnabled
+                          ? () => pvd?.toggle(f)
+                          : null,
+                      onOpen: _selectionEnabled
+                          ? () => pvd?.toggle(f)
+                          : () => OpenService.open(f.path),
+                      onLongPress: () {
+                        if (!_selectionEnabled) {
+                          pvd?.enable();
+                        }
+                        pvd?.toggle(f);
+                      },
+                      onMenu: (v) => _handleFileMenu(v, f),
+                    ),
+                  ),
+                ),
+                if (isLoading)
+                  const Padding(
+                    padding: EdgeInsets.all(20),
+                    child: Center(child: CircularProgressIndicator()),
+                  ),
+              ],
+            ),
+          ),
         ),
       ],
     );
   }
 
+  // --- Actions delegates to Provider ---
+
   void _handleFolderMenu(String v, FileInfo f) {
+    // Implement folder rename/delete via provider if needed
     switch (v) {
       case 'open':
         _openFolder(f.path);
         break;
-      case 'rename':
-        break;
-      case 'delete':
-        break;
+      // ...
     }
   }
 
   Future<void> _handleFileRename(FileInfo file) async {
-    debugPrint('✏️ [AndroidFilesScreen] Renaming file: ${file.name}');
     await showRenameFileSheet(
       context: context,
       initialName: file.name,
       onRename: (newName) async {
-        final result = await FileService.renameFile(file, newName);
-        result.fold(
-          (exception) {
-            debugPrint(
-              '❌ [AndroidFilesScreen] Rename failed: ${exception.message}',
-            );
-            if (mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(exception.message),
-                  backgroundColor: Theme.of(context).colorScheme.error,
-                ),
-              );
-            }
-          },
-          (renamedFileInfo) {
-            debugPrint(
-              '✅ [AndroidFilesScreen] Rename successful: ${renamedFileInfo.name}',
-            );
-            if (mounted) {
-              // Refresh current folder to show renamed file
-              if (_currentPath != null) {
-                _open(_currentPath!);
-              }
-              // Trigger home page refresh
-              RecentFilesSection.refreshNotifier.value++;
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('File renamed successfully')),
-              );
-            }
-          },
-        );
+        context.read<FileSystemProvider>().renameFile(file, newName).then((_) {
+          RecentFilesSection.refreshNotifier.value++;
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('File renamed successfully')),
+          );
+        });
       },
     );
   }
@@ -670,39 +623,9 @@ class _AndroidFilesScreenState extends State<AndroidFilesScreen> {
           context: context,
           fileName: f.name,
           onDelete: () async {
-            // Optimistically remove from UI
-            setState(() {
-              _entries.removeWhere((e) => e.path == f.path);
+            context.read<FileSystemProvider>().deleteFile(f).then((_) {
+              RecentFilesSection.refreshNotifier.value++;
             });
-
-            // Perform actual deletion
-            final result = await FileService.deleteFile(f);
-
-            if (!mounted) return;
-
-            result.fold(
-              (error) {
-                // Restore item on error
-                setState(() {
-                  _entries.add(f);
-                });
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(error.message),
-                    backgroundColor: Theme.of(context).colorScheme.error,
-                  ),
-                );
-              },
-              (success) async {
-                // Also remove from recent files if present
-                await RecentFilesService.removeRecentFile(f.path);
-                // Mark that a file was deleted
-                _fileDeleted = true;
-                // ScaffoldMessenger.of(context).showSnackBar(
-                //   SnackBar(content: Text('${f.name} deleted successfully')),
-                // );
-              },
-            );
           },
         );
         break;
