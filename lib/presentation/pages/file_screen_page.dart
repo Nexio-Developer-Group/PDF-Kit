@@ -1,6 +1,5 @@
 // android_files_screen.dart
 import 'dart:async';
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:pdf_kit/models/file_model.dart';
 import 'package:pdf_kit/presentation/component/document_tile.dart';
@@ -12,13 +11,8 @@ import 'package:pdf_kit/service/open_service.dart';
 import 'package:pdf_kit/service/permission_service.dart';
 import 'package:pdf_kit/presentation/pages/home_page.dart';
 import 'package:pdf_kit/core/app_export.dart';
-import 'package:pdf_kit/presentation/sheets/new_folder_sheet.dart';
-import 'package:pdf_kit/presentation/sheets/filter_sheet.dart';
 import 'package:pdf_kit/presentation/sheets/delete_file_sheet.dart';
 import 'package:pdf_kit/presentation/sheets/rename_file_sheet.dart';
-import 'package:path/path.dart' as p;
-
-import 'package:pdf_kit/presentation/models/filter_models.dart';
 
 class AndroidFilesScreen extends StatefulWidget {
   final String? initialPath;
@@ -44,26 +38,16 @@ class AndroidFilesScreen extends StatefulWidget {
 class _AndroidFilesScreenState extends State<AndroidFilesScreen> {
   // Removed local state: _roots, _currentPath, _entries
   // Removed: _searchSub, _fileDeleted
+  // Removed: _sortOption, _typeFilters, _filterSheetOpen (moved to shell)
 
-  // Keep UI-only state
-  SortOption _sortOption = SortOption.name;
-  final Set<TypeFilter> _typeFilters = {};
-  bool _filterSheetOpen = false;
+  // Keep only scroll controller for list
   final ScrollController _listingScrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
     _boot();
-    _listingScrollController.addListener(() {
-      if (!_filterSheetOpen) return;
-      try {
-        if (_listingScrollController.hasClients &&
-            _listingScrollController.position.isScrollingNotifier.value) {
-          if (mounted) Navigator.of(context).maybePop();
-        }
-      } catch (_) {}
-    });
+    // Simple scroll controller for the list
   }
 
   Future<void> _boot() async {
@@ -79,14 +63,9 @@ class _AndroidFilesScreenState extends State<AndroidFilesScreen> {
         print('✅ [AndroidFilesScreen] Permission: $ok');
         if (!ok) return;
 
-        final provider = context.read<FileSystemProvider>();
-
-        // Load roots if no path
-        if (widget.initialPath == null) {
-          await provider.loadRoots();
-        } else {
-          // Load target path
-          await provider.load(widget.initialPath!);
+        // Always load the provided path (no null handling)
+        if (widget.initialPath != null) {
+          await context.read<FileSystemProvider>().load(widget.initialPath!);
         }
       },
     );
@@ -118,105 +97,13 @@ class _AndroidFilesScreenState extends State<AndroidFilesScreen> {
         forceRefresh: true,
       );
     } else {
-      await context.read<FileSystemProvider>().loadRoots();
+      // If initialPath is null, there's nothing to refresh in this simplified view
+      // This case should ideally not be reached if initialPath is always provided
+      // or if this screen is only used for specific paths.
+      print(
+        '⚠️ [AndroidFilesScreen] _refresh called with null _currentPath. No action taken.',
+      );
     }
-  }
-
-  List<FileInfo> _getVisibleEntries(List<FileInfo> allFiles) {
-    final list = List<FileInfo>.from(allFiles);
-
-    List<FileInfo> filtered = list.where((e) {
-      if (_typeFilters.isEmpty) return true;
-      if (_typeFilters.contains(TypeFilter.folder) &&
-          (e.isDirectory || e.extension.isEmpty)) // assuming dir logic
-        return true;
-      if (_typeFilters.contains(TypeFilter.pdf) &&
-          e.extension.toLowerCase() == 'pdf')
-        return true;
-      if (_typeFilters.contains(TypeFilter.image)) {
-        const imgExt = {
-          'jpg',
-          'jpeg',
-          'png',
-          'gif',
-          'webp',
-          'bmp',
-          'tif',
-          'tiff',
-          'heic',
-          'heif',
-          'svg',
-        };
-        if (imgExt.contains(e.extension.toLowerCase())) return true;
-      }
-      return false;
-    }).toList();
-
-    // Apply sort
-    switch (_sortOption) {
-      case SortOption.name:
-        filtered.sort(
-          (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()),
-        );
-        break;
-      case SortOption.modified:
-        filtered.sort(
-          (a, b) => (b.lastModified ?? DateTime.fromMillisecondsSinceEpoch(0))
-              .compareTo(
-                a.lastModified ?? DateTime.fromMillisecondsSinceEpoch(0),
-              ),
-        );
-        break;
-      case SortOption.type:
-        filtered.sort((a, b) {
-          if (a.isDirectory && !b.isDirectory) return -1;
-          if (!a.isDirectory && b.isDirectory) return 1;
-          final ae = a.extension.toLowerCase();
-          final be = b.extension.toLowerCase();
-          final c = ae.compareTo(be);
-          if (c != 0) return c;
-          return a.name.toLowerCase().compareTo(b.name.toLowerCase());
-        });
-        break;
-    }
-
-    return filtered;
-  }
-
-  Future<void> _openFilterDialog() async {
-    _filterSheetOpen =
-        true; // Use local var, set state not needed for this flag alone unless widely used
-    await showModalBottomSheet(
-      context: context,
-      useRootNavigator: true,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-      builder: (context) {
-        return Padding(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(28),
-            child: Container(
-              child: SafeArea(
-                top: false,
-                child: FilterSheet(
-                  currentSort: _sortOption,
-                  currentTypes: Set.from(_typeFilters),
-                  onSortChanged: (s) => setState(() => _sortOption = s),
-                  onTypeFiltersChanged: (set) {
-                    setState(() {
-                      _typeFilters.clear();
-                      _typeFilters.addAll(set);
-                    });
-                  },
-                ),
-              ),
-            ),
-          ),
-        );
-      },
-    );
-    _filterSheetOpen = false;
   }
 
   // Navigate deeper
@@ -244,182 +131,26 @@ class _AndroidFilesScreenState extends State<AndroidFilesScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Determine data based on path
     final provider = context.watch<FileSystemProvider>();
 
-    // Logic: if currentPath is null, we show roots. Else files.
-    final isRoot = _currentPath == null;
+    // Get file data for current path
+    final List<FileInfo> rawFiles = _currentPath != null
+        ? provider.filesFor(_currentPath!)
+        : [];
 
-    // Get raw data
-    final List<FileInfo> rawFiles = isRoot
-        ? [] // Roots are handled separately
-        : provider.filesFor(_currentPath!);
-
-    final List<Directory> rootDirs = provider.roots;
-
-    final bool loading = isRoot
-        ? (rootDirs.isEmpty && provider.roots.isEmpty) // simple check
-        : provider.isLoading(_currentPath!);
-
-    print(
-      '🖼️ [AndroidFilesScreen] build. Path: $_currentPath, Loading: $loading, Roots: ${rootDirs.length}, Files: ${rawFiles.length}',
-    );
-
-    // Filter/Sort
-    final visibleItems = _getVisibleEntries(rawFiles);
-    final folders = visibleItems.where((e) => e.isDirectory).toList();
-    final files = visibleItems.where((e) => !e.isDirectory).toList();
-
-    return Scaffold(
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(0),
-          child: Column(
-            children: [
-              _buildHeader(context, files, loading),
-
-              Expanded(
-                child: isRoot
-                    ? _buildRoots(rootDirs)
-                    : _buildListing(folders, files, context, loading),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildHeader(
-    BuildContext context,
-    List<FileInfo> visibleFiles,
-    bool loading,
-  ) {
-    final t = AppLocalizations.of(context);
-    final p = _maybeProvider();
-    final enabled = widget.selectable && (p?.isEnabled ?? false);
-    final maxLimitActive = p?.maxSelectable != null;
-    final allOnPage = (!maxLimitActive && enabled)
-        ? (p?.areAllSelected(visibleFiles) ?? false)
+    final bool loading = _currentPath != null
+        ? provider.isLoading(_currentPath!)
         : false;
 
-    return Container(
-      height: 56,
-      padding: const EdgeInsets.symmetric(horizontal: 12),
-      alignment: Alignment.center,
-      child: Row(
-        children: [
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.primary.withOpacity(0.15),
-              shape: BoxShape.circle,
-            ),
-            child: ClipOval(
-              child: SizedBox(
-                width: 40,
-                height: 40,
-                child: Image.asset(
-                  'assets/app_icon.png',
-                  width: 40,
-                  height: 40,
-                  fit: BoxFit.cover,
-                  errorBuilder: (c, e, s) => Icon(
-                    Icons.widgets_rounded,
-                    size: 40,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(width: 12),
-          Text(
-            t.t('files_header_title'),
-            style: Theme.of(
-              context,
-            ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600),
-          ),
-          if (loading) ...[
-            const SizedBox(width: 12),
-            const SizedBox(
-              width: 16,
-              height: 16,
-              child: CircularProgressIndicator(strokeWidth: 2),
-            ),
-          ],
-          const Spacer(),
-          IconButton(
-            icon: const Icon(Icons.search),
-            onPressed: () {
-              // Navigation logic remains same
-              if (widget.isFullscreenRoute == true) {
-                context.pushNamed(
-                  'files.search.fullscreen', // ensure route exists
-                  queryParameters: {'path': _currentPath},
-                );
-              } else {
-                context.pushNamed(
-                  AppRouteName.filesSearch,
-                  queryParameters: {'path': _currentPath},
-                );
-              }
-            },
-            tooltip: t.t('common_search'),
-          ),
-          if (widget.selectable && !maxLimitActive)
-            IconButton(
-              icon: Icon(
-                !enabled
-                    ? Icons.check_box_outline_blank
-                    : (allOnPage
-                          ? Icons.check_box
-                          : Icons.check_box_outline_blank),
-              ),
-              tooltip: !enabled
-                  ? t.t('files_enable_selection_tooltip')
-                  : (allOnPage
-                        ? t.t('files_clear_page_tooltip')
-                        : t.t('files_select_all_page_tooltip')),
-              onPressed: () {
-                final prov = _maybeProvider();
-                if (prov == null) return;
-                prov.cyclePage(visibleFiles);
-              },
-            )
-          else if (widget.selectable && maxLimitActive)
-            const SizedBox.shrink()
-          else
-            IconButton(
-              icon: const Icon(Icons.more_vert),
-              onPressed: () {},
-              tooltip: t.t('files_more_tooltip'),
-            ),
-        ],
-      ),
+    print(
+      '🖼️ [AndroidFilesScreen] build. Path: $_currentPath, Loading: $loading, Files: ${rawFiles.length}',
     );
-  }
 
-  Widget _buildRoots(List<Directory> roots) {
-    print('🎨 [AndroidFilesScreen] _buildRoots: ${roots.length} items');
-    return ListView(
-      children: roots.map((d) {
-        print('  - Root: ${d.path}');
-        return Card(
-          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          child: ListTile(
-            leading: const Icon(Icons.sd_storage, size: 32, color: Colors.blue),
-            title: Text(
-              d.path,
-              style: const TextStyle(fontWeight: FontWeight.bold),
-            ),
-            subtitle: const Text('Storage Root'),
-            onTap: () => _openFolder(d.path),
-          ),
-        );
-      }).toList(),
-    );
+    // Separate folders and files (no filtering/sorting - shell handles that)
+    final folders = rawFiles.where((e) => e.isDirectory).toList();
+    final files = rawFiles.where((e) => !e.isDirectory).toList();
+
+    return _buildListing(folders, files, context, loading);
   }
 
   Widget _buildEmptyState() {
@@ -456,130 +187,55 @@ class _AndroidFilesScreenState extends State<AndroidFilesScreen> {
       return _buildEmptyState();
     }
 
-    final t = AppLocalizations.of(context);
-    final String displayName;
-    // ... Display name logic ...
-    // Simplified for brevity, reusing generic basename or just "path"
-    if (_currentPath != null) {
-      displayName = p.basename(_currentPath!);
-      // You can re-add the "root detection" logic here if needed
-    } else {
-      displayName = "/";
-    }
-
     final pvd = _maybeProvider();
 
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 12),
-          child: Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      displayName,
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      t
-                          .t('files_total_items')
-                          .replaceAll(
-                            '{count}',
-                            (folders.length + files.length).toString(),
-                          ),
-                      style: Theme.of(context).textTheme.bodySmall,
-                    ),
-                  ],
-                ),
+    return RefreshIndicator(
+      onRefresh: _refresh,
+      child: ListView(
+        controller: _listingScrollController,
+        padding: const EdgeInsets.only(bottom: 16),
+        physics: const AlwaysScrollableScrollPhysics(),
+        children: [
+          ...folders.map(
+            (f) => Container(
+              margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 12),
+              child: FolderEntryCard(
+                info: f,
+                onTap: () => _openFolder(f.path),
+                onMenuSelected: (v) => _handleFolderMenu(v, f),
               ),
-              IconButton(
-                padding: EdgeInsets.zero,
-                tooltip: t.t('files_sort_filter_tooltip'),
-                icon: const Icon(Icons.tune),
-                onPressed: () => _openFilterDialog(),
-              ),
-              IconButton(
-                onPressed: () {
-                  showNewFolderSheet(
-                    context: context,
-                    onCreate: (String folderName) async {
-                      if (_currentPath == null || folderName.trim().isEmpty)
-                        return;
-                      await context.read<FileSystemProvider>().createFolder(
-                        _currentPath!,
-                        folderName,
-                      );
-                    },
-                  );
-                },
-                icon: const Icon(Icons.create_new_folder_outlined),
-              ),
-            ],
-          ),
-        ),
-        Expanded(
-          child: RefreshIndicator(
-            onRefresh: _refresh,
-            child: ListView(
-              controller: _listingScrollController,
-              padding: const EdgeInsets.only(bottom: 16),
-              physics: const AlwaysScrollableScrollPhysics(),
-              children: [
-                ...folders.map(
-                  (f) => Container(
-                    margin: const EdgeInsets.symmetric(
-                      vertical: 4,
-                      horizontal: 12,
-                    ),
-                    child: FolderEntryCard(
-                      info: f,
-                      onTap: () => _openFolder(f.path),
-                      onMenuSelected: (v) => _handleFolderMenu(v, f),
-                    ),
-                  ),
-                ),
-                ...files.map(
-                  (f) => Container(
-                    margin: const EdgeInsets.symmetric(
-                      vertical: 4,
-                      horizontal: 12,
-                    ),
-                    child: DocEntryCard(
-                      info: f,
-                      selectable: _selectionEnabled,
-                      selected: (pvd?.isSelected(f.path) ?? false),
-                      onToggleSelected: _selectionEnabled
-                          ? () => pvd?.toggle(f)
-                          : null,
-                      onOpen: _selectionEnabled
-                          ? () => pvd?.toggle(f)
-                          : () => OpenService.open(f.path),
-                      onLongPress: () {
-                        if (!_selectionEnabled) {
-                          pvd?.enable();
-                        }
-                        pvd?.toggle(f);
-                      },
-                      onMenu: (v) => _handleFileMenu(v, f),
-                    ),
-                  ),
-                ),
-                if (isLoading)
-                  const Padding(
-                    padding: EdgeInsets.all(20),
-                    child: Center(child: CircularProgressIndicator()),
-                  ),
-              ],
             ),
           ),
-        ),
-      ],
+          ...files.map(
+            (f) => Container(
+              margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 12),
+              child: DocEntryCard(
+                info: f,
+                selectable: _selectionEnabled,
+                selected: (pvd?.isSelected(f.path) ?? false),
+                onToggleSelected: _selectionEnabled
+                    ? () => pvd?.toggle(f)
+                    : null,
+                onOpen: _selectionEnabled
+                    ? () => pvd?.toggle(f)
+                    : () => OpenService.open(f.path),
+                onLongPress: () {
+                  if (!_selectionEnabled) {
+                    pvd?.enable();
+                  }
+                  pvd?.toggle(f);
+                },
+                onMenu: (v) => _handleFileMenu(v, f),
+              ),
+            ),
+          ),
+          if (isLoading)
+            const Padding(
+              padding: EdgeInsets.all(20),
+              child: Center(child: CircularProgressIndicator()),
+            ),
+        ],
+      ),
     );
   }
 
