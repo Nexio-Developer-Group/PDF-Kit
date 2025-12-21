@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'core/app_export.dart';
 import 'providers/locale_provider.dart';
 import 'package:pdf_kit/providers/theme_provider.dart';
+import 'package:pdf_kit/providers/file_system_provider.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -22,6 +23,7 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => LocaleProvider()),
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
+        ChangeNotifierProvider.value(value: Get.find<FileSystemProvider>()),
       ],
       child: Consumer2<LocaleProvider, ThemeProvider>(
         builder: (context, localeProvider, themeProvider, _) {

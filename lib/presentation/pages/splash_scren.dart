@@ -45,7 +45,7 @@ class _PdfKitSplashPageState extends State<PdfKitSplashPage> {
               width: 140,
               height: 140,
               child: Image.asset(
-                'assets/app_icon1.png',
+                'assets/app_icon.png',
                 fit: BoxFit.cover,
                 errorBuilder: (c, e, s) =>
                     Icon(Icons.picture_as_pdf, size: 140, color: Colors.blue),

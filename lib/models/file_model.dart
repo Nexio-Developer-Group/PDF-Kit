@@ -13,9 +13,12 @@ class FileInfo {
   final Map<String, dynamic>? mediaInfo; // not used for videos here
   final bool isDirectory;
   final int? childrenCount;
+  final bool isExpanded; // for tree view UI
+  final String? contentHash; // for diffing/versioning
+  final List<FileInfo>? children; // cached children for tree structures
 
   const FileInfo({
-    required this.name, 
+    required this.name,
     required this.path,
     required this.extension,
     required this.size,
@@ -26,6 +29,9 @@ class FileInfo {
     this.mediaInfo,
     this.isDirectory = false,
     this.childrenCount,
+    this.isExpanded = false,
+    this.contentHash,
+    this.children,
   });
 
   factory FileInfo.fromJson(Map<String, dynamic> json) => FileInfo(
@@ -46,6 +52,11 @@ class FileInfo {
         : null,
     isDirectory: json['isDirectory'] ?? false,
     childrenCount: json['childrenCount'],
+    isExpanded: json['isExpanded'] ?? false,
+    contentHash: json['contentHash'],
+    children: json['children'] != null
+        ? (json['children'] as List).map((e) => FileInfo.fromJson(e)).toList()
+        : null,
   );
 
   Map<String, dynamic> toJson() => {
@@ -60,6 +71,9 @@ class FileInfo {
     'mediaInfo': mediaInfo,
     'isDirectory': isDirectory,
     'childrenCount': childrenCount,
+    'isExpanded': isExpanded,
+    'contentHash': contentHash,
+    'children': children?.map((e) => e.toJson()).toList(),
   };
 
   /// 🧩 Create a modified copy.
@@ -73,6 +87,9 @@ class FileInfo {
     String? parentDirectory,
     Map<String, dynamic>? exifData,
     Map<String, dynamic>? mediaInfo,
+    bool? isExpanded,
+    String? contentHash,
+    List<FileInfo>? children,
   }) {
     return FileInfo(
       name: name ?? this.name,
@@ -84,6 +101,11 @@ class FileInfo {
       parentDirectory: parentDirectory ?? this.parentDirectory,
       exifData: exifData ?? this.exifData,
       mediaInfo: mediaInfo ?? this.mediaInfo,
+      isDirectory: isDirectory,
+      childrenCount: childrenCount,
+      isExpanded: isExpanded ?? this.isExpanded,
+      contentHash: contentHash ?? this.contentHash,
+      children: children ?? this.children,
     );
   }
 
@@ -110,7 +132,9 @@ class FileInfo {
   mimeType: $mimeType,
   parentDirectory: $parentDirectory,
   exifData: ${exifData != null ? jsonEncode(exifData) : 'null'},
-  mediaInfo: ${mediaInfo != null ? jsonEncode(mediaInfo) : 'null'}
+  mediaInfo: ${mediaInfo != null ? jsonEncode(mediaInfo) : 'null'},
+  isExpanded: $isExpanded,
+  children: ${children?.length ?? 0}
 )''';
   }
 
@@ -124,7 +148,9 @@ class FileInfo {
           path == other.path &&
           extension == other.extension &&
           size == other.size &&
-          mimeType == other.mimeType;
+          mimeType == other.mimeType &&
+          isExpanded == other.isExpanded &&
+          contentHash == other.contentHash;
 
   /// 🔢 Hash code.
   @override
@@ -133,5 +159,7 @@ class FileInfo {
       path.hashCode ^
       extension.hashCode ^
       size.hashCode ^
-      mimeType.hashCode;
+      mimeType.hashCode ^
+      isExpanded.hashCode ^
+      contentHash.hashCode;
 }

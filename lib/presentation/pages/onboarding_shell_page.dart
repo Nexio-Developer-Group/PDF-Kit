@@ -25,16 +25,6 @@ class _OnboardingShellPageState extends State<OnboardingShellPage> {
         content: const OnboardingContentView(child: OnboardingImage1()),
       ),
       OnboardingPageModel(
-        title: t('onboarding_screen2_title'),
-        subtitle: t('onboarding_screen2_subtitle'),
-        content: const OnboardingContentView(child: OnboardingImage2()),
-      ),
-      OnboardingPageModel(
-        title: t('onboarding_screen3_title'),
-        subtitle: t('onboarding_screen3_subtitle'),
-        content: const OnboardingContentView(child: OnboardingImage3()),
-      ),
-      OnboardingPageModel(
         title: t('onboarding_screen4_title'),
         subtitle: t('onboarding_screen4_subtitle'),
         content: const OnboardingContentView(child: LanguageSelectionContent()),

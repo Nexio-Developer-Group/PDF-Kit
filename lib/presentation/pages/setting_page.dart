@@ -164,7 +164,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 width: 40,
                 height: 40,
                 child: Image.asset(
-                  'assets/app_icon1.png',
+                  'assets/app_icon.png',
                   width: 40,
                   height: 40,
                   fit: BoxFit.cover,

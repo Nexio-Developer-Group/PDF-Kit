@@ -1,6 +1,7 @@
 import 'package:pdf_kit/presentation/provider/selection_provider.dart';
 import 'package:pdf_kit/core/app_export.dart';
 import 'package:pdf_kit/service/action_callback_manager.dart';
+import 'package:pdf_kit/providers/file_system_provider.dart';
 
 /// Selection Implementation
 SelectionProvider ensureSelection(String key) {
@@ -43,4 +44,5 @@ class SelectionManager {
 Future<void> initDI() async {
   Get.put<SelectionManager>(SelectionManager(), permanent: true);
   Get.put<ActionCallbackManager>(ActionCallbackManager(), permanent: true);
+  Get.put<FileSystemProvider>(FileSystemProvider(), permanent: true);
 }

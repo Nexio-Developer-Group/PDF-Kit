@@ -4,6 +4,8 @@ import 'package:pdf_kit/presentation/pages/page_export.dart';
 import 'package:pdf_kit/presentation/provider/provider_export.dart';
 import 'package:pdf_kit/presentation/layouts/layout_export.dart';
 import 'package:pdf_kit/service/action_callback_manager.dart';
+import 'package:pdf_kit/presentation/pages/files_root_page.dart'; // [NEW]
+import 'package:pdf_kit/presentation/layouts/file_browser_shell.dart'; // [NEW]
 
 ShellRoute buildSelectionShellRoute({
   required GlobalKey<NavigatorState> rootNavKey,
@@ -182,38 +184,55 @@ ShellRoute buildSelectionShellRoute({
         path: '/files-fullscreen',
         pageBuilder: (context, state) => MaterialPage(
           key: state.pageKey,
-          child: AndroidFilesScreen(
-            initialPath: state.uri.queryParameters['path'],
-            selectable: true,
+          child: FilesRootPage(
             isFullscreenRoute: true,
             selectionId: state.uri.queryParameters['selectionId'],
             selectionActionText: state.uri.queryParameters['actionText'],
           ),
         ),
         routes: [
-          GoRoute(
-            name: AppRouteName.filesFolderFullScreen,
-            path: 'folder',
-            pageBuilder: (context, state) => MaterialPage(
-              key: state.pageKey,
-              child: AndroidFilesScreen(
-                initialPath: state.uri.queryParameters['path'],
-                selectable: true,
-                isFullscreenRoute: true,
-                selectionId: state.uri.queryParameters['selectionId'],
-                selectionActionText: state.uri.queryParameters['actionText'],
+          // Persistent shell for folder browsing in selection mode
+          ShellRoute(
+            pageBuilder: (context, state, child) {
+              return MaterialPage(
+                key: state.pageKey,
+                child: FileBrowserShell(
+                  selectable: true,
+                  isFullscreenRoute: true,
+                  selectionId: state.uri.queryParameters['selectionId'],
+                  selectionActionText: state.uri.queryParameters['actionText'],
+                  child: child,
+                ),
+              );
+            },
+            routes: [
+              GoRoute(
+                name: AppRouteName.filesFolderFullScreen,
+                path: 'folder',
+                pageBuilder: (context, state) => MaterialPage(
+                  key: state.pageKey,
+                  child: AndroidFilesScreen(
+                    initialPath: state.uri.queryParameters['path'],
+                    selectable: true,
+                    isFullscreenRoute: true,
+                    selectionId: state.uri.queryParameters['selectionId'],
+                    selectionActionText:
+                        state.uri.queryParameters['actionText'],
+                  ),
+                ),
               ),
-            ),
+            ],
           ),
+          // Search stays as direct child (no shell)
           GoRoute(
-            name: AppRouteName.filesSearchFullscreen, // NEW
+            name: AppRouteName.filesSearchFullscreen,
             path: 'search',
             pageBuilder: (context, state) => MaterialPage(
               key: state.pageKey,
               child: SearchFilesScreen(
                 initialPath: state.uri.queryParameters['path'],
-                selectable: true, // NEW
-                isFullscreenRoute: true, // NEW
+                selectable: true,
+                isFullscreenRoute: true,
                 selectionId: state.uri.queryParameters['selectionId'],
                 selectionActionText: state.uri.queryParameters['actionText'],
               ),
