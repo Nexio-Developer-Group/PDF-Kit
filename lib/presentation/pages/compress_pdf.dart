@@ -154,8 +154,7 @@ class _CompressPdfPageState extends State<CompressPdfPage> {
                   children: [
                     Text(
                       AppLocalizations.of(context).t('compress_pdf_title'),
-                      style: theme.textTheme.headlineMedium?.copyWith(
-                        fontSize: 28,
+                      style: theme.textTheme.headlineSmall?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -164,9 +163,7 @@ class _CompressPdfPageState extends State<CompressPdfPage> {
                       AppLocalizations.of(
                         context,
                       ).t('compress_pdf_description'),
-                      style: theme.textTheme.bodyLarge?.copyWith(
-                        fontWeight: FontWeight.w500,
-                      ),
+                      style: theme.textTheme.bodyMedium?.copyWith(height: 1.4),
                     ),
                     const SizedBox(height: 20),
                     hasFile

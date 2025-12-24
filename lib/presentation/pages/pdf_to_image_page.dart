@@ -564,7 +564,7 @@ class _PdfToImagePageState extends State<PdfToImagePage> {
               child: SafeArea(
                 child: SizedBox(
                   width: double.infinity,
-                  height: 56,
+                  height: 48,
                   child: FilledButton(
                     onPressed: _isPageSelectorMode
                         ? () {

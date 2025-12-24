@@ -13,6 +13,8 @@ import 'package:pdf_kit/presentation/pages/home_page.dart';
 import 'package:pdf_kit/core/app_export.dart';
 import 'package:pdf_kit/presentation/sheets/delete_file_sheet.dart';
 import 'package:pdf_kit/presentation/sheets/rename_file_sheet.dart';
+import 'package:pdf_kit/presentation/layouts/file_browser_filter_scope.dart';
+import 'package:pdf_kit/presentation/models/filter_models.dart';
 
 class AndroidFilesScreen extends StatefulWidget {
   final String? initialPath;
@@ -146,9 +148,79 @@ class _AndroidFilesScreenState extends State<AndroidFilesScreen> {
       '🖼️ [AndroidFilesScreen] build. Path: $_currentPath, Loading: $loading, Files: ${rawFiles.length}',
     );
 
-    // Separate folders and files (no filtering/sorting - shell handles that)
-    final folders = rawFiles.where((e) => e.isDirectory).toList();
-    final files = rawFiles.where((e) => !e.isDirectory).toList();
+    // Get filter settings from shell (if available)
+    final filterScope = FileBrowserFilterScope.maybeOf(context);
+    final sortOption = filterScope?.sortOption ?? SortOption.name;
+    final typeFilters = filterScope?.typeFilters ?? {};
+
+    // Apply type filters if any are set
+    List<FileInfo> filteredFiles = rawFiles;
+    if (typeFilters.isNotEmpty) {
+      filteredFiles = rawFiles.where((file) {
+        if (file.isDirectory) {
+          return typeFilters.contains(TypeFilter.folder);
+        }
+
+        final ext = file.extension.toLowerCase();
+        if (ext == 'pdf') {
+          return typeFilters.contains(TypeFilter.pdf);
+        }
+
+        // Common image extensions
+        const imageExts = {
+          'jpg',
+          'jpeg',
+          'png',
+          'gif',
+          'webp',
+          'bmp',
+          'heic',
+          'heif',
+        };
+        if (imageExts.contains(ext)) {
+          return typeFilters.contains(TypeFilter.image);
+        }
+
+        // For other file types, don't show them if filtering is active
+        return false;
+      }).toList();
+    }
+
+    // Apply sorting
+    filteredFiles.sort((a, b) {
+      switch (sortOption) {
+        case SortOption.name:
+          // Folders first, then files, alphabetically within each group
+          if (a.isDirectory && !b.isDirectory) return -1;
+          if (!a.isDirectory && b.isDirectory) return 1;
+          return a.name.toLowerCase().compareTo(b.name.toLowerCase());
+
+        case SortOption.modified:
+          // Most recent first
+          final aTime = a.lastModified ?? DateTime(0);
+          final bTime = b.lastModified ?? DateTime(0);
+          return bTime.compareTo(aTime);
+
+        case SortOption.type:
+          // Sort by extension: folders first, then by extension, then by name
+          if (a.isDirectory && !b.isDirectory) return -1;
+          if (!a.isDirectory && b.isDirectory) return 1;
+          if (a.isDirectory && b.isDirectory) {
+            return a.name.toLowerCase().compareTo(b.name.toLowerCase());
+          }
+          // For files, compare extensions first
+          final extCompare = a.extension.toLowerCase().compareTo(
+            b.extension.toLowerCase(),
+          );
+          if (extCompare != 0) return extCompare;
+          // Same extension - sort by name
+          return a.name.toLowerCase().compareTo(b.name.toLowerCase());
+      }
+    });
+
+    // Separate folders and files from filtered/sorted list
+    final folders = filteredFiles.where((e) => e.isDirectory).toList();
+    final files = filteredFiles.where((e) => !e.isDirectory).toList();
 
     return _buildListing(folders, files, context, loading);
   }

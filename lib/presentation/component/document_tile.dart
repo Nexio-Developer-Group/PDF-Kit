@@ -8,7 +8,6 @@ import 'package:pdfx/pdfx.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:pdf_kit/models/file_model.dart';
 import 'package:pdf_kit/core/app_export.dart';
-import 'package:go_router/go_router.dart';
 
 class _Thumb {
   final Uint8List bytes;
@@ -177,16 +176,22 @@ class _DocEntryCardState extends State<DocEntryCard> {
   void _handleTap(BuildContext context) {
     if (widget.disabled) return;
 
-    // If it's a PDF, open the viewer page
-    if (_isPdf) {
+    // Route both PDFs and images to the viewer page
+    if (_isPdf || _isImage) {
       context.pushNamed(
         AppRouteName.pdfViewer,
         queryParameters: {'path': widget.info.path},
       );
     } else {
-      // For non-PDFs, use the original onOpen callback
+      // For other file types, use the original onOpen callback
       widget.onOpen?.call();
     }
+  }
+
+  void _handleThumbnailTap(BuildContext context) {
+    if (widget.disabled) return;
+    // Thumbnail tap always opens the viewer, even in selection mode
+    _handleTap(context);
   }
 
   @override
@@ -204,101 +209,134 @@ class _DocEntryCardState extends State<DocEntryCard> {
       elevation: 2,
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
-        onTap: widget.disabled ? null : () => _handleTap(context),
+        onTap: widget.disabled
+            ? null
+            : widget.selectable
+            ? widget.onToggleSelected
+            : () => _handleTap(context),
         child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8),
+          padding:
+              const EdgeInsets.symmetric(vertical: 6) +
+              EdgeInsets.only(left: 0, right: 12),
           child: Row(
             children: [
-              Padding(
+                Padding(
                 padding: const EdgeInsets.only(right: 12, left: 12),
-                child: FutureBuilder<_Thumb?>(
-                  future: _thumbnailFuture, // Use the cached future
-                  builder: (context, snap) {
-                    Widget child;
-                    if (snap.connectionState == ConnectionState.waiting) {
-                      child = const Center(
-                        child: SizedBox(
-                          width: 70,
-                          height: 70,
-                          child: ShimmerBox(
-                            height: 70,
-                            width: 70,
-                            borderRadius: BorderRadiusGeometry.all(
-                              Radius.circular(12),
+                child: InkWell(
+                  // In selectable mode, thumbnail opens viewer; otherwise handled by parent
+                  onTap: widget.selectable && !widget.disabled
+                      ? () => _handleThumbnailTap(context)
+                      : null,
+                  borderRadius: BorderRadius.circular(12),
+                  child: FutureBuilder<_Thumb?>(
+                    future: _thumbnailFuture, // Use the cached future
+                    builder: (context, snap) {
+                      Widget child;
+                      if (snap.connectionState == ConnectionState.waiting) {
+                        child = const Center(
+                          child: SizedBox(
+                            width: 56,
+                            height: 56,
+                            child: ShimmerBox(
+                              height: 56,
+                              width: 56,
+                              borderRadius: BorderRadiusGeometry.all(
+                                Radius.circular(10),
+                              ),
                             ),
                           ),
-                        ),
-                      );
-                    } else if (snap.data != null) {
-                      final t = snap.data!;
-                      final fit = (t.height < t.width)
-                          ? BoxFit.fitWidth
-                          : BoxFit.fitHeight;
+                        );
+                      } else if (snap.data != null) {
+                        final t = snap.data!;
+                        final fit = (t.height < t.width)
+                            ? BoxFit.fitWidth
+                            : BoxFit.fitHeight;
 
-                      child = ClipRRect(
-                        borderRadius: BorderRadius.circular(12),
-                        child: SizedBox.square(
-                          dimension: 70,
-                          child: Stack(
-                            children: [
-                              // Thumbnail
-                              Positioned.fill(
-                                child: Image.memory(
-                                  t.bytes,
-                                  fit: fit,
-                                  cacheWidth: 140,
-                                  cacheHeight: 140,
+                        child = ClipRRect(
+                          borderRadius: BorderRadius.circular(10),
+                          child: SizedBox.square(
+                            dimension: 56,
+                            child: Stack(
+                              children: [
+                                // Thumbnail
+                                Positioned.fill(
+                                  child: Image.memory(
+                                    t.bytes,
+                                    fit: fit,
+                                    cacheWidth: 140,
+                                    cacheHeight: 140,
+                                  ),
                                 ),
-                              ),
 
-                              // Extension badge (top‑left)
-                              Positioned(
-                                top: 4,
-                                left: 4,
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 3,
-                                    vertical: 1,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: Colors.black.withOpacity(
-                                      0.6,
-                                    ), // not pure black
-                                    borderRadius: BorderRadius.circular(2),
-                                  ),
-                                  child: Text(
-                                    widget.info.extension.toUpperCase(),
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.w600,
+                                // Extension badge (top‑left)
+                                Positioned(
+                                  top: 4,
+                                  left: 4,
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 2.5,
+                                      vertical: 1,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: Colors.black.withOpacity(
+                                        0.6,
+                                      ), // not pure black
+                                      borderRadius: BorderRadius.circular(2),
+                                    ),
+                                    child: Text(
+                                      widget.info.extension.toUpperCase(),
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 9,
+                                        fontWeight: FontWeight.w600,
+                                      ),
                                     ),
                                   ),
                                 ),
-                              ),
-                            ],
+
+                                // Eye icon overlay in selectable mode
+                                if (widget.selectable)
+                                  Positioned.fill(
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        color: Colors.black.withAlpha(23 * 3),
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      child: Icon(
+                                        Icons.visibility_outlined,
+                                        color: Colors.white.withAlpha(23 * 5),
+                                        size: 28,
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            ),
                           ),
-                        ),
+                        );
+                      } else {
+                        child = Container(
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.surfaceContainerHighest,
+                          width: 56,
+                          height: 56,
+                          child: Icon(
+                            _isPdf
+                                ? Icons.picture_as_pdf
+                                : Icons.image_outlined,
+                            size: 34,
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurfaceVariant,
+                          ),
+                        );
+                      }
+                      return ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: child,
                       );
-                    } else {
-                      child = Container(
-                        color: Theme.of(
-                          context,
-                        ).colorScheme.surfaceContainerHighest,
-                        width: 70,
-                        height: 70,
-                        child: Icon(
-                          _isPdf ? Icons.picture_as_pdf : Icons.image_outlined,
-                          size: 42,
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
-                        ),
-                      );
-                    }
-                    return ClipRRect(
-                      borderRadius: BorderRadius.circular(16),
-                      child: child,
-                    );
-                  },
+                    },
+                  ),
                 ),
               ),
               Expanded(
@@ -310,12 +348,8 @@ class _DocEntryCardState extends State<DocEntryCard> {
                       widget.info.name,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        color: widget.disabled
-                            ? Theme.of(
-                                context,
-                              ).textTheme.titleMedium?.color?.withOpacity(0.5)
-                            : null,
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                     Text(
@@ -334,7 +368,7 @@ class _DocEntryCardState extends State<DocEntryCard> {
                           children: [
                             Icon(
                               Icons.sd_storage,
-                              size: 14,
+                              size: 12,
                               color: Theme.of(
                                 context,
                               ).colorScheme.onSurface.withAlpha(153),
@@ -358,7 +392,7 @@ class _DocEntryCardState extends State<DocEntryCard> {
                             children: [
                               Icon(
                                 Icons.auto_stories,
-                                size: 14,
+                                size: 12,
                                 color: Theme.of(
                                   context,
                                 ).colorScheme.onSurface.withAlpha(153),

@@ -274,25 +274,23 @@ class _ImagesToPdfPageState extends State<ImagesToPdfPage> {
                       children: [
                         Text(
                           t.t('images_to_pdf_title'),
-                          style: theme.textTheme.headlineMedium?.copyWith(
-                            fontSize: 28,
+                          style: theme.textTheme.headlineSmall?.copyWith(
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 12),
                         Text(
                           t.t('images_to_pdf_description'),
                           style: theme.textTheme.bodyMedium?.copyWith(
-                            fontSize: 14,
-                            height: 1.5,
+                            height: 1.4,
                           ),
                         ),
-                        const SizedBox(height: 24),
+                        const SizedBox(height: 16),
 
                         // File Name section
                         Text(
                           t.t('images_to_pdf_file_name_label'),
-                          style: theme.textTheme.titleMedium,
+                          style: theme.textTheme.titleSmall,
                         ),
                         const SizedBox(height: 8),
                         TextField(
@@ -317,12 +315,12 @@ class _ImagesToPdfPageState extends State<ImagesToPdfPage> {
                             ),
                           ),
                         ),
-                        const SizedBox(height: 24),
+                        const SizedBox(height: 16),
 
                         // Destination Folder Section
                         Text(
                           t.t('images_to_pdf_save_to_folder_label'),
-                          style: theme.textTheme.titleMedium,
+                          style: theme.textTheme.titleSmall,
                         ),
                         const SizedBox(height: 8),
                         _DestinationFolderSelector(
@@ -331,7 +329,7 @@ class _ImagesToPdfPageState extends State<ImagesToPdfPage> {
                           onTap: _selectDestinationFolder,
                           disabled: _isConverting,
                         ),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 12),
                         Row(
                           children: [
                             Expanded(
@@ -342,7 +340,7 @@ class _ImagesToPdfPageState extends State<ImagesToPdfPage> {
                                       '{count}',
                                       files.length.toString(),
                                     ),
-                                style: theme.textTheme.titleMedium,
+                                style: theme.textTheme.titleSmall,
                               ),
                             ),
                             FilledButton(
@@ -420,7 +418,7 @@ class _ImagesToPdfPageState extends State<ImagesToPdfPage> {
                   // Add More Files Button
                   SizedBox(
                     width: double.infinity,
-                    height: 56,
+                    height: 48,
                     child: OutlinedButton.icon(
                       onPressed: _isConverting
                           ? null
@@ -445,7 +443,7 @@ class _ImagesToPdfPageState extends State<ImagesToPdfPage> {
                   // Convert Button
                   SizedBox(
                     width: double.infinity,
-                    height: 56,
+                    height: 48,
                     child: FilledButton(
                       onPressed: (files.length >= 2 && !_isConverting)
                           ? () => _handleConvert(context, selection)
@@ -497,7 +495,7 @@ class _DestinationFolderSelector extends StatelessWidget {
       onTap: disabled ? null : onTap,
       borderRadius: BorderRadius.circular(12),
       child: Container(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           border: Border.all(
             color: disabled
@@ -536,7 +534,7 @@ class _DestinationFolderSelector extends StatelessWidget {
                     color: disabled
                         ? theme.colorScheme.onSurfaceVariant.withOpacity(0.4)
                         : theme.colorScheme.primary,
-                    size: 24,
+                    size: 20,
                   ),
                   const SizedBox(width: 12),
                   Expanded(

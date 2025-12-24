@@ -153,19 +153,17 @@ class _UnlockPdfPageState extends State<UnlockPdfPage> {
                 children: [
                   Text(
                     t.t('unlock_pdf_title'),
-                    style: theme.textTheme.headlineMedium?.copyWith(
-                      fontSize: 28,
+                    style: theme.textTheme.headlineSmall?.copyWith(
                       fontWeight: FontWeight.bold,
                       color: Colors.black,
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 12),
                   Text(
                     t.t('unlock_pdf_description'),
                     style: theme.textTheme.bodyMedium?.copyWith(
-                      fontSize: 14,
                       color: Colors.black87,
-                      height: 1.5,
+                      height: 1.4,
                     ),
                   ),
                   const SizedBox(height: 24),
@@ -269,7 +267,7 @@ class _UnlockPdfPageState extends State<UnlockPdfPage> {
                     minimum: const EdgeInsets.fromLTRB(16, 0, 16, 16),
                     child: SizedBox(
                       width: double.infinity,
-                      height: 56,
+                      height: 48,
                       child: FilledButton(
                         onPressed: !_isUnlocking
                             ? () => _handleUnlock(context, selection)

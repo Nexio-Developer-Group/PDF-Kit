@@ -155,20 +155,14 @@ class _ProtectPdfPageState extends State<ProtectPdfPage> {
                 children: [
                   Text(
                     t.t('protect_pdf_title'),
-                    style: theme.textTheme.headlineMedium?.copyWith(
-                      fontSize: 28,
+                    style: theme.textTheme.headlineSmall?.copyWith(
                       fontWeight: FontWeight.bold,
-                      color: Colors.black,
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 12),
                   Text(
                     t.t('protect_pdf_description'),
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      fontSize: 14,
-                      color: Colors.black87,
-                      height: 1.5,
-                    ),
+                    style: theme.textTheme.bodyMedium?.copyWith(height: 1.4),
                   ),
                   const SizedBox(height: 24),
 
@@ -274,17 +268,11 @@ class _ProtectPdfPageState extends State<ProtectPdfPage> {
                     minimum: const EdgeInsets.fromLTRB(16, 0, 16, 16),
                     child: SizedBox(
                       width: double.infinity,
-                      height: 56,
+                      height: 48,
                       child: FilledButton(
                         onPressed: !_isProtecting
                             ? () => _handleProtect(context, selection)
                             : null,
-                        style: FilledButton.styleFrom(
-                          backgroundColor: const Color(0xFF5B7FFF),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(28),
-                          ),
-                        ),
                         child: _isProtecting
                             ? const SizedBox(
                                 height: 24,
