@@ -82,6 +82,9 @@
 
   "folder_picker_title": "Select Folder",
   "folder_picker_description": "Browse and select a folder where you want to save your files",
+  "folder_picker_description_downloads": "Downloads folder",
+  "folder_picker_description_images": "Images folder",
+  "folder_picker_description_screenshots": "Screenshots folder",
   "folder_picker_no_folder_selected": "No folder selected yet",
   "folder_picker_select_button": "SELECT",
   "folder_picker_unable_to_load_title": "Unable to load folders",

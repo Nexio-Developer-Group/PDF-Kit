@@ -84,6 +84,11 @@
   "new_folder_field_hint": "ফোল্ডারের নাম লিখুন",
 
   "folder_picker_title": "ফোল্ডার নির্বাচন করুন",
+  "folder_picker_description": "আপনার ফাইল সংরক্ষণ করতে চান যেখানে ফোল্ডার ব্রাউজ এবং নির্বাচন করুন",
+  "folder_picker_description_downloads": "ডাউনলোড ফোল্ডার",
+  "folder_picker_description_images": "ছবি ফোল্ডার",
+  "folder_picker_description_screenshots": "স্ক্রিনশট ফোল্ডার",
+  "folder_picker_no_folder_selected": "এখনও কোনো ফোল্ডার নির্বাচন করা হয়নি",
   "folder_picker_select_button": "নির্বাচন",
   "folder_picker_unable_to_load_title": "ফোল্ডার লোড করা যাচ্ছে না",
   "folder_picker_no_folders": "কোনো ফোল্ডার পাওয়া যায়নি",

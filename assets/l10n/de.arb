@@ -84,6 +84,11 @@
   "new_folder_field_hint": "Ordnername eingeben",
 
   "folder_picker_title": "Ordner auswählen",
+  "folder_picker_description": "Durchsuchen und wählen Sie einen Ordner aus, in dem Sie Ihre Dateien speichern möchten",
+  "folder_picker_description_downloads": "Downloads-Ordner",
+  "folder_picker_description_images": "Bilder-Ordner",
+  "folder_picker_description_screenshots": "Screenshots-Ordner",
+  "folder_picker_no_folder_selected": "Noch kein Ordner ausgewählt",
   "folder_picker_select_button": "AUSWÄHLEN",
   "folder_picker_unable_to_load_title": "Ordner konnten nicht geladen werden",
   "folder_picker_no_folders": "Keine Ordner verfügbar",

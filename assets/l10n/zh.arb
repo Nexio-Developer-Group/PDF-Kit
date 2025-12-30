@@ -84,6 +84,11 @@
   "new_folder_field_hint": "输入文件夹名称",
 
   "folder_picker_title": "选择文件夹",
+  "folder_picker_description": "浏览并选择您想要保存文件的文件夹",
+  "folder_picker_description_downloads": "下载文件夹",
+  "folder_picker_description_images": "图片文件夹",
+  "folder_picker_description_screenshots": "截图文件夹",
+  "folder_picker_no_folder_selected": "尚未选择文件夹",
   "folder_picker_select_button": "选择",
   "folder_picker_unable_to_load_title": "无法加载文件夹",
   "folder_picker_no_folders": "无可用文件夹",

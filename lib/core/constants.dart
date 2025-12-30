@@ -23,6 +23,21 @@ class Constants {
   /// compressed before being added to PDF during merge operations.
   static const int imageSizeThreshold = 2 * 1024 * 1024; // 2 MB
 
+  // ========== Custom Folder Paths Configuration ==========
+
+  /// User-chosen Downloads folder path storage key
+  static const String downloadsFolderPathKey = 'custom_downloads_folder_path';
+
+  /// User-chosen Images folder path storage key
+  static const String imagesFolderPathKey = 'custom_images_folder_path';
+
+  /// User-chosen Screenshots folder path storage key
+  static const String screenshotsFolderPathKey =
+      'custom_screenshots_folder_path';
+
+  /// User-chosen PDF output folder path storage key
+  static const String pdfOutputFolderPathKey = 'custom_pdf_output_folder_path';
+
   // ========== PDF Merge Size Management Configuration ==========
 
   /// Target maximum size for merged PDF in MB

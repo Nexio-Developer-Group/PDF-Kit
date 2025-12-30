@@ -84,6 +84,11 @@
   "new_folder_field_hint": "フォルダー名を入力",
 
   "folder_picker_title": "フォルダーを選択",
+  "folder_picker_description": "ファイルを保存するフォルダーを参照して選択してください",
+  "folder_picker_description_downloads": "ダウンロードフォルダー",
+  "folder_picker_description_images": "画像フォルダー",
+  "folder_picker_description_screenshots": "スクリーンショットフォルダー",
+  "folder_picker_no_folder_selected": "まだフォルダーが選択されていません",
   "folder_picker_select_button": "選択",
   "folder_picker_unable_to_load_title": "フォルダーを読み込めません",
   "folder_picker_no_folders": "利用可能なフォルダーがありません",

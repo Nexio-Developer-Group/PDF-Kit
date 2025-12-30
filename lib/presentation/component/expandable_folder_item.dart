@@ -16,7 +16,6 @@ class ExpandableFolderItem extends StatelessWidget {
     final provider = context.watch<FolderPickerProvider>();
     final indent = level * 20.0;
     // Always assume folders can have children (they're directories)
-    final hasChildren = true;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

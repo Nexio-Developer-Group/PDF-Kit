@@ -69,6 +69,16 @@ class FileSystemProvider extends ChangeNotifier with WidgetsBindingObserver {
 
   // --- Actions ---
 
+  /// Check if a directory exists locally
+  Future<bool> directoryExists(String path) async {
+    try {
+      final dir = Directory(path);
+      return await dir.exists();
+    } catch (e) {
+      return false;
+    }
+  }
+
   Future<void> loadRoots() async {
     print('🔍 [FileSystemProvider] loadRoots called');
     final res = await PathService.volumes();

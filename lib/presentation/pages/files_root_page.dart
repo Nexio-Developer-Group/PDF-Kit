@@ -2,7 +2,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:pdf_kit/providers/file_system_provider.dart';
 import 'package:pdf_kit/core/app_export.dart';
-import 'package:provider/provider.dart';
+import 'package:pdf_kit/core/constants.dart';
+import 'package:pdf_kit/core/utility/storage_utility.dart';
 import 'package:pdf_kit/service/recent_file_service.dart';
 import 'package:pdf_kit/models/file_model.dart';
 import 'package:pdf_kit/presentation/component/document_tile.dart';
@@ -77,6 +78,113 @@ class _FilesRootPageState extends State<FilesRootPage> {
 
   bool get _selectionEnabled =>
       widget.isFullscreenRoute && (_maybeProvider()?.isEnabled ?? false);
+
+  /// Get stored folder path from preferences, or return default path
+  String? _getStoredPath(String prefsKey) {
+    return Prefs.getString(prefsKey);
+  }
+
+  /// Check if a folder exists on the file system
+  Future<bool> _folderExists(String path) async {
+    return context.read<FileSystemProvider>().directoryExists(path);
+  }
+
+  /// Navigate to folder if it exists, otherwise navigate to folder picker
+  Future<void> _navigateToFolderOrPicker({
+    required String prefsKey,
+    required String defaultPath,
+    required String pickerDescription,
+  }) async {
+    // 1. Check if user has a stored path
+    String? storedPath = _getStoredPath(prefsKey);
+
+    print('🔍 [Folder Navigation] Checking folder access');
+    print('📁 [Folder Navigation] Stored path: ${storedPath ?? "none"}');
+    print('📂 [Folder Navigation] Default path: $defaultPath');
+
+    // 2. Validate stored path if it exists
+    if (storedPath != null) {
+      bool storedExists = await _folderExists(storedPath);
+      if (storedExists) {
+        print(
+          '✅ [Folder Navigation] Stored folder exists. Navigating to: $storedPath',
+        );
+        _navigateToFolder(storedPath);
+        return;
+      } else {
+        print('❌ [Folder Navigation] Stored folder not found. Falling back.');
+        // Optional: clear invalid stored path?
+        // Prefs.remove(prefsKey);
+      }
+    }
+
+    // 3. Check default path
+    bool defaultExists = await _folderExists(defaultPath);
+    if (defaultExists) {
+      print(
+        '✅ [Folder Navigation] Default folder exists. Navigating to: $defaultPath',
+      );
+      // We don't necessarily force-save the default path unless we want to lock it in.
+      // But if the user later changes directories on their phone, checking default dynamically is better.
+      // However, if we want consistency, we can save it.
+      // For now, just navigate.
+      _navigateToFolder(defaultPath);
+      return;
+    }
+
+    // 4. Default also missing -> Show Picker
+    print(
+      '🎯 [Folder Navigation] Default folder missing. Showing folder picker.',
+    );
+
+    // Show explanation before picking? Or just open picker?
+    // User requested "navigate to the folder_picker_page and let the user select".
+    // We can show a snackbar explaining why if we want, but direct navigation is smoother.
+
+    _navigateToFolderPicker(prefsKey, pickerDescription);
+  }
+
+  /// Navigate to folder picker and handle result
+  Future<void> _navigateToFolderPicker(
+    String prefsKey,
+    String description,
+  ) async {
+    // Navigate to picker and wait for result
+    final selectedPath = await context.pushNamed<String>(
+      AppRouteName.folderPickScreen,
+      extra: {'description': description, 'prefsKey': prefsKey},
+    );
+
+    // If user selected a path
+    if (selectedPath != null && selectedPath.isNotEmpty) {
+      print('💾 [Folder Navigation] User selected path: $selectedPath');
+
+      // Save to storage
+      await Prefs.setString(prefsKey, selectedPath);
+
+      // Navigate to the selected folder
+      _navigateToFolder(selectedPath);
+    } else {
+      print('🚫 [Folder Navigation] User cancelled folder selection');
+    }
+  }
+
+  /// Navigate to a specific folder path
+  void _navigateToFolder(String path) {
+    final routeName = widget.isFullscreenRoute
+        ? AppRouteName.filesFolderFullScreen
+        : AppRouteName.filesFolder;
+
+    final params = <String, String>{'path': path};
+    if (widget.selectionId != null) {
+      params['selectionId'] = widget.selectionId!;
+    }
+    if (widget.selectionActionText != null) {
+      params['actionText'] = widget.selectionActionText!;
+    }
+
+    context.pushNamed(routeName, queryParameters: params);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -191,26 +299,14 @@ class _FilesRootPageState extends State<FilesRootPage> {
                                       label: t.t('files_downloads_folder'),
                                       color: Colors.blue,
                                       onTap: () {
-                                        final routeName =
-                                            widget.isFullscreenRoute
-                                            ? AppRouteName.filesFolderFullScreen
-                                            : AppRouteName.filesFolder;
-                                        final params = <String, String>{
-                                          'path':
-                                              '/storage/emulated/0/Download',
-                                        };
-                                        if (widget.selectionId != null) {
-                                          params['selectionId'] =
-                                              widget.selectionId!;
-                                        }
-                                        if (widget.selectionActionText !=
-                                            null) {
-                                          params['actionText'] =
-                                              widget.selectionActionText!;
-                                        }
-                                        context.pushNamed(
-                                          routeName,
-                                          queryParameters: params,
+                                        _navigateToFolderOrPicker(
+                                          prefsKey:
+                                              Constants.downloadsFolderPathKey,
+                                          defaultPath:
+                                              '/storage/emulated/0/Download_INVALID',
+                                          pickerDescription: t.t(
+                                            'folder_picker_description_downloads',
+                                          ),
                                         );
                                       },
                                     ),
@@ -227,26 +323,14 @@ class _FilesRootPageState extends State<FilesRootPage> {
                                       label: t.t('files_pdfs_folder'),
                                       color: Colors.red,
                                       onTap: () {
-                                        final routeName =
-                                            widget.isFullscreenRoute
-                                            ? AppRouteName.filesFolderFullScreen
-                                            : AppRouteName.filesFolder;
-                                        final params = <String, String>{
-                                          'path':
-                                              '/storage/emulated/0/Download',
-                                        };
-                                        if (widget.selectionId != null) {
-                                          params['selectionId'] =
-                                              widget.selectionId!;
-                                        }
-                                        if (widget.selectionActionText !=
-                                            null) {
-                                          params['actionText'] =
-                                              widget.selectionActionText!;
-                                        }
-                                        context.pushNamed(
-                                          routeName,
-                                          queryParameters: params,
+                                        _navigateToFolderOrPicker(
+                                          prefsKey:
+                                              Constants.downloadsFolderPathKey,
+                                          defaultPath:
+                                              '/storage/emulated/0/Download_INVALID',
+                                          pickerDescription: t.t(
+                                            'folder_picker_description_downloads',
+                                          ),
                                         );
                                       },
                                     ),
@@ -259,26 +343,14 @@ class _FilesRootPageState extends State<FilesRootPage> {
                                       label: t.t('files_images_folder'),
                                       color: Colors.purple,
                                       onTap: () {
-                                        final routeName =
-                                            widget.isFullscreenRoute
-                                            ? AppRouteName.filesFolderFullScreen
-                                            : AppRouteName.filesFolder;
-                                        final params = <String, String>{
-                                          'path':
-                                              '/storage/emulated/0/DCIM/Camera',
-                                        };
-                                        if (widget.selectionId != null) {
-                                          params['selectionId'] =
-                                              widget.selectionId!;
-                                        }
-                                        if (widget.selectionActionText !=
-                                            null) {
-                                          params['actionText'] =
-                                              widget.selectionActionText!;
-                                        }
-                                        context.pushNamed(
-                                          routeName,
-                                          queryParameters: params,
+                                        _navigateToFolderOrPicker(
+                                          prefsKey:
+                                              Constants.imagesFolderPathKey,
+                                          defaultPath:
+                                              '/storage/emulated/0/DCIM/Camera_INVALID',
+                                          pickerDescription: t.t(
+                                            'folder_picker_description_images',
+                                          ),
                                         );
                                       },
                                     ),
@@ -295,26 +367,14 @@ class _FilesRootPageState extends State<FilesRootPage> {
                                       label: t.t('files_screenshots_folder'),
                                       color: Colors.green,
                                       onTap: () {
-                                        final routeName =
-                                            widget.isFullscreenRoute
-                                            ? AppRouteName.filesFolderFullScreen
-                                            : AppRouteName.filesFolder;
-                                        final params = <String, String>{
-                                          'path':
-                                              '/storage/emulated/0/DCIM/Screenshots',
-                                        };
-                                        if (widget.selectionId != null) {
-                                          params['selectionId'] =
-                                              widget.selectionId!;
-                                        }
-                                        if (widget.selectionActionText !=
-                                            null) {
-                                          params['actionText'] =
-                                              widget.selectionActionText!;
-                                        }
-                                        context.pushNamed(
-                                          routeName,
-                                          queryParameters: params,
+                                        _navigateToFolderOrPicker(
+                                          prefsKey: Constants
+                                              .screenshotsFolderPathKey,
+                                          defaultPath:
+                                              '/storage/emulated/0/DCIM/Screenshots_INVALID',
+                                          pickerDescription: t.t(
+                                            'folder_picker_description_screenshots',
+                                          ),
                                         );
                                       },
                                     ),
@@ -691,24 +751,11 @@ class _FilesRootPageState extends State<FilesRootPage> {
       elevation: 2,
       child: InkWell(
         onTap: () {
-          // Navigate to Downloads folder
-          // Use correct route based on selection mode
-          final routeName = widget.isFullscreenRoute
-              ? AppRouteName.filesFolderFullScreen
-              : AppRouteName.filesFolder;
-
-          // Downloads folder path on Android
-          final downloadsPath = '/storage/emulated/0/Download';
-
-          final params = <String, String>{'path': downloadsPath};
-          if (widget.selectionId != null) {
-            params['selectionId'] = widget.selectionId!;
-          }
-          if (widget.selectionActionText != null) {
-            params['actionText'] = widget.selectionActionText!;
-          }
-
-          context.pushNamed(routeName, queryParameters: params);
+          _navigateToFolderOrPicker(
+            prefsKey: Constants.downloadsFolderPathKey,
+            defaultPath: '/storage/emulated/0/Download_INVALID',
+            pickerDescription: t.t('folder_picker_description_downloads'),
+          );
         },
         borderRadius: BorderRadius.circular(12),
         child: Padding(
@@ -771,23 +818,11 @@ class _FilesRootPageState extends State<FilesRootPage> {
       elevation: 2,
       child: InkWell(
         onTap: () {
-          // Navigate to Downloads folder (for now, later can be PDF-specific location)
-          final routeName = widget.isFullscreenRoute
-              ? AppRouteName.filesFolderFullScreen
-              : AppRouteName.filesFolder;
-
-          // Navigate to Downloads folder for PDFs
-          final pdfsPath = '/storage/emulated/0/Download';
-
-          final params = <String, String>{'path': pdfsPath};
-          if (widget.selectionId != null) {
-            params['selectionId'] = widget.selectionId!;
-          }
-          if (widget.selectionActionText != null) {
-            params['actionText'] = widget.selectionActionText!;
-          }
-
-          context.pushNamed(routeName, queryParameters: params);
+          _navigateToFolderOrPicker(
+            prefsKey: Constants.pdfOutputFolderPathKey,
+            defaultPath: '/storage/emulated/0/Download_INVALID',
+            pickerDescription: t.t('folder_picker_description_pdfs'),
+          );
         },
         borderRadius: BorderRadius.circular(12),
         child: Padding(
@@ -834,23 +869,11 @@ class _FilesRootPageState extends State<FilesRootPage> {
       elevation: 2,
       child: InkWell(
         onTap: () {
-          // Navigate to DCIM/Camera folder
-          final routeName = widget.isFullscreenRoute
-              ? AppRouteName.filesFolderFullScreen
-              : AppRouteName.filesFolder;
-
-          // Try Camera folder first, fallback to DCIM if needed
-          final imagesPath = '/storage/emulated/0/DCIM/Camera';
-
-          final params = <String, String>{'path': imagesPath};
-          if (widget.selectionId != null) {
-            params['selectionId'] = widget.selectionId!;
-          }
-          if (widget.selectionActionText != null) {
-            params['actionText'] = widget.selectionActionText!;
-          }
-
-          context.pushNamed(routeName, queryParameters: params);
+          _navigateToFolderOrPicker(
+            prefsKey: Constants.imagesFolderPathKey,
+            defaultPath: '/storage/emulated/0/DCIM/Cameraaaa',
+            pickerDescription: t.t('folder_picker_description_images'),
+          );
         },
         borderRadius: BorderRadius.circular(12),
         child: Padding(
@@ -897,23 +920,11 @@ class _FilesRootPageState extends State<FilesRootPage> {
       elevation: 2,
       child: InkWell(
         onTap: () {
-          // Navigate to Screenshots folder
-          final routeName = widget.isFullscreenRoute
-              ? AppRouteName.filesFolderFullScreen
-              : AppRouteName.filesFolder;
-
-          // Screenshots folder path on Android
-          final screenshotsPath = '/storage/emulated/0/DCIM/Screenshots';
-
-          final params = <String, String>{'path': screenshotsPath};
-          if (widget.selectionId != null) {
-            params['selectionId'] = widget.selectionId!;
-          }
-          if (widget.selectionActionText != null) {
-            params['actionText'] = widget.selectionActionText!;
-          }
-
-          context.pushNamed(routeName, queryParameters: params);
+          _navigateToFolderOrPicker(
+            prefsKey: Constants.screenshotsFolderPathKey,
+            defaultPath: '/storage/emulated/0/DCIM/Screenshooooots',
+            pickerDescription: t.t('folder_picker_description_screenshots'),
+          );
         },
         borderRadius: BorderRadius.circular(12),
         child: Padding(

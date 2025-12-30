@@ -81,6 +81,11 @@
   "new_folder_field_hint": "फ़ोल्डर नाम दर्ज करें",
 
   "folder_picker_title": "फ़ोल्डर चुनें",
+  "folder_picker_description": "ब्राउज़ करें और एक फ़ोल्डर चुनें जहाँ आप अपनी फ़ाइलें सहेजना चाहते हैं",
+  "folder_picker_description_downloads": "डाउनलोड फ़ोल्डर",
+  "folder_picker_description_images": "इमेज फ़ोल्डर",
+  "folder_picker_description_screenshots": "स्क्रीनशॉट फ़ोल्डर",
+  "folder_picker_no_folder_selected": "अभी तक कोई फ़ोल्डर चयनित नहीं",
   "folder_picker_select_button": "चुनें",
   "folder_picker_unable_to_load_title": "फ़ोल्डर लोड नहीं हो सके",
   "folder_picker_no_folders": "कोई फ़ोल्डर उपलब्ध नहीं",
