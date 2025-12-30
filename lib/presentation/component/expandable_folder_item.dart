@@ -97,25 +97,21 @@ class ExpandableFolderItem extends StatelessWidget {
                 SizedBox(
                   width: 32,
                   height: 32,
-                  child: hasChildren
-                      ? IconButton(
-                          icon: Icon(
-                            node.isExpanded
-                                ? Icons.expand_less
-                                : Icons.expand_more,
-                            size: 20,
-                            color: Theme.of(
-                              context,
-                            ).colorScheme.onSurfaceVariant.withOpacity(0.6),
-                          ),
-                          onPressed: () => provider.toggleExpansion(node),
-                          padding: EdgeInsets.zero,
-                          constraints: const BoxConstraints(
-                            minWidth: 32,
-                            minHeight: 32,
-                          ),
-                        )
-                      : null,
+                  child: IconButton(
+                    icon: Icon(
+                      node.isExpanded ? Icons.expand_less : Icons.expand_more,
+                      size: 20,
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.onSurfaceVariant.withOpacity(0.6),
+                    ),
+                    onPressed: () => provider.toggleExpansion(node),
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(
+                      minWidth: 32,
+                      minHeight: 32,
+                    ),
+                  ),
                 ),
               ],
             ),
