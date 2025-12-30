@@ -276,9 +276,7 @@ class _MergePdfPageState extends State<MergePdfPage> {
                       children: [
                         Text(
                           t.t('merge_pdf_title'), // "Merge PDF"
-                          style: theme.textTheme.headlineSmall?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
+                          style: Theme.of(context).textTheme.titleLarge,
                         ),
                         const SizedBox(height: 12),
                         Text(

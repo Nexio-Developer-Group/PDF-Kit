@@ -31,13 +31,40 @@ class FilesRootPage extends StatefulWidget {
 }
 
 class _FilesRootPageState extends State<FilesRootPage> {
+  List<FileInfo>? _cachedRecentFiles;
+  bool _isLoadingRecent = true;
+
   @override
   void initState() {
     super.initState();
     // Load storage roots when page loads
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<FileSystemProvider>().loadRoots();
+      _loadRecentFiles();
     });
+  }
+
+  Future<void> _loadRecentFiles() async {
+    setState(() => _isLoadingRecent = true);
+    final result = await RecentFilesService.getRecentFiles();
+    result.fold(
+      (error) {
+        if (mounted) {
+          setState(() {
+            _cachedRecentFiles = [];
+            _isLoadingRecent = false;
+          });
+        }
+      },
+      (files) {
+        if (mounted) {
+          setState(() {
+            _cachedRecentFiles = files.take(5).toList();
+            _isLoadingRecent = false;
+          });
+        }
+      },
+    );
   }
 
   SelectionProvider? _maybeProvider() {
@@ -112,14 +139,15 @@ class _FilesRootPageState extends State<FilesRootPage> {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 12),
-                            child: Text(
-                              t.t('files_quick_access_title'),
-                              style: Theme.of(context).textTheme.titleMedium
-                                  ?.copyWith(fontWeight: FontWeight.w600),
-                            ),
+                          // Padding(
+                          //   padding: const EdgeInsets.symmetric(horizontal: 12),
+                          //   child:
+                          Text(
+                            t.t('files_quick_access_title'),
+                            style: Theme.of(context).textTheme.titleMedium
+                                ?.copyWith(fontWeight: FontWeight.w600),
                           ),
+                          // ),
                           const SizedBox(height: 8),
                           Column(
                             children: [
@@ -155,7 +183,7 @@ class _FilesRootPageState extends State<FilesRootPage> {
                                       },
                                     ),
                                   ),
-                                  // const SizedBox(width: 12),
+                                  const SizedBox(width: 8),
                                   Expanded(
                                     child: _buildQuickAccessGridItem(
                                       context,
@@ -189,6 +217,7 @@ class _FilesRootPageState extends State<FilesRootPage> {
                                   ),
                                 ],
                               ),
+                              const SizedBox(height: 8),
                               Row(
                                 children: [
                                   Expanded(
@@ -222,7 +251,7 @@ class _FilesRootPageState extends State<FilesRootPage> {
                                       },
                                     ),
                                   ),
-                                  // const SizedBox(width: 12),
+                                  const SizedBox(width: 8),
                                   Expanded(
                                     child: _buildQuickAccessGridItem(
                                       context,
@@ -256,6 +285,7 @@ class _FilesRootPageState extends State<FilesRootPage> {
                                   ),
                                 ],
                               ),
+                              const SizedBox(height: 8),
                               Row(
                                 children: [
                                   Expanded(
@@ -297,20 +327,21 @@ class _FilesRootPageState extends State<FilesRootPage> {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 16),
 
                       // Storage volumes list
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 12),
-                            child: Text(
-                              t.t('files_storage_title'),
-                              style: Theme.of(context).textTheme.titleMedium
-                                  ?.copyWith(fontWeight: FontWeight.w600),
-                            ),
+                          // Padding(
+                          //   padding: const EdgeInsets.symmetric(horizontal: 12),
+                          //   child:
+                          Text(
+                            t.t('files_storage_title'),
+                            style: Theme.of(context).textTheme.titleMedium
+                                ?.copyWith(fontWeight: FontWeight.w600),
                           ),
+                          // ),
                           const SizedBox(height: 8),
 
                           roots.isEmpty
@@ -336,49 +367,48 @@ class _FilesRootPageState extends State<FilesRootPage> {
                                 ),
                         ],
                       ),
-                      const SizedBox(height: 12),
 
                       // Recent Files section
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 12),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  t.t('recent_files_title'),
-                                  style: Theme.of(context).textTheme.titleMedium
-                                      ?.copyWith(fontWeight: FontWeight.w600),
+                          // Padding(
+                          //   padding: const EdgeInsets.symmetric(horizontal: 12),
+                          //   child:
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                t.t('recent_files_title'),
+                                style: Theme.of(context).textTheme.titleMedium
+                                    ?.copyWith(fontWeight: FontWeight.w600),
+                              ),
+                              IconButton(
+                                icon: const Icon(
+                                  Icons.arrow_forward_ios,
+                                  size: 16,
                                 ),
-                                IconButton(
-                                  icon: const Icon(
-                                    Icons.arrow_forward_ios,
-                                    size: 20,
-                                  ),
-                                  tooltip: t.t('recent_files_view_all_tooltip'),
-                                  onPressed: () {
-                                    final routeName = widget.isFullscreenRoute
-                                        ? AppRouteName.recentFilesFullscreen
-                                        : AppRouteName.recentFiles;
-                                    final params = <String, String>{};
-                                    if (widget.selectionId != null) {
-                                      params['selectionId'] =
-                                          widget.selectionId!;
-                                    }
-                                    if (widget.selectionActionText != null) {
-                                      params['actionText'] =
-                                          widget.selectionActionText!;
-                                    }
-                                    context.pushNamed(
-                                      routeName,
-                                      queryParameters: params,
-                                    );
-                                  },
-                                ),
-                              ],
-                            ),
+                                tooltip: t.t('recent_files_view_all_tooltip'),
+                                onPressed: () {
+                                  final routeName = widget.isFullscreenRoute
+                                      ? AppRouteName.recentFilesFullscreen
+                                      : AppRouteName.recentFiles;
+                                  final params = <String, String>{};
+                                  if (widget.selectionId != null) {
+                                    params['selectionId'] = widget.selectionId!;
+                                  }
+                                  if (widget.selectionActionText != null) {
+                                    params['actionText'] =
+                                        widget.selectionActionText!;
+                                  }
+                                  context.pushNamed(
+                                    routeName,
+                                    queryParameters: params,
+                                  );
+                                },
+                              ),
+                            ],
+                            // ),
                           ),
                           // const SizedBox(height: 4),
                           _buildRecentFilesPreview(context),
@@ -405,7 +435,14 @@ class _FilesRootPageState extends State<FilesRootPage> {
         : t.t('files_sd_card');
 
     return Card(
-      elevation: 2,
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(
+          color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
+          width: 1,
+        ),
+      ),
       margin: EdgeInsets.zero,
       child: InkWell(
         onTap: () {
@@ -468,10 +505,10 @@ class _FilesRootPageState extends State<FilesRootPage> {
                   ],
                 ),
               ),
-              // Icon(
-              //   Icons.chevron_right,
-              //   color: Theme.of(context).colorScheme.onSurfaceVariant,
-              // ),
+              Icon(
+                Icons.chevron_right,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
             ],
           ),
         ),
@@ -487,7 +524,7 @@ class _FilesRootPageState extends State<FilesRootPage> {
     required VoidCallback onTap,
   }) {
     return Card(
-      margin: const EdgeInsets.all(4),
+      margin: EdgeInsets.zero,
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
@@ -917,70 +954,58 @@ class _FilesRootPageState extends State<FilesRootPage> {
   }
 
   Widget _buildRecentFilesPreview(BuildContext context) {
-    return FutureBuilder<List<FileInfo>>(
-      future: RecentFilesService.getRecentFiles().then((result) {
-        return result.fold(
-          (error) => <FileInfo>[],
-          (files) => files.take(5).toList(),
-        );
-      }),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(
-            child: Padding(
-              padding: EdgeInsets.all(24.0),
-              child: CircularProgressIndicator(),
+    if (_isLoadingRecent) {
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.all(24.0),
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
+    final files = _cachedRecentFiles ?? [];
+
+    if (files.isEmpty) {
+      return Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Center(
+          child: Text(
+            AppLocalizations.of(context).t('recent_files_empty'),
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: Theme.of(
+                context,
+              ).textTheme.bodySmall?.color?.withOpacity(0.7),
             ),
-          );
-        }
+          ),
+        ),
+      );
+    }
 
-        final files = snapshot.data ?? [];
+    final pvd = _maybeProvider();
 
-        if (files.isEmpty) {
-          return Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Center(
-              child: Text(
-                AppLocalizations.of(context).t('recent_files_empty'),
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Theme.of(
-                    context,
-                  ).textTheme.bodySmall?.color?.withOpacity(0.7),
-                ),
-              ),
-            ),
-          );
-        }
-
-        final pvd = _maybeProvider();
-        
-        return ListView.separated(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          padding: EdgeInsets.zero,
-          itemCount: files.length,
-          separatorBuilder: (_, __) => const SizedBox(height: 8),
-          itemBuilder: (context, index) {
-            final file = files[index];
-            return DocEntryCard(
-              info: file,
-              selectable: _selectionEnabled,
-              selected: (pvd?.isSelected(file.path) ?? false),
-              onToggleSelected: _selectionEnabled
-                  ? () => pvd?.toggle(file)
-                  : null,
-              onOpen: _selectionEnabled
-                  ? () => pvd?.toggle(file)
-                  : () => OpenService.open(file.path),
-              onLongPress: () {
-                if (!_selectionEnabled) {
-                  pvd?.enable();
-                }
-                pvd?.toggle(file);
-              },
-              onMenu: (action) => _handleFileMenu(file, action),
-            );
+    return ListView.separated(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      padding: EdgeInsets.zero,
+      itemCount: files.length,
+      separatorBuilder: (_, __) => const SizedBox(height: 8),
+      itemBuilder: (context, index) {
+        final file = files[index];
+        return DocEntryCard(
+          info: file,
+          selectable: _selectionEnabled,
+          selected: (pvd?.isSelected(file.path) ?? false),
+          onToggleSelected: _selectionEnabled ? () => pvd?.toggle(file) : null,
+          onOpen: _selectionEnabled
+              ? () => pvd?.toggle(file)
+              : () => OpenService.open(file.path),
+          onLongPress: () {
+            if (!_selectionEnabled) {
+              pvd?.enable();
+            }
+            pvd?.toggle(file);
           },
+          onMenu: (action) => _handleFileMenu(file, action),
         );
       },
     );
@@ -1006,7 +1031,7 @@ class _FilesRootPageState extends State<FilesRootPage> {
           },
           (updatedFiles) {
             if (mounted) {
-              setState(() {});
+              _loadRecentFiles();
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(content: Text('Removed from recent files')),
               );
@@ -1033,7 +1058,7 @@ class _FilesRootPageState extends State<FilesRootPage> {
               },
               (renamedFileInfo) {
                 if (mounted) {
-                  setState(() {});
+                  _loadRecentFiles();
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('File renamed successfully')),
                   );

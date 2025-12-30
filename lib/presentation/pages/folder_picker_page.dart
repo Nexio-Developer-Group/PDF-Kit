@@ -2,7 +2,8 @@
 
 import 'package:flutter/material.dart';
 import 'package:pdf_kit/core/localization/app_localizations.dart';
-import 'package:pdf_kit/presentation/component/folder_tree_item.dart';
+import 'package:pdf_kit/core/theme/app_theme.dart';
+import 'package:pdf_kit/presentation/component/expandable_folder_item.dart';
 import 'package:pdf_kit/presentation/provider/folder_picker_provider.dart';
 import 'package:provider/provider.dart';
 
@@ -27,32 +28,12 @@ class _FolderPickerPageContent extends StatefulWidget {
 }
 
 class _FolderPickerPageContentState extends State<_FolderPickerPageContent> {
+  bool _isSelecting = false;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(AppLocalizations.of(context).t('folder_picker_title')),
-        actions: [
-          Consumer<FolderPickerProvider>(
-            builder: (context, provider, _) {
-              return TextButton(
-                onPressed: provider.hasSelection
-                    ? () => Navigator.pop(context, provider.selectedFolderPath)
-                    : null,
-                child: Text(
-                  AppLocalizations.of(context).t('folder_picker_select_button'),
-                  style: TextStyle(
-                    color: provider.hasSelection
-                        ? Theme.of(context).colorScheme.primary
-                        : Theme.of(context).disabledColor,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              );
-            },
-          ),
-        ],
-      ),
+      appBar: AppBar(),
       body: Consumer<FolderPickerProvider>(
         builder: (context, provider, _) {
           if (provider.isLoading) {
@@ -71,7 +52,6 @@ class _FolderPickerPageContentState extends State<_FolderPickerPageContent> {
                       size: 64,
                       color: Theme.of(context).colorScheme.error,
                     ),
-                    const SizedBox(height: 16),
                     Text(
                       AppLocalizations.of(
                         context,
@@ -120,67 +100,152 @@ class _FolderPickerPageContentState extends State<_FolderPickerPageContent> {
             );
           }
 
-          return ListView.builder(
-            padding: const EdgeInsets.symmetric(vertical: 8),
-            itemCount: provider.rootNodes.length,
-            itemBuilder: (context, index) {
-              return FolderTreeItem(node: provider.rootNodes[index]);
-            },
+          return ListView(
+            padding: screenPadding,
+            children: [
+              // Page heading and description
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    AppLocalizations.of(context).t('folder_picker_title'),
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    AppLocalizations.of(context).t('folder_picker_description'),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodyMedium?.copyWith(height: 1.4),
+                  ),
+                  // Always show selected folder info
+                  const SizedBox(height: 16),
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: provider.hasSelection
+                          ? Theme.of(
+                              context,
+                            ).colorScheme.primaryContainer.withOpacity(0.3)
+                          : Theme.of(
+                              context,
+                            ).colorScheme.surfaceContainerHighest,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: provider.hasSelection
+                            ? Theme.of(
+                                context,
+                              ).colorScheme.primary.withOpacity(0.5)
+                            : Theme.of(context).colorScheme.outline,
+                        width: 1,
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          AppLocalizations.of(
+                            context,
+                          ).t('folder_picker_selected_folder_label'),
+                          style: Theme.of(context).textTheme.labelSmall
+                              ?.copyWith(
+                                color: provider.hasSelection
+                                    ? Theme.of(context).colorScheme.primary
+                                    : Theme.of(
+                                        context,
+                                      ).colorScheme.onSurfaceVariant,
+                                fontWeight: FontWeight.w600,
+                              ),
+                        ),
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            Icon(
+                              provider.hasSelection
+                                  ? Icons.folder
+                                  : Icons.folder_outlined,
+                              size: 16,
+                              color: provider.hasSelection
+                                  ? Theme.of(context).colorScheme.primary
+                                  : Theme.of(
+                                      context,
+                                    ).colorScheme.onSurfaceVariant,
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                provider.hasSelection
+                                    ? provider.selectedFolderPath!
+                                    : AppLocalizations.of(
+                                        context,
+                                      ).t('folder_picker_no_folder_selected'),
+                                style: Theme.of(context).textTheme.bodySmall
+                                    ?.copyWith(
+                                      fontWeight: provider.hasSelection
+                                          ? FontWeight.w500
+                                          : FontWeight.w400,
+                                      fontStyle: provider.hasSelection
+                                          ? FontStyle.normal
+                                          : FontStyle.italic,
+                                      color: provider.hasSelection
+                                          ? null
+                                          : Theme.of(
+                                              context,
+                                            ).colorScheme.onSurfaceVariant,
+                                    ),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              // Folder list
+              ...provider.rootNodes.map(
+                (node) => ExpandableFolderItem(node: node, level: 0),
+              ),
+            ],
           );
         },
       ),
       bottomNavigationBar: Consumer<FolderPickerProvider>(
         builder: (context, provider, _) {
-          if (!provider.hasSelection) return const SizedBox.shrink();
-
-          return Material(
-            elevation: 8,
+          return SafeArea(
+            // bottom: true,
+            // minimum: const EdgeInsets.fromLTRB(16, 0, 16, 16),
             child: Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                border: Border(
-                  top: BorderSide(
-                    color: Theme.of(context).dividerColor,
-                    width: 1,
-                  ),
-                ),
-              ),
-              child: SafeArea(
-                top: false,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      AppLocalizations.of(
-                        context,
-                      ).t('folder_picker_selected_folder_label'),
-                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.folder,
-                          size: 16,
-                          color: Theme.of(context).colorScheme.primary,
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            provider.selectedFolderPath!,
-                            style: Theme.of(context).textTheme.bodyMedium
-                                ?.copyWith(fontWeight: FontWeight.w500),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+              child: SizedBox(
+                width: double.infinity,
+                height: 48,
+                child: FilledButton(
+                  onPressed: provider.hasSelection && !_isSelecting
+                      ? () {
+                          setState(() {
+                            _isSelecting = true;
+                          });
+                          provider.lockSelection();
+                          Navigator.pop(context, provider.selectedFolderPath);
+                        }
+                      : null,
+                  child: _isSelecting
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
                           ),
+                        )
+                      : Text(
+                          AppLocalizations.of(
+                            context,
+                          ).t('folder_picker_select_button'),
                         ),
-                      ],
-                    ),
-                  ],
                 ),
               ),
             ),

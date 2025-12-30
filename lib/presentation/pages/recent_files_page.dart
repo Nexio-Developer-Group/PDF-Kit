@@ -33,6 +33,7 @@ class RecentFilesPage extends StatefulWidget {
 class _RecentFilesPageState extends State<RecentFilesPage> {
   List<FileInfo> _files = [];
   bool _isLoading = true;
+  final GlobalKey<AnimatedListState> _listKey = GlobalKey<AnimatedListState>();
 
   @override
   void initState() {
@@ -279,7 +280,7 @@ class _RecentFilesPageState extends State<RecentFilesPage> {
                     : _files.isEmpty
                     ? _buildEmptyState(context, theme)
                     : AnimatedList(
-                        key: GlobalKey<AnimatedListState>(),
+                        key: _listKey,
                         padding: const EdgeInsets.only(bottom: 16),
                         initialItemCount: _files.length,
                         itemBuilder: (context, i, animation) {
