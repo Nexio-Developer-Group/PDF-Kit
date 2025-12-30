@@ -149,7 +149,7 @@ class _ProtectPdfPageState extends State<ProtectPdfPage> {
           ),
           body: SafeArea(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24.0),
+              padding: screenPadding,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -215,6 +215,7 @@ class _ProtectPdfPageState extends State<ProtectPdfPage> {
                     const SizedBox(height: 8),
                     TextField(
                       controller: _passwordController,
+                      onChanged: (_) => setState(() {}),
                       obscureText: !_isPasswordVisible,
                       decoration: InputDecoration(
                         hintText: t.t('protect_pdf_password_hint_obscured'),
@@ -270,7 +271,9 @@ class _ProtectPdfPageState extends State<ProtectPdfPage> {
                       width: double.infinity,
                       height: 48,
                       child: FilledButton(
-                        onPressed: !_isProtecting
+                        onPressed:
+                            !_isProtecting &&
+                                _passwordController.text.isNotEmpty
                             ? () => _handleProtect(context, selection)
                             : null,
                         child: _isProtecting

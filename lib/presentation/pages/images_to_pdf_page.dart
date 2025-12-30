@@ -267,7 +267,7 @@ class _ImagesToPdfPageState extends State<ImagesToPdfPage> {
             child: CustomScrollView(
               slivers: [
                 SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                  padding: screenPadding,
                   sliver: SliverToBoxAdapter(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,

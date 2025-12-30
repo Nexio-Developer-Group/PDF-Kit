@@ -148,7 +148,7 @@ class _CompressPdfPageState extends State<CompressPdfPage> {
             child: AbsorbPointer(
               absorbing: _isWorking,
               child: SingleChildScrollView(
-                padding: const EdgeInsets.all(24.0),
+                padding: screenPadding,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [

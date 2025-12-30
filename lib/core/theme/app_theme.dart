@@ -4,7 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 /// overall screens paddings
 /// 10 pixels horizontal padding
 const EdgeInsets screenPadding = EdgeInsets.symmetric(
-  horizontal: 12.0,
+  horizontal: 18.0,
   vertical: 0.0,
 );
 
@@ -237,7 +237,7 @@ class AppTheme {
     ),
 
     textButtonTheme: TextButtonThemeData(
-      style: TextButton.styleFrom(  
+      style: TextButton.styleFrom(
         foregroundColor: primaryLight,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),

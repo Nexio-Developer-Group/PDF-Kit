@@ -351,7 +351,7 @@ class _PdfToImagePageState extends State<PdfToImagePage> {
             body: SafeArea(
               child: _isPageSelectorMode && files.isNotEmpty
                   ? Padding(
-                      padding: const EdgeInsets.all(16),
+                      padding: screenPadding,
                       child: PdfPageSelector(
                         pdfFile: File(files.first.path),
                         initialSelectedPages: _selectedPages,

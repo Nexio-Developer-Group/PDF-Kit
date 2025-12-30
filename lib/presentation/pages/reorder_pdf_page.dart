@@ -278,61 +278,47 @@ class _ReorderPdfPageState extends State<ReorderPdfPage> {
           ),
           bottomNavigationBar: files.isNotEmpty && !_isLoading
               ? Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.surface,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
-                        offset: const Offset(0, -2),
-                        blurRadius: 8,
-                      ),
-                    ],
-                  ),
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
                   child: SafeArea(
-                    child: ElevatedButton(
-                      onPressed: _isProcessing
-                          ? null
-                          : () => _reorderPdf(selection),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: theme.colorScheme.primary,
-                        foregroundColor: theme.colorScheme.onPrimary,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: _isProcessing
-                          ? Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                SizedBox(
-                                  width: 20,
-                                  height: 20,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    valueColor: AlwaysStoppedAnimation<Color>(
-                                      theme.colorScheme.onPrimary,
+                    child: SizedBox(
+                      width: double.infinity,
+                      height: 48,
+                      child: FilledButton(
+                        onPressed: _isProcessing
+                            ? null
+                            : () => _reorderPdf(selection),
+                        child: _isProcessing
+                            ? Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      valueColor: AlwaysStoppedAnimation<Color>(
+                                        theme.colorScheme.onPrimary,
+                                      ),
                                     ),
                                   ),
-                                ),
-                                const SizedBox(width: 12),
-                                const Text(
-                                  'Processing...',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
+                                  const SizedBox(width: 12),
+                                  const Text(
+                                    'Processing...',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
+                                ],
+                              )
+                            : Text(
+                                t.t('reorder_pdf_button'),
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
                                 ),
-                              ],
-                            )
-                          : Text(
-                              t.t('reorder_pdf_button'),
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
                               ),
-                            ),
+                      ),
                     ),
                   ),
                 )
@@ -340,7 +326,7 @@ class _ReorderPdfPageState extends State<ReorderPdfPage> {
           body: files.isEmpty
               ? Center(
                   child: Padding(
-                    padding: const EdgeInsets.all(32),
+                    padding: screenPadding,
                     child: Text(
                       t.t('reorder_pdf_no_file'),
                       textAlign: TextAlign.center,
@@ -351,7 +337,7 @@ class _ReorderPdfPageState extends State<ReorderPdfPage> {
               : _isLoading
               ? const Center(
                   child: Padding(
-                    padding: EdgeInsets.all(48.0),
+                    padding: screenPadding,
                     child: CircularProgressIndicator(),
                   ),
                 )

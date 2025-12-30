@@ -147,7 +147,7 @@ class _UnlockPdfPageState extends State<UnlockPdfPage> {
           ),
           body: SafeArea(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24.0),
+              padding: screenPadding,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -215,6 +215,7 @@ class _UnlockPdfPageState extends State<UnlockPdfPage> {
                     const SizedBox(height: 8),
                     TextField(
                       controller: _passwordController,
+                      onChanged: (_) => setState(() {}),
                       obscureText: !_isPasswordVisible,
                       decoration: InputDecoration(
                         hintText: t.t('unlock_pdf_password_hint'),
@@ -269,15 +270,10 @@ class _UnlockPdfPageState extends State<UnlockPdfPage> {
                       width: double.infinity,
                       height: 48,
                       child: FilledButton(
-                        onPressed: !_isUnlocking
+                        onPressed:
+                            !_isUnlocking && _passwordController.text.isNotEmpty
                             ? () => _handleUnlock(context, selection)
                             : null,
-                        style: FilledButton.styleFrom(
-                          backgroundColor: const Color(0xFF5B7FFF),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(28),
-                          ),
-                        ),
                         child: _isUnlocking
                             ? const SizedBox(
                                 height: 24,
