@@ -37,6 +37,7 @@ dependencies:
   pdf_combiner: ^4.4.1
   image: ^4.5.4
   reorderable_grid_view: ^2.2.8
+  flutter_pdfview: ^1.4.3
   
 
 dev_dependencies:

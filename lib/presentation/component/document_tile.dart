@@ -8,6 +8,8 @@ import 'package:pdfx/pdfx.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:pdf_kit/models/file_model.dart';
 import 'package:pdf_kit/core/app_export.dart';
+import 'package:open_filex/open_filex.dart';
+import 'package:pdf_kit/service/pdf_protect_service.dart';
 
 class _Thumb {
   final Uint8List bytes;
@@ -173,11 +175,31 @@ class _DocEntryCardState extends State<DocEntryCard> {
     );
   }
 
-  void _handleTap(BuildContext context) {
+  Future<void> _handleTap(BuildContext context) async {
     if (widget.disabled) return;
 
-    // Route both PDFs and images to the viewer page
+    if (_isPdf) {
+      final isProtectedResult = await PdfProtectionService.isPdfProtected(
+        pdfPath: widget.info.path,
+      );
+
+      bool isProtected = false;
+      isProtectedResult.fold(
+        (l) => isProtected = false,
+        (r) => isProtected = r,
+      );
+
+      if (isProtected) {
+        if (mounted) {
+          await OpenFilex.open(widget.info.path);
+        }
+        return;
+      }
+    }
+
+    // Route both PDFs (unprotected) and images to the viewer page
     if (_isPdf || _isImage) {
+      if (!mounted) return;
       context.pushNamed(
         AppRouteName.pdfViewer,
         queryParameters: {'path': widget.info.path},
@@ -220,7 +242,7 @@ class _DocEntryCardState extends State<DocEntryCard> {
               EdgeInsets.only(left: 0, right: 12),
           child: Row(
             children: [
-                Padding(
+              Padding(
                 padding: const EdgeInsets.only(right: 12, left: 12),
                 child: InkWell(
                   // In selectable mode, thumbnail opens viewer; otherwise handled by parent

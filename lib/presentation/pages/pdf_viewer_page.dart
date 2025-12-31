@@ -1,7 +1,8 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:path/path.dart' as p;
-import 'package:pdfx/pdfx.dart';
+import 'package:flutter_pdfview/flutter_pdfview.dart';
 import 'package:provider/provider.dart';
 import 'package:pdf_kit/presentation/sheets/pdf_options_sheet.dart';
 import 'package:pdf_kit/presentation/sheets/rename_file_sheet.dart';
@@ -22,14 +23,17 @@ class FileViewerPage extends StatefulWidget {
 }
 
 class _FileViewerPageState extends State<FileViewerPage> {
-  PdfControllerPinch? _pdfController;
+  final Completer<PDFViewController> _pdfController =
+      Completer<PDFViewController>();
   bool _loading = true;
   String? _error;
-  int _currentPage = 1;
+  int _currentPage = 0;
   int _totalPages = 0;
   String? _currentPath;
   bool _isPdf = false;
   bool _isImage = false;
+  String? _password;
+  Key _pdfViewerKey = UniqueKey(); // Key to force rebuild PDF view
 
   @override
   void initState() {
@@ -42,19 +46,10 @@ class _FileViewerPageState extends State<FileViewerPage> {
     );
 
     if (_isPdf) {
-      _loadPdf();
+      // PDF loading is handled by the PDFView widget itself
+      _validateFile();
     } else if (_isImage) {
-      // For images, validate file exists
-      if (_currentPath != null && File(_currentPath!).existsSync()) {
-        setState(() => _loading = false);
-        debugPrint('[FileViewer] Image file validated, ready to display');
-      } else {
-        setState(() {
-          _error = 'Image file does not exist';
-          _loading = false;
-        });
-        debugPrint('[FileViewer] Image file does not exist: $_currentPath');
-      }
+      _validateFile();
     } else {
       // Unsupported file type
       setState(() {
@@ -65,10 +60,17 @@ class _FileViewerPageState extends State<FileViewerPage> {
     }
   }
 
-  @override
-  void dispose() {
-    _pdfController?.dispose();
-    super.dispose();
+  void _validateFile() {
+    if (_currentPath != null && File(_currentPath!).existsSync()) {
+      setState(() => _loading = false);
+      debugPrint('[FileViewer] File validated, ready to display');
+    } else {
+      setState(() {
+        _error = 'File does not exist';
+        _loading = false;
+      });
+      debugPrint('[FileViewer] File does not exist: $_currentPath');
+    }
   }
 
   void _detectFileType() {
@@ -90,114 +92,6 @@ class _FileViewerPageState extends State<FileViewerPage> {
     debugPrint(
       '[FileViewer] File type detected: isPdf=$_isPdf, isImage=$_isImage',
     );
-  }
-
-  Future<void> _loadPdf({String? password}) async {
-    debugPrint('[FileViewer] ========== _loadPdf called ==========');
-    debugPrint('[FileViewer] Path: $_currentPath');
-    debugPrint(
-      '[FileViewer] Password provided: ${password != null ? "YES (length: ${password.length})" : "NO"}',
-    );
-
-    final path = _currentPath;
-    if (path == null || path.isEmpty) {
-      setState(() {
-        _error = 'No file path provided';
-        _loading = false;
-      });
-      return;
-    }
-
-    final file = File(path);
-    if (!file.existsSync()) {
-      setState(() {
-        _error = 'File does not exist';
-        _loading = false;
-      });
-      return;
-    }
-
-    debugPrint('[FileViewer] File exists, attempting to open PDF...');
-    try {
-      // Create controller with Future - PdfControllerPinch expects Future<PdfDocument>
-      final controller = PdfControllerPinch(
-        document: PdfDocument.openFile(path, password: password),
-      );
-
-      // Wait for document to load to get page count
-      final document = await controller.document;
-      debugPrint('[FileViewer] ✅ PDF opened successfully!');
-      debugPrint('[FileViewer] Total pages: ${document.pagesCount}');
-
-      setState(() {
-        _pdfController = controller;
-        _totalPages = document.pagesCount;
-        _currentPage = 1;
-        _loading = false;
-        _error = null;
-      });
-    } catch (e, stackTrace) {
-      debugPrint('[FileViewer] ❌ Error opening PDF!');
-      debugPrint('[FileViewer] Error type: ${e.runtimeType}');
-      debugPrint('[FileViewer] Error message: $e');
-      debugPrint('[FileViewer] Stack trace: $stackTrace');
-
-      // Check if it's a password-related error
-      final errorMessage = e.toString().toLowerCase();
-      final isPdfRendererException = errorMessage.contains(
-        'pdfrendererexception',
-      );
-      final isUnknownError = errorMessage.contains('unknown error');
-      final hasPasswordKeywords =
-          errorMessage.contains('password') ||
-          errorMessage.contains('encrypted') ||
-          errorMessage.contains('protected');
-
-      debugPrint('[FileViewer] Error analysis:');
-      debugPrint(
-        '[FileViewer]   - isPdfRendererException: $isPdfRendererException',
-      );
-      debugPrint('[FileViewer]   - isUnknownError: $isUnknownError');
-      debugPrint('[FileViewer]   - hasPasswordKeywords: $hasPasswordKeywords');
-      debugPrint(
-        '[FileViewer]   - Will treat as password error: ${(isPdfRendererException && isUnknownError) || hasPasswordKeywords}',
-      );
-
-      // PdfRendererException with "Unknown error" is often a password issue
-      // Also check for explicit password keywords
-      if ((isPdfRendererException && isUnknownError) || hasPasswordKeywords) {
-        // Password required or incorrect
-        if (password == null) {
-          // First attempt - ask for password
-          // Don't set loading=false, keep showing loading while dialog is up
-          _showPasswordDialog();
-        } else {
-          debugPrint(
-            '[FileViewer] 🔐 Password was provided but still failed - incorrect password',
-          );
-          // Incorrect password - show error and ask again
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Incorrect password. Please try again.'),
-                backgroundColor: Colors.red,
-              ),
-            );
-          }
-          // Show dialog again
-          _showPasswordDialog();
-        }
-      } else {
-        debugPrint(
-          '[FileViewer] ⚠️  Not a password error - showing error message',
-        );
-        // Other errors
-        setState(() {
-          _error = 'Failed to load PDF: $e';
-          _loading = false;
-        });
-      }
-    }
   }
 
   void _showPasswordDialog() {
@@ -224,13 +118,14 @@ class _FileViewerPageState extends State<FileViewerPage> {
               ),
               onSubmitted: (_) {
                 final pwd = passwordController.text;
-                debugPrint(
-                  '[FileViewer] 🔑 Password submitted (Enter key): length=${pwd.length}',
-                );
                 Navigator.of(context).pop();
                 if (pwd.isNotEmpty) {
-                  setState(() => _loading = true);
-                  _loadPdf(password: pwd);
+                  setState(() {
+                    _password = pwd;
+                    _pdfViewerKey = UniqueKey(); // Rebuild with new password
+                    _loading = true;
+                    _error = null;
+                  });
                 } else {
                   _showPasswordDialog(); // Show again if empty
                 }
@@ -249,13 +144,14 @@ class _FileViewerPageState extends State<FileViewerPage> {
           ElevatedButton(
             onPressed: () {
               final pwd = passwordController.text;
-              debugPrint(
-                '[FileViewer] 🔑 Password submitted (Open button): length=${pwd.length}',
-              );
               Navigator.of(context).pop();
               if (pwd.isNotEmpty) {
-                setState(() => _loading = true);
-                _loadPdf(password: pwd);
+                setState(() {
+                  _password = pwd;
+                  _pdfViewerKey = UniqueKey(); // Rebuild with new password
+                  _loading = true;
+                  _error = null;
+                });
               } else {
                 _showPasswordDialog(); // Show again if empty
               }
@@ -339,19 +235,13 @@ class _FileViewerPageState extends State<FileViewerPage> {
             const SnackBar(content: Text('File renamed successfully')),
           );
 
-          // Reload PDF with new path
           setState(() {
             _currentPath = newPath;
             _detectFileType();
             if (_isPdf) {
-              _loading = true;
-              _pdfController?.dispose();
-              _pdfController = null;
+              _pdfViewerKey = UniqueKey(); // Reload PDF
             }
           });
-          if (_isPdf) {
-            _loadPdf();
-          }
         }
       },
     );
@@ -404,7 +294,7 @@ class _FileViewerPageState extends State<FileViewerPage> {
           foregroundColor: Colors.white,
           elevation: 0,
         ),
-        scaffoldBackgroundColor: Colors.black87,
+        scaffoldBackgroundColor: Colors.black,
       ),
       child: Scaffold(
         appBar: AppBar(
@@ -423,9 +313,7 @@ class _FileViewerPageState extends State<FileViewerPage> {
             ),
           ],
         ),
-        body: _loading
-            ? const Center(child: CircularProgressIndicator())
-            : _error != null
+        body: _error != null
             ? Center(
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
@@ -438,26 +326,95 @@ class _FileViewerPageState extends State<FileViewerPage> {
               )
             : Stack(
                 children: [
-                  // PDF Viewer with zoom and pan
-                  if (_isPdf && _pdfController != null)
-                    PdfViewPinch(
-                      controller: _pdfController!,
-                      padding: 10,
-                      minScale:
-                          1.0, // Limit zoom out to fit-to-screen (no cropping)
-                      maxScale: 4.0, // Allow zooming in to 400%
-                      onPageChanged: (page) {
-                        setState(() {
-                          _currentPage = page;
-                        });
-                      },
-                      onDocumentLoaded: (document) {
-                        debugPrint(
-                          '[FileViewer] Document loaded: ${document.pagesCount} pages',
-                        );
-                      },
+                  // PDF Viewer
+                  if (_isPdf && _currentPath != null)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                      child: PDFView(
+                        key: _pdfViewerKey,
+                        filePath: _currentPath,
+                        password: _password,
+                        enableSwipe: true,
+                        swipeHorizontal: false, // Vertical scrolling
+                        autoSpacing: false, // Gap between pages
+                        pageFling:
+                            false, // important: no ViewPager-like one-page fling
+                        pageSnap: false, // keep off (Android-only)
+                        defaultPage: _currentPage,
+                        fitPolicy: FitPolicy.BOTH, // Fit each page to screen
+                        fitEachPage:
+                            true, // Ensure each page is fit independently
+                        backgroundColor: Colors.black, // True black background
+                        preventLinkNavigation: false,
+                        onRender: (pages) {
+                          setState(() {
+                            _totalPages = pages ?? 0;
+                            _loading = false;
+                            _error = null;
+                          });
+                          debugPrint(
+                            '[FileViewer] Document loaded: $pages pages',
+                          );
+                        },
+                        onError: (error) {
+                          debugPrint(
+                            '[FileViewer] ❌ Error opening PDF: $error',
+                          );
+                          setState(() {
+                            // Attempt to detect password error purely by the error string or behavior
+                            // flutter_pdfview is not always consistent with error codes
+                            // But usually if password is provided and wrong, or not provided and needed...
+
+                            // If it's a password issue, try to show dialog
+                            if (error.toString().toLowerCase().contains(
+                                  'password',
+                                ) ||
+                                error.toString().toLowerCase().contains(
+                                  'encrypted',
+                                ) ||
+                                // Some native errors might be generic
+                                (_password == null &&
+                                    error.toString().isNotEmpty)) {
+                              // HACK: Re-enable loading state and show password dialog
+                              // But we can't show dialog in build. Schedule it.
+                              Future.microtask(() {
+                                if (mounted && _password == null) {
+                                  _showPasswordDialog();
+                                } else if (mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text(
+                                        'Incorrect password or file error.',
+                                      ),
+                                      backgroundColor: Colors.red,
+                                    ),
+                                  );
+                                  // Show dialog again
+                                  _showPasswordDialog();
+                                }
+                              });
+                            } else {
+                              _error = error.toString();
+                              _loading = false;
+                            }
+                          });
+                        },
+                        onPageError: (page, error) {
+                          debugPrint('[FileViewer] Page $page error: $error');
+                        },
+                        onViewCreated: (PDFViewController pdfViewController) {
+                          if (!_pdfController.isCompleted) {
+                            _pdfController.complete(pdfViewController);
+                          }
+                        },
+                        onPageChanged: (int? page, int? total) {
+                          setState(() {
+                            _currentPage = page ?? 0;
+                          });
+                        },
+                      ),
                     )
-                  // Image Viewer with zoom and pan
+                  // Image Viewer
                   else if (_isImage && _currentPath != null)
                     InteractiveViewer(
                       minScale: 0.5,
@@ -470,10 +427,14 @@ class _FileViewerPageState extends State<FileViewerPage> {
                       ),
                     )
                   else
-                    // Fallback - should not happen if error handling is correct
                     const SizedBox.shrink(),
+
+                  // Loading Indicator
+                  if (_loading)
+                    const Center(child: CircularProgressIndicator()),
+
                   // Floating page indicator (PDFs only)
-                  if (_isPdf && _totalPages > 0)
+                  if (_isPdf && _totalPages > 0 && !_loading)
                     Positioned(
                       bottom: 24,
                       right: 24,
@@ -491,7 +452,7 @@ class _FileViewerPageState extends State<FileViewerPage> {
                           ),
                         ),
                         child: Text(
-                          'Page $_currentPage / $_totalPages',
+                          'Page ${_currentPage + 1} / $_totalPages',
                           style: const TextStyle(
                             color: Colors.white,
                             fontSize: 14,
