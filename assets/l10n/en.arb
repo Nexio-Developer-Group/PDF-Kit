@@ -25,6 +25,9 @@
   "recent_files_title": "Recent Files",
   "recent_files_empty_title": "No recent files",
   "recent_files_empty_message": "Your recently accessed files will appear here.",
+  "recent_files_empty": "No recent files",
+  "recent_files_filter_empty_pdf": "Only PDF files are selectable",
+  "recent_files_filter_empty_images": "Only image files are selectable",
   "recent_files_removed_snackbar": "Removed from recent files",
   "recent_files_clear_menu": "Clear all recent files",
   "recent_files_clear_confirm_title": "Clear all recent files?",
@@ -75,6 +78,8 @@
   "filter_type_folders": "Folders",
   "filter_type_pdfs": "PDFs",
   "filter_type_images": "Images",
+  "filter_file_type_pdf_mode": "PDF Mode",
+  "filter_file_type_images_mode": "Images Mode",
 
   "new_folder_sheet_title": "New Folder",
   "new_folder_field_label": "Folder Name",

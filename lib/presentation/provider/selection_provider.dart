@@ -11,6 +11,8 @@ class SelectionProvider extends ChangeNotifier {
   int? _maxSelectable; // optional upper limit
   int? _minSelectable; // optional lower limit
   String? _allowedFilter; // 'protected', 'unprotected', or null for all
+  String?
+  _fileType; // 'all', 'pdf', 'images' - defines the scope of file filtering
   // String? _lastErrorMessage; // surfaced when exceeding limit
 
   // Callback for custom file validation (returns error message if invalid, null if valid)
@@ -26,6 +28,7 @@ class SelectionProvider extends ChangeNotifier {
 
   int? get maxSelectable => _maxSelectable;
   int? get minSelectable => _minSelectable;
+  String? get fileType => _fileType;
   int? _lastLimitCount; // instead of String? _lastErrorMessage
 
   int getRotation(String path) => _rotations[path] ?? 0;
@@ -66,6 +69,11 @@ class SelectionProvider extends ChangeNotifier {
 
   void setAllowedFilter(String? value) {
     _allowedFilter = value;
+    notifyListeners();
+  }
+
+  void setFileType(String? value) {
+    _fileType = value;
     notifyListeners();
   }
 

@@ -118,9 +118,14 @@ class _SplitPdfPageState extends State<SplitPdfPage> {
   }
 
   Future<void> _selectDestinationFolder() async {
+    final t = AppLocalizations.of(context);
     final selectedPath = await context.pushNamed<String>(
       AppRouteName.folderPickScreen,
-      extra: _selectedDestinationFolder?.path,
+      extra: {
+        'path': _selectedDestinationFolder?.path,
+        'title': t.t('split_pdf_select_folder_title'),
+        'description': t.t('split_pdf_select_folder_description'),
+      },
     );
     if (selectedPath != null && mounted) {
       // Update local state only for Split Page as per requirements

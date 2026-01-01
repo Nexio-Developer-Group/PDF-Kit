@@ -164,10 +164,26 @@ final appRouter = GoRouter(
       path: '/folder-picker',
       name: AppRouteName.folderPickScreen,
       pageBuilder: (context, state) {
-        final initialPath = state.extra as String?;
+        String? initialPath;
+        String? title;
+        String? description;
+
+        if (state.extra is Map<String, dynamic>) {
+          final args = state.extra as Map<String, dynamic>;
+          initialPath = args['path'] as String?;
+          title = args['title'] as String?;
+          description = args['description'] as String?;
+        } else if (state.extra is String) {
+          initialPath = state.extra as String?;
+        }
+
         return MaterialPage(
           key: state.pageKey,
-          child: FolderPickerPage(initialPath: initialPath),
+          child: FolderPickerPage(
+            initialPath: initialPath,
+            title: title,
+            description: description,
+          ),
         );
       },
     ),

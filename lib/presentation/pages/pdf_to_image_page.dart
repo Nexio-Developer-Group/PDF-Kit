@@ -123,9 +123,16 @@ class _PdfToImagePageState extends State<PdfToImagePage> {
 
   /// Open folder picker and update destination
   Future<void> _selectDestinationFolder() async {
+    final t = AppLocalizations.of(context);
     final selectedPath = await context.pushNamed<String>(
       AppRouteName.folderPickScreen,
-      extra: _selectedDestinationFolder?.path,
+      extra: {
+        'path': _selectedDestinationFolder?.path,
+        'title': t.t(
+          'pdf_to_image_select_folder_title',
+        ), // Assuming key exists or using text
+        'description': t.t('pdf_to_image_select_folder_description'),
+      },
     );
 
     if (selectedPath != null && mounted) {

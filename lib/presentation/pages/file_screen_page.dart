@@ -23,6 +23,7 @@ class AndroidFilesScreen extends StatefulWidget {
   final String? selectionId;
   final bool? isFullscreenRoute;
   final void Function(List<FileInfo> files)? onSelectionAction;
+  final String? fileType;
 
   const AndroidFilesScreen({
     super.key,
@@ -32,6 +33,7 @@ class AndroidFilesScreen extends StatefulWidget {
     this.onSelectionAction,
     this.selectionId,
     this.isFullscreenRoute = false,
+    this.fileType,
   });
   @override
   State<AndroidFilesScreen> createState() => _AndroidFilesScreenState();
@@ -117,6 +119,7 @@ class _AndroidFilesScreenState extends State<AndroidFilesScreen> {
         params['selectionId'] = widget.selectionId!;
       if (widget.selectionActionText != null)
         params['actionText'] = widget.selectionActionText!;
+      if (widget.fileType != null) params['fileType'] = widget.fileType!;
 
       await context.pushNamed(
         AppRouteName.filesFolderFullScreen,
@@ -153,10 +156,10 @@ class _AndroidFilesScreenState extends State<AndroidFilesScreen> {
     final sortOption = filterScope?.sortOption ?? SortOption.name;
     final typeFilters = filterScope?.typeFilters ?? {};
 
-    // Apply type filters if any are set
+    // Apply type filters
     List<FileInfo> filteredFiles = rawFiles;
     if (typeFilters.isNotEmpty) {
-      filteredFiles = rawFiles.where((file) {
+      filteredFiles = filteredFiles.where((file) {
         if (file.isDirectory) {
           return typeFilters.contains(TypeFilter.folder);
         }

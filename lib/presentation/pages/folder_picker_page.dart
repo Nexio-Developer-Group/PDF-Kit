@@ -9,20 +9,31 @@ import 'package:provider/provider.dart';
 
 class FolderPickerPage extends StatelessWidget {
   final String? initialPath;
-  const FolderPickerPage({super.key, this.initialPath});
+  final String? title;
+  final String? description;
+
+  const FolderPickerPage({
+    super.key,
+    this.initialPath,
+    this.title,
+    this.description,
+  });
 
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
       create: (_) =>
           FolderPickerProvider()..initialize(initialPath: initialPath),
-      child: const _FolderPickerPageContent(),
+      child: _FolderPickerPageContent(title: title, description: description),
     );
   }
 }
 
 class _FolderPickerPageContent extends StatefulWidget {
-  const _FolderPickerPageContent();
+  final String? title;
+  final String? description;
+
+  const _FolderPickerPageContent({this.title, this.description});
 
   @override
   State<_FolderPickerPageContent> createState() =>
@@ -110,12 +121,16 @@ class _FolderPickerPageContentState extends State<_FolderPickerPageContent> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    AppLocalizations.of(context).t('folder_picker_title'),
+                    widget.title ??
+                        AppLocalizations.of(context).t('folder_picker_title'),
                     style: Theme.of(context).textTheme.titleLarge,
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    AppLocalizations.of(context).t('folder_picker_description'),
+                    widget.description ??
+                        AppLocalizations.of(
+                          context,
+                        ).t('folder_picker_description'),
                     style: Theme.of(
                       context,
                     ).textTheme.bodyMedium?.copyWith(height: 1.4),

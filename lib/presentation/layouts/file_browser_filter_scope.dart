@@ -5,11 +5,13 @@ import 'package:pdf_kit/presentation/models/filter_models.dart';
 class FileBrowserFilterScope extends InheritedWidget {
   final SortOption sortOption;
   final Set<TypeFilter> typeFilters;
+  final String? fileType; // 'all', 'pdf', 'images' - from functionality
 
   const FileBrowserFilterScope({
     super.key,
     required this.sortOption,
     required this.typeFilters,
+    this.fileType,
     required super.child,
   });
 
@@ -21,6 +23,7 @@ class FileBrowserFilterScope extends InheritedWidget {
   @override
   bool updateShouldNotify(FileBrowserFilterScope oldWidget) {
     return sortOption != oldWidget.sortOption ||
-        typeFilters != oldWidget.typeFilters;
+        typeFilters != oldWidget.typeFilters ||
+        fileType != oldWidget.fileType;
   }
 }

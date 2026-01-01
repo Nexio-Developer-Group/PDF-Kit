@@ -12,6 +12,7 @@ import 'package:pdf_kit/presentation/sheets/rename_file_sheet.dart';
 import 'package:pdf_kit/service/file_service.dart';
 import 'package:pdf_kit/presentation/provider/selection_provider.dart';
 import 'package:pdf_kit/presentation/layouts/selection_layout.dart';
+import 'package:pdf_kit/presentation/models/filter_models.dart';
 
 /// Page displaying storage volumes (Internal Storage, SD Card, etc.)
 /// This is the root page of the file browser at /files
@@ -19,12 +20,14 @@ class FilesRootPage extends StatefulWidget {
   final bool isFullscreenRoute;
   final String? selectionId;
   final String? selectionActionText;
+  final String? fileType;
 
   const FilesRootPage({
     super.key,
     this.isFullscreenRoute = false,
     this.selectionId,
     this.selectionActionText,
+    this.fileType,
   });
 
   @override
@@ -115,6 +118,7 @@ class _FilesRootPageState extends State<FilesRootPage> with RouteAware {
   Future<void> _navigateToFolderOrPicker({
     required String prefsKey,
     required String defaultPath,
+    required String pickerTitle,
     required String pickerDescription,
   }) async {
     // 1. Check if user has a stored path
@@ -159,11 +163,7 @@ class _FilesRootPageState extends State<FilesRootPage> with RouteAware {
       '🎯 [Folder Navigation] Default folder missing. Showing folder picker.',
     );
 
-    // Show explanation before picking? Or just open picker?
-    // User requested "navigate to the folder_picker_page and let the user select".
-    // We can show a snackbar explaining why if we want, but direct navigation is smoother.
-
-    _navigateToFolderPicker(prefsKey, pickerDescription);
+    _navigateToFolderPicker(prefsKey, pickerTitle, pickerDescription);
   }
 
   Future<void> _refresh() async {
@@ -176,12 +176,13 @@ class _FilesRootPageState extends State<FilesRootPage> with RouteAware {
   /// Navigate to folder picker and handle result
   Future<void> _navigateToFolderPicker(
     String prefsKey,
+    String title,
     String description,
   ) async {
     // Navigate to picker and wait for result
     final selectedPath = await context.pushNamed<String>(
       AppRouteName.folderPickScreen,
-      extra: {'description': description, 'prefsKey': prefsKey},
+      extra: {'title': title, 'description': description},
     );
 
     // If user selected a path
@@ -210,6 +211,9 @@ class _FilesRootPageState extends State<FilesRootPage> with RouteAware {
     }
     if (widget.selectionActionText != null) {
       params['actionText'] = widget.selectionActionText!;
+    }
+    if (widget.fileType != null) {
+      params['fileType'] = widget.fileType!;
     }
 
     context.pushNamed(routeName, queryParameters: params);
@@ -337,6 +341,8 @@ class _FilesRootPageState extends State<FilesRootPage> with RouteAware {
                                                 .downloadsFolderPathKey,
                                             defaultPath:
                                                 '/storage/emulated/0/Download_INVALID',
+                                            pickerTitle:
+                                                'Select Downloads Folder',
                                             pickerDescription: t.t(
                                               'folder_picker_description_downloads',
                                             ),
@@ -358,11 +364,13 @@ class _FilesRootPageState extends State<FilesRootPage> with RouteAware {
                                         onTap: () {
                                           _navigateToFolderOrPicker(
                                             prefsKey: Constants
-                                                .downloadsFolderPathKey,
+                                                .pdfOutputFolderPathKey,
                                             defaultPath:
                                                 '/storage/emulated/0/Download_INVALID',
+                                            pickerTitle:
+                                                'Select PDF Output Folder',
                                             pickerDescription: t.t(
-                                              'folder_picker_description_downloads',
+                                              'folder_picker_description_pdfs',
                                             ),
                                           );
                                         },
@@ -381,6 +389,7 @@ class _FilesRootPageState extends State<FilesRootPage> with RouteAware {
                                                 Constants.imagesFolderPathKey,
                                             defaultPath:
                                                 '/storage/emulated/0/DCIM/Camera_INVALID',
+                                            pickerTitle: 'Select Images Folder',
                                             pickerDescription: t.t(
                                               'folder_picker_description_images',
                                             ),
@@ -405,6 +414,8 @@ class _FilesRootPageState extends State<FilesRootPage> with RouteAware {
                                                 .screenshotsFolderPathKey,
                                             defaultPath:
                                                 '/storage/emulated/0/DCIM/Screenshots_INVALID',
+                                            pickerTitle:
+                                                'Select Screenshots Folder',
                                             pickerDescription: t.t(
                                               'folder_picker_description_screenshots',
                                             ),
@@ -792,6 +803,7 @@ class _FilesRootPageState extends State<FilesRootPage> with RouteAware {
           _navigateToFolderOrPicker(
             prefsKey: Constants.downloadsFolderPathKey,
             defaultPath: '/storage/emulated/0/Download_INVALID',
+            pickerTitle: 'Select Downloads Folder',
             pickerDescription: t.t('folder_picker_description_downloads'),
           );
         },
@@ -859,6 +871,7 @@ class _FilesRootPageState extends State<FilesRootPage> with RouteAware {
           _navigateToFolderOrPicker(
             prefsKey: Constants.pdfOutputFolderPathKey,
             defaultPath: '/storage/emulated/0/Download_INVALID',
+            pickerTitle: 'Select PDF Output Folder',
             pickerDescription: t.t('folder_picker_description_pdfs'),
           );
         },
@@ -910,6 +923,7 @@ class _FilesRootPageState extends State<FilesRootPage> with RouteAware {
           _navigateToFolderOrPicker(
             prefsKey: Constants.imagesFolderPathKey,
             defaultPath: '/storage/emulated/0/DCIM/Cameraaaa',
+            pickerTitle: 'Select Images Folder',
             pickerDescription: t.t('folder_picker_description_images'),
           );
         },
@@ -961,6 +975,7 @@ class _FilesRootPageState extends State<FilesRootPage> with RouteAware {
           _navigateToFolderOrPicker(
             prefsKey: Constants.screenshotsFolderPathKey,
             defaultPath: '/storage/emulated/0/DCIM/Screenshooooots',
+            pickerTitle: 'Select Screenshots Folder',
             pickerDescription: t.t('folder_picker_description_screenshots'),
           );
         },
@@ -1031,15 +1046,89 @@ class _FilesRootPageState extends State<FilesRootPage> with RouteAware {
     }
 
     final pvd = _maybeProvider();
+    final t = AppLocalizations.of(context);
+
+    // Get fileType from SelectionProvider and apply TypeFilter-based filtering
+    final fileType = pvd?.fileType;
+    Set<TypeFilter> typeFilters = {};
+
+    // Initialize type filters based on fileType
+    if (fileType == 'pdf') {
+      typeFilters = {TypeFilter.folder, TypeFilter.pdf};
+    } else if (fileType == 'images') {
+      typeFilters = {TypeFilter.folder, TypeFilter.image};
+    } else if (fileType == 'all') {
+      typeFilters = {TypeFilter.folder, TypeFilter.pdf, TypeFilter.image};
+    }
+
+    // Apply TypeFilter-based filtering
+    List<FileInfo> filteredFiles = files;
+    if (typeFilters.isNotEmpty) {
+      filteredFiles = files.where((file) {
+        if (file.isDirectory) {
+          return typeFilters.contains(TypeFilter.folder);
+        }
+
+        final ext = file.extension.toLowerCase();
+        if (ext == 'pdf') {
+          return typeFilters.contains(TypeFilter.pdf);
+        }
+
+        // Common image extensions
+        const imageExts = {
+          'jpg',
+          'jpeg',
+          'png',
+          'gif',
+          'bmp',
+          'webp',
+          'svg',
+          'heic',
+          'heif',
+        };
+        if (imageExts.contains(ext)) {
+          return typeFilters.contains(TypeFilter.image);
+        }
+
+        // For other file types, don't show them if filtering is active
+        return false;
+      }).toList();
+    }
+
+    // Show filter-specific empty message if files exist but all filtered out
+    if (filteredFiles.isEmpty && files.isNotEmpty) {
+      String message;
+      if (fileType == 'pdf') {
+        message = t.t('recent_files_filter_empty_pdf');
+      } else if (fileType == 'images') {
+        message = t.t('recent_files_filter_empty_images');
+      } else {
+        message = t.t('recent_files_empty');
+      }
+
+      return Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Center(
+          child: Text(
+            message,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: Theme.of(
+                context,
+              ).textTheme.bodySmall?.color?.withOpacity(0.7),
+            ),
+          ),
+        ),
+      );
+    }
 
     return ListView.separated(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       padding: EdgeInsets.zero,
-      itemCount: files.length,
+      itemCount: filteredFiles.length,
       separatorBuilder: (_, __) => const SizedBox(height: 8),
       itemBuilder: (context, index) {
-        final file = files[index];
+        final file = filteredFiles[index];
         return DocEntryCard(
           info: file,
           selectable: _selectionEnabled,

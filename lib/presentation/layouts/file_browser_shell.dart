@@ -37,6 +37,7 @@ class _FileBrowserShellState extends State<FileBrowserShell> with RouteAware {
   // UI-only state for filters (parent manages these)
   SortOption _sortOption = SortOption.name;
   final Set<TypeFilter> _typeFilters = {};
+  bool _typeFiltersInitialized = false;
 
   // Get current path from route
   String? get _currentPath {
@@ -69,6 +70,31 @@ class _FileBrowserShellState extends State<FileBrowserShell> with RouteAware {
     final fileCount = files.where((f) => !f.isDirectory).length;
     final totalCount = folderCount + fileCount;
 
+    // Get fileType from SelectionProvider if available
+    final selectionProvider = _maybeProvider();
+    final fileType = selectionProvider?.fileType;
+
+    // Initialize type filters based on fileType (only once)
+    if (!_typeFiltersInitialized && fileType != null) {
+      _typeFiltersInitialized = true;
+      _typeFilters.clear();
+
+      if (fileType == 'pdf') {
+        // For PDF-only mode, show folders + PDFs
+        _typeFilters.addAll([TypeFilter.folder, TypeFilter.pdf]);
+      } else if (fileType == 'images') {
+        // For images-only mode, show folders + images
+        _typeFilters.addAll([TypeFilter.folder, TypeFilter.image]);
+      } else {
+        // For 'all', show everything
+        _typeFilters.addAll([
+          TypeFilter.folder,
+          TypeFilter.pdf,
+          TypeFilter.image,
+        ]);
+      }
+    }
+
     return Scaffold(
       body: SafeArea(
         child: Column(
@@ -86,6 +112,7 @@ class _FileBrowserShellState extends State<FileBrowserShell> with RouteAware {
                 typeFilters: Set.from(
                   _typeFilters,
                 ), // Create new Set for proper change detection
+                fileType: fileType,
                 child: widget.child,
               ),
             ),
@@ -275,6 +302,10 @@ class _FileBrowserShellState extends State<FileBrowserShell> with RouteAware {
   }
 
   Future<void> _openFilterDialog() async {
+    // Get fileType from SelectionProvider if available
+    final selectionProvider = _maybeProvider();
+    final fileType = selectionProvider?.fileType;
+
     await showModalBottomSheet(
       context: context,
       useRootNavigator: true,
@@ -290,6 +321,7 @@ class _FileBrowserShellState extends State<FileBrowserShell> with RouteAware {
               child: FilterSheet(
                 currentSort: _sortOption,
                 currentTypes: Set.from(_typeFilters),
+                currentFileType: fileType,
                 onSortChanged: (s) => setState(() => _sortOption = s),
                 onTypeFiltersChanged: (set) {
                   setState(() {
