@@ -8,9 +8,24 @@ import 'package:pdf_kit/presentation/sheets/rename_file_sheet.dart';
 import 'package:pdf_kit/service/file_service.dart';
 import 'package:pdf_kit/core/app_export.dart';
 import 'package:pdf_kit/presentation/pages/home_page.dart';
+import 'package:pdf_kit/presentation/layouts/layout_export.dart';
+import 'package:pdf_kit/presentation/provider/provider_export.dart';
 
 class RecentFilesSearchPage extends StatefulWidget {
-  const RecentFilesSearchPage({super.key});
+  final bool selectable;
+  final String? selectionActionText;
+  final String? selectionId;
+  final bool? isFullscreenRoute;
+  final void Function(List<FileInfo> files)? onSelectionAction;
+
+  const RecentFilesSearchPage({
+    super.key,
+    this.selectable = false,
+    this.selectionActionText,
+    this.selectionId,
+    this.isFullscreenRoute = false,
+    this.onSelectionAction,
+  });
 
   @override
   State<RecentFilesSearchPage> createState() => _RecentFilesSearchPageState();
@@ -46,6 +61,17 @@ class _RecentFilesSearchPageState extends State<RecentFilesSearchPage> {
     _controller.dispose();
     super.dispose();
   }
+
+  SelectionProvider? _maybeProvider() {
+    try {
+      return SelectionScope.of(context);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  bool get _selectionEnabled =>
+      widget.selectable && (_maybeProvider()?.isEnabled ?? false);
 
   Future<void> _loadRecentFiles() async {
     setState(() => _isLoading = true);
@@ -92,10 +118,14 @@ class _RecentFilesSearchPageState extends State<RecentFilesSearchPage> {
 
   void _handleFileOpen(FileInfo file) {
     debugPrint('🔓 [RecentFilesSearch] Opening file: ${file.name}');
-    context.pushNamed(
-      AppRouteName.showPdf,
-      queryParameters: {'path': file.path},
-    );
+    if (_selectionEnabled) {
+      _maybeProvider()?.toggle(file);
+    } else {
+      context.pushNamed(
+        AppRouteName.showPdf,
+        queryParameters: {'path': file.path},
+      );
+    }
   }
 
   Future<void> _handleFileDelete(FileInfo file) async {
@@ -231,11 +261,12 @@ class _RecentFilesSearchPageState extends State<RecentFilesSearchPage> {
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
                 const Spacer(),
-                IconButton(
-                  onPressed: () {}, // optional: clear all later
-                  icon: const Icon(Icons.close),
-                  tooltip: t.t('recent_files_search_clear_all_tooltip'),
-                ),
+                if (!_selectionEnabled)
+                  IconButton(
+                    onPressed: () {}, // optional: clear all later
+                    icon: const Icon(Icons.close),
+                    tooltip: t.t('recent_files_search_clear_all_tooltip'),
+                  ),
               ],
             ),
           ),
@@ -331,9 +362,21 @@ class _RecentFilesSearchPageState extends State<RecentFilesSearchPage> {
             margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 12),
             child: DocEntryCard(
               info: f,
+              selectable: _selectionEnabled,
+              selected: (_maybeProvider()?.isSelected(f.path) ?? false),
+              onToggleSelected: _selectionEnabled
+                  ? () => _maybeProvider()?.toggle(f)
+                  : null,
               onOpen: () => _handleFileOpen(f),
+              onLongPress: () {
+                if (!_selectionEnabled) {
+                  _maybeProvider()?.enable();
+                }
+                _maybeProvider()?.toggle(f);
+              },
               onMenu: (action) => _handleFileMenu(f, action),
               onRemove: () => _handleFileDelete(f),
+              showRemove: !_selectionEnabled,
             ),
           ),
         );

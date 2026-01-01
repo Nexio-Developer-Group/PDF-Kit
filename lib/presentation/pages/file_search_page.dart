@@ -11,6 +11,7 @@ import 'package:pdf_kit/service/open_service.dart';
 import 'package:pdf_kit/core/app_export.dart';
 import 'package:pdf_kit/presentation/sheets/rename_file_sheet.dart';
 import 'package:pdf_kit/presentation/sheets/delete_file_sheet.dart';
+import 'package:pdf_kit/presentation/pages/home_page.dart';
 
 class SearchFilesScreen extends StatefulWidget {
   final String? initialPath;
@@ -203,7 +204,6 @@ class _SearchFilesScreenState extends State<SearchFilesScreen> {
                       );
                     }
                   },
-                  onMenuSelected: (_) {}, // Implement folder actions if needed
                 )
               : DocEntryCard(
                   info: f,
@@ -263,11 +263,12 @@ class _SearchFilesScreenState extends State<SearchFilesScreen> {
           context: context,
           fileName: f.name,
           onDelete: () async {
-            context.read<FileSystemProvider>().deleteFile(f).then((_) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Deleted successfully')),
-              );
-            });
+            await context.read<FileSystemProvider>().deleteFile(f);
+            RecentFilesSection.refreshNotifier.value++;
+            if (!mounted) return;
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Deleted successfully')),
+            );
           },
         );
         break;

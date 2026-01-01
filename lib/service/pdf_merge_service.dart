@@ -19,6 +19,8 @@ import 'package:pdf/pdf.dart' as pw_pdf;
 import 'package:pdf/widgets.dart' as pw;
 import 'package:image/image.dart' as img;
 
+typedef MergeProgressCallback = void Function(double progress01, String stage);
+
 /// Parameters for image-to-PDF conversion in isolate
 class _ImageToPdfParams {
   final List<String> imagePaths;
@@ -212,8 +214,17 @@ class PdfMergeService {
     required List<FileInfo> files,
     required String outputFileName,
     String? destinationPath,
+    MergeProgressCallback? onProgress,
   }) async {
     try {
+      void report(double progress01, String stage) {
+        try {
+          final clamped = progress01.clamp(0.0, 1.0);
+          onProgress?.call(clamped, stage);
+        } catch (_) {}
+      }
+
+      report(0.03, 'Validating files');
       if (files.isEmpty) {
         return const Left(
           CustomException(
@@ -232,7 +243,13 @@ class PdfMergeService {
         );
       }
 
-      for (final fileInfo in files) {
+      final totalFiles = files.length;
+      for (var i = 0; i < files.length; i++) {
+        final fileInfo = files[i];
+        report(
+          0.03 + (0.07 * ((i + 1) / totalFiles)),
+          'Validating ${i + 1}/$totalFiles: ${fileInfo.name}',
+        );
         final file = File(fileInfo.path);
         if (!await file.exists()) {
           return Left(
@@ -256,6 +273,8 @@ class PdfMergeService {
           );
         }
       }
+
+      report(0.12, 'Preparing output');
 
       final Directory targetDir = await _resolveDestination(destinationPath);
 
@@ -288,6 +307,10 @@ class PdfMergeService {
       }
 
       debugPrint('   PDFs: ${pdfFiles.length}, Images: ${imageFiles.length}');
+      report(
+        0.16,
+        'Preparing inputs (${pdfFiles.length} PDF${pdfFiles.length == 1 ? '' : 's'}, ${imageFiles.length} image${imageFiles.length == 1 ? '' : 's'})',
+      );
 
       List<String> inputPaths;
 
@@ -295,6 +318,11 @@ class PdfMergeService {
         // Mixed: images -> temp PDF (dart_pdf in isolate), then merge
         debugPrint('   Processing mixed content (PDFs + images)');
         debugPrint('   🚀 Launching isolate for image conversion...');
+
+        report(
+          0.30,
+          'Converting ${imageFiles.length} image${imageFiles.length == 1 ? '' : 's'} to PDF',
+        );
 
         final tempOutputPath = p.join(
           targetDir.path,
@@ -320,11 +348,18 @@ class PdfMergeService {
         }
 
         debugPrint('   ✅ Isolate completed, temp PDF created');
+        report(0.55, 'Image conversion complete');
+        report(0.58, 'Preparing merge');
         inputPaths = [...pdfFiles.map((f) => f.path), tempImagePdf];
       } else if (imageFiles.isNotEmpty) {
         // Images only -> final PDF using dart_pdf in isolate
         debugPrint('   Processing images only (dart_pdf in isolate)');
         debugPrint('   🚀 Launching isolate for image conversion...');
+
+        report(
+          0.35,
+          'Converting ${imageFiles.length} image${imageFiles.length == 1 ? '' : 's'} to PDF',
+        );
 
         final imagesOnlyPdfPath = await compute(
           _imagesToPdfIsolate,
@@ -345,12 +380,24 @@ class PdfMergeService {
         }
 
         debugPrint('   ✅ Isolate completed');
-        return _createFileInfoFromPath(imagesOnlyPdfPath);
+        report(0.92, 'Finalizing output');
+        final fileInfoResult = await _createFileInfoFromPath(imagesOnlyPdfPath);
+        report(1.0, 'Done');
+        return fileInfoResult;
       } else {
         // PDFs only: do not touch PDF pages at all
         debugPrint('   Processing PDFs only (no image conversion)');
+        report(
+          0.30,
+          'Preparing ${pdfFiles.length} PDF${pdfFiles.length == 1 ? '' : 's'} for merge',
+        );
         inputPaths = pdfFiles.map((f) => f.path).toList();
       }
+
+      report(
+        0.65,
+        'Merging ${inputPaths.length} document${inputPaths.length == 1 ? '' : 's'}',
+      );
 
       debugPrint(
         '🔧 [MergeService] Calling PdfCombiner.generatePDFFromDocuments',
@@ -370,7 +417,12 @@ class PdfMergeService {
 
       if (docResponse.status.toString().toLowerCase().contains('success')) {
         debugPrint('✅ [MergeService] Merge successful, creating FileInfo');
-        return _createFileInfoFromPath(docResponse.outputPath);
+        report(0.92, 'Finalizing output');
+        final fileInfoResult = await _createFileInfoFromPath(
+          docResponse.outputPath,
+        );
+        report(1.0, 'Done');
+        return fileInfoResult;
       } else {
         final errorMessage = docResponse.message;
         debugPrint('❌ [MergeService] Merge failed: $errorMessage');

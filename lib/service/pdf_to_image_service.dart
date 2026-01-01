@@ -26,6 +26,16 @@ class PdfRasterizationFailure {
 class PdfSelectedPagesToImagesService {
   PdfSelectedPagesToImagesService._();
 
+  static void _report(
+    void Function(double progress01, String stage)? onProgress,
+    double progress01,
+    String stage,
+  ) {
+    try {
+      onProgress?.call(progress01.clamp(0.0, 1.0), stage);
+    } catch (_) {}
+  }
+
   /// Rasterize the selected pages of [inputPdf] and store them as image files
   /// in [outputDirectory]. If [outputDirectory] is null, a default folder
   /// inside the app documents directory is used.
@@ -38,8 +48,10 @@ class PdfSelectedPagesToImagesService {
     required List<int> pageNumbers,
     Directory? outputDirectory,
     String? fileNamePrefix,
+    void Function(double progress01, String stage)? onProgress,
   }) async {
     try {
+      _report(onProgress, 0.03, 'Validating inputs');
       if (pageNumbers.isEmpty) {
         return left(
           const PdfRasterizationFailure('No page numbers provided for export'),
@@ -84,8 +96,17 @@ class PdfSelectedPagesToImagesService {
             fileNamePrefix ?? p.basenameWithoutExtension(inputPdf.path);
         final List<File> exportedFiles = [];
 
+        _report(
+          onProgress,
+          0.12,
+          'Exporting ${pagesToExport.length} page${pagesToExport.length == 1 ? '' : 's'} to images',
+        );
+
         // Render and save each requested page.
-        for (final pageIndex in pagesToExport) {
+        for (var i = 0; i < pagesToExport.length; i++) {
+          final pageIndex = pagesToExport[i];
+          final progress01 = 0.15 + (0.75 * ((i + 1) / pagesToExport.length));
+          _report(onProgress, progress01, 'Rendering page $pageIndex');
           final page = await doc.getPage(pageIndex);
 
           try {
@@ -114,6 +135,7 @@ class PdfSelectedPagesToImagesService {
                 '${baseName}_page_${pageIndex.toString().padLeft(3, '0')}.jpg';
             final filePath = p.join(baseDir.path, fileName);
             final file = File(filePath);
+            _report(onProgress, progress01, 'Saving $fileName');
             await file.writeAsBytes(bytes, flush: true);
 
             exportedFiles.add(file);
@@ -130,9 +152,12 @@ class PdfSelectedPagesToImagesService {
           );
         }
 
+        _report(onProgress, 0.95, 'Finalizing');
+
         debugPrint(
           '✅ [SelectedPagesToImages] Exported ${exportedFiles.length} pages to ${baseDir.path}',
         );
+        _report(onProgress, 1.0, 'Done');
         return right(exportedFiles);
       } finally {
         await doc.close();

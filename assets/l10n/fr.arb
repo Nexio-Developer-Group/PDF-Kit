@@ -84,6 +84,11 @@
   "new_folder_field_hint": "Entrez le nom du dossier",
 
   "folder_picker_title": "Sélectionner un dossier",
+  "folder_picker_description": "Parcourir et sélectionner un dossier où vous souhaitez enregistrer vos fichiers",
+  "folder_picker_description_downloads": "Dossier Téléchargements",
+  "folder_picker_description_images": "Dossier Images",
+  "folder_picker_description_screenshots": "Dossier Captures d'écran",
+  "folder_picker_no_folder_selected": "Aucun dossier sélectionné pour le moment",
   "folder_picker_select_button": "SÉLECTIONNER",
   "folder_picker_unable_to_load_title": "Impossible de charger les dossiers",
   "folder_picker_no_folders": "Aucun dossier disponible",

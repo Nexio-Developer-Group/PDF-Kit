@@ -7,9 +7,9 @@ import 'package:pdf_kit/presentation/sheets/new_folder_sheet.dart';
 import 'package:pdf_kit/presentation/sheets/filter_sheet.dart';
 import 'package:pdf_kit/presentation/models/filter_models.dart';
 import 'package:pdf_kit/core/app_export.dart';
-import 'package:provider/provider.dart';
 import 'package:path/path.dart' as p;
 import 'package:pdf_kit/presentation/widgets/breadcrumb_widget.dart';
+import 'package:pdf_kit/presentation/layouts/file_browser_filter_scope.dart';
 
 /// Persistent shell layout for file browsing
 /// Contains header and folder info bar that don't rebuild on navigation
@@ -37,6 +37,7 @@ class _FileBrowserShellState extends State<FileBrowserShell> with RouteAware {
   // UI-only state for filters (parent manages these)
   SortOption _sortOption = SortOption.name;
   final Set<TypeFilter> _typeFilters = {};
+  bool _typeFiltersInitialized = false;
 
   // Get current path from route
   String? get _currentPath {
@@ -69,6 +70,31 @@ class _FileBrowserShellState extends State<FileBrowserShell> with RouteAware {
     final fileCount = files.where((f) => !f.isDirectory).length;
     final totalCount = folderCount + fileCount;
 
+    // Get fileType from SelectionProvider if available
+    final selectionProvider = _maybeProvider();
+    final fileType = selectionProvider?.fileType;
+
+    // Initialize type filters based on fileType (only once)
+    if (!_typeFiltersInitialized && fileType != null) {
+      _typeFiltersInitialized = true;
+      _typeFilters.clear();
+
+      if (fileType == 'pdf') {
+        // For PDF-only mode, show folders + PDFs
+        _typeFilters.addAll([TypeFilter.folder, TypeFilter.pdf]);
+      } else if (fileType == 'images') {
+        // For images-only mode, show folders + images
+        _typeFilters.addAll([TypeFilter.folder, TypeFilter.image]);
+      } else {
+        // For 'all', show everything
+        _typeFilters.addAll([
+          TypeFilter.folder,
+          TypeFilter.pdf,
+          TypeFilter.image,
+        ]);
+      }
+    }
+
     return Scaffold(
       body: SafeArea(
         child: Column(
@@ -80,7 +106,16 @@ class _FileBrowserShellState extends State<FileBrowserShell> with RouteAware {
             _buildFolderInfoBar(context, displayName, totalCount, files),
 
             // Child content (file list from AndroidFilesScreen)
-            Expanded(child: widget.child),
+            Expanded(
+              child: FileBrowserFilterScope(
+                sortOption: _sortOption,
+                typeFilters: Set.from(
+                  _typeFilters,
+                ), // Create new Set for proper change detection
+                fileType: fileType,
+                child: widget.child,
+              ),
+            ),
           ],
         ),
       ),
@@ -104,7 +139,9 @@ class _FileBrowserShellState extends State<FileBrowserShell> with RouteAware {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.primary.withOpacity(0.15),
+              color: Theme.of(
+                context,
+              ).colorScheme.primary.withAlpha((0.15 * 225).toInt()),
               shape: BoxShape.circle,
             ),
             child: ClipOval(
@@ -247,8 +284,9 @@ class _FileBrowserShellState extends State<FileBrowserShell> with RouteAware {
                 showNewFolderSheet(
                   context: context,
                   onCreate: (String folderName) async {
-                    if (_currentPath == null || folderName.trim().isEmpty)
+                    if (_currentPath == null || folderName.trim().isEmpty) {
                       return;
+                    }
                     await context.read<FileSystemProvider>().createFolder(
                       _currentPath!,
                       folderName,
@@ -264,6 +302,10 @@ class _FileBrowserShellState extends State<FileBrowserShell> with RouteAware {
   }
 
   Future<void> _openFilterDialog() async {
+    // Get fileType from SelectionProvider if available
+    final selectionProvider = _maybeProvider();
+    final fileType = selectionProvider?.fileType;
+
     await showModalBottomSheet(
       context: context,
       useRootNavigator: true,
@@ -274,20 +316,19 @@ class _FileBrowserShellState extends State<FileBrowserShell> with RouteAware {
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(28),
-            child: Container(
-              child: SafeArea(
-                top: false,
-                child: FilterSheet(
-                  currentSort: _sortOption,
-                  currentTypes: Set.from(_typeFilters),
-                  onSortChanged: (s) => setState(() => _sortOption = s),
-                  onTypeFiltersChanged: (set) {
-                    setState(() {
-                      _typeFilters.clear();
-                      _typeFilters.addAll(set);
-                    });
-                  },
-                ),
+            child: SafeArea(
+              top: false,
+              child: FilterSheet(
+                currentSort: _sortOption,
+                currentTypes: Set.from(_typeFilters),
+                currentFileType: fileType,
+                onSortChanged: (s) => setState(() => _sortOption = s),
+                onTypeFiltersChanged: (set) {
+                  setState(() {
+                    _typeFilters.clear();
+                    _typeFilters.addAll(set);
+                  });
+                },
               ),
             ),
           ),

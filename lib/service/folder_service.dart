@@ -96,4 +96,50 @@ class FolderServiceAndroid {
     final baseNorm = base.replaceAll(RegExp(r'[\/\\]+$'), '');
     return '$baseNorm$sep$name';
   }
+
+  /// Renames a folder from [path] to [newName].
+  /// Returns Either<String error, Directory success>.
+  static Future<Either<String, Directory>> renameFolder({
+    required String path,
+    required String newName,
+  }) async {
+    try {
+      final dir = Directory(path);
+      if (!await dir.exists()) {
+        return left('Folder does not exist');
+      }
+
+      final parentPath = dir.parent.path;
+      final sanitized = _sanitizeFolderName(newName);
+      final newPath = _join(parentPath, sanitized);
+
+      final newDir = Directory(newPath);
+      if (await newDir.exists()) {
+        return left('Folder with this name already exists');
+      }
+
+      final renamed = await dir.rename(newPath);
+      return right(renamed);
+    } catch (e) {
+      return left('Failed to rename folder: $e');
+    }
+  }
+
+  /// Deletes a folder at [path].
+  /// Returns Either<String error, bool success>.
+  static Future<Either<String, bool>> deleteFolder({
+    required String path,
+  }) async {
+    try {
+      final dir = Directory(path);
+      if (!await dir.exists()) {
+        return left('Folder does not exist');
+      }
+
+      await dir.delete(recursive: true);
+      return right(true);
+    } catch (e) {
+      return left('Failed to delete folder: $e');
+    }
+  }
 }

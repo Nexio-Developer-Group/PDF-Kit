@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'dart:async';
 import 'package:pdf_kit/models/file_model.dart';
 import 'package:pdf_kit/presentation/component/document_tile.dart';
 import 'package:pdf_kit/presentation/provider/selection_provider.dart';
@@ -9,6 +10,7 @@ import 'package:pdf_kit/service/recent_file_service.dart';
 import 'package:pdf_kit/core/app_export.dart';
 import 'package:path/path.dart' as p;
 import 'package:pdf_kit/presentation/pages/home_page.dart';
+import 'package:pdf_kit/presentation/widgets/non_dismissible_progress_dialog.dart';
 
 class UnlockPdfPage extends StatefulWidget {
   final String? selectionId;
@@ -35,6 +37,8 @@ class _UnlockPdfPageState extends State<UnlockPdfPage> {
   bool _isPasswordVisible = true;
   bool _isUnlocking = false;
 
+  final ProgressDialogController _progressDialog = ProgressDialogController();
+
   @override
   void dispose() {
     _passwordController.dispose();
@@ -56,16 +60,62 @@ class _UnlockPdfPageState extends State<UnlockPdfPage> {
       return;
     }
 
+    if (_isUnlocking) return;
     setState(() => _isUnlocking = true);
+
+    final progress = ValueNotifier<double>(0.02);
+    final stage = ValueNotifier<String>('Preparing…');
+    late final Timer smoothTimer;
+
+    void bumpProgress(double value01) {
+      final next = value01.clamp(0.0, 1.0);
+      if (next > progress.value) progress.value = next;
+    }
+
+    _progressDialog.show(
+      context: context,
+      title: 'Unlock PDF',
+      progress: progress,
+      stage: stage,
+    );
+
+    smoothTimer = Timer.periodic(const Duration(milliseconds: 250), (_) {
+      if (progress.value < 0.92) {
+        bumpProgress(progress.value + 0.01);
+      }
+    });
 
     final file = selection.files.first;
 
-    final result = await PdfProtectionService.unlockPdf(
-      pdfPath: file.path,
-      password: _passwordController.text,
-    );
+    late final result;
+    try {
+      result = await PdfProtectionService.unlockPdf(
+        pdfPath: file.path,
+        password: _passwordController.text,
+        onProgress: (p01, s) {
+          stage.value = s;
+          bumpProgress(p01);
+        },
+      );
+    } finally {
+      try {
+        bumpProgress(1.0);
+        stage.value = 'Done';
+      } catch (_) {}
 
-    setState(() => _isUnlocking = false);
+      smoothTimer.cancel();
+      if (mounted) {
+        _progressDialog.dismiss(context);
+      }
+      progress.dispose();
+      stage.dispose();
+
+      if (mounted) {
+        setState(() => _isUnlocking = false);
+      } else {
+        _isUnlocking = false;
+      }
+    }
 
     result.fold(
       (failure) {
@@ -147,25 +197,23 @@ class _UnlockPdfPageState extends State<UnlockPdfPage> {
           ),
           body: SafeArea(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24.0),
+              padding: screenPadding,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     t.t('unlock_pdf_title'),
-                    style: theme.textTheme.headlineMedium?.copyWith(
-                      fontSize: 28,
+                    style: theme.textTheme.headlineSmall?.copyWith(
                       fontWeight: FontWeight.bold,
                       color: Colors.black,
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 12),
                   Text(
                     t.t('unlock_pdf_description'),
                     style: theme.textTheme.bodyMedium?.copyWith(
-                      fontSize: 14,
                       color: Colors.black87,
-                      height: 1.5,
+                      height: 1.4,
                     ),
                   ),
                   const SizedBox(height: 24),
@@ -217,6 +265,7 @@ class _UnlockPdfPageState extends State<UnlockPdfPage> {
                     const SizedBox(height: 8),
                     TextField(
                       controller: _passwordController,
+                      onChanged: (_) => setState(() {}),
                       obscureText: !_isPasswordVisible,
                       decoration: InputDecoration(
                         hintText: t.t('unlock_pdf_password_hint'),
@@ -255,31 +304,17 @@ class _UnlockPdfPageState extends State<UnlockPdfPage> {
           bottomNavigationBar: hasFile
               ? Container(
                   padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-                  decoration: BoxDecoration(
-                    color: Colors.transparent,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
-                        offset: const Offset(0, -2),
-                        blurRadius: 8,
-                      ),
-                    ],
-                  ),
+                  decoration: BoxDecoration(color: Colors.transparent),
                   child: SafeArea(
                     minimum: const EdgeInsets.fromLTRB(16, 0, 16, 16),
                     child: SizedBox(
                       width: double.infinity,
-                      height: 56,
+                      height: 48,
                       child: FilledButton(
-                        onPressed: !_isUnlocking
+                        onPressed:
+                            !_isUnlocking && _passwordController.text.isNotEmpty
                             ? () => _handleUnlock(context, selection)
                             : null,
-                        style: FilledButton.styleFrom(
-                          backgroundColor: const Color(0xFF5B7FFF),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(28),
-                          ),
-                        ),
                         child: _isUnlocking
                             ? const SizedBox(
                                 height: 24,

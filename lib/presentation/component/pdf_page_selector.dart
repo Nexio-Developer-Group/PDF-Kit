@@ -32,6 +32,8 @@ class _PdfPageSelectorState extends State<PdfPageSelector> {
   int _totalPages = 0;
   final Map<int, Uint8List?> _pageCache = {};
 
+  int _thumbnailLoadId = 0;
+
   @override
   void initState() {
     super.initState();
@@ -64,7 +66,10 @@ class _PdfPageSelectorState extends State<PdfPageSelector> {
       widget.onSelectionChanged(_selectedPages);
 
       // Start loading page thumbnails
-      _loadPageThumbnails();
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        _loadPageThumbnails();
+      });
     } catch (e) {
       debugPrint('Error loading PDF: $e');
       setState(() => _isLoading = false);
@@ -72,11 +77,12 @@ class _PdfPageSelectorState extends State<PdfPageSelector> {
   }
 
   Future<void> _loadPageThumbnails() async {
+    final loadId = ++_thumbnailLoadId;
     try {
       final doc = await pdfx.PdfDocument.openFile(widget.pdfFile.path);
 
       for (int pageNum = 1; pageNum <= _totalPages; pageNum++) {
-        if (!mounted) break;
+        if (!mounted || loadId != _thumbnailLoadId) break;
         if (_pageCache.containsKey(pageNum)) continue;
 
         try {
@@ -99,6 +105,9 @@ class _PdfPageSelectorState extends State<PdfPageSelector> {
         } catch (e) {
           debugPrint('Error loading page $pageNum: $e');
         }
+
+        // Yield to UI so scrolling/interaction stays smooth.
+        await Future<void>.delayed(Duration.zero);
       }
 
       await doc.close();
@@ -257,7 +266,7 @@ class _PdfPageSelectorState extends State<PdfPageSelector> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Select pages text field
+        // Select pages text field (fixed header)
         TextField(
           controller: _selectCtrl,
           decoration: InputDecoration(
@@ -291,7 +300,7 @@ class _PdfPageSelectorState extends State<PdfPageSelector> {
         ),
         const SizedBox(height: 16),
 
-        // Selected count info
+        // Selected count info (fixed header)
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           decoration: BoxDecoration(
@@ -320,32 +329,33 @@ class _PdfPageSelectorState extends State<PdfPageSelector> {
         ),
         const SizedBox(height: 16),
 
-        // Pages grid (2 columns) - Non-reorderable
-        GridView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
-            mainAxisSpacing: 12,
-            crossAxisSpacing: 12,
-            childAspectRatio: 0.65,
-          ),
-          itemCount: _totalPages,
-          itemBuilder: (context, index) {
-            final pageNum = index + 1;
-            final isSelected = _selectedPages.contains(pageNum);
+        // Pages grid (scrollable)
+        Expanded(
+          child: GridView.builder(
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              mainAxisSpacing: 12,
+              crossAxisSpacing: 12,
+              childAspectRatio: 0.65,
+            ),
+            itemCount: _totalPages,
+            itemBuilder: (context, index) {
+              final pageNum = index + 1;
+              final isSelected = _selectedPages.contains(pageNum);
 
-            return PdfPageThumbnail(
-              pageNum: pageNum,
-              isSelected: isSelected,
-              thumbnailBytes: _pageCache[pageNum],
-              rotation: 0.0,
-              onToggle: () => _togglePage(pageNum),
-              showRotateButton: false,
-              showRemoveButton: false,
-              showSelectButton: true,
-            );
-          },
+              return PdfPageThumbnail(
+                key: ValueKey(pageNum),
+                pageNum: pageNum,
+                isSelected: isSelected,
+                thumbnailBytes: _pageCache[pageNum],
+                rotation: 0.0,
+                onToggle: () => _togglePage(pageNum),
+                showRotateButton: false,
+                showRemoveButton: false,
+                showSelectButton: true,
+              );
+            },
+          ),
         ),
       ],
     );

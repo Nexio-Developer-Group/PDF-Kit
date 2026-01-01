@@ -12,73 +12,71 @@ class FolderPickerProvider extends ChangeNotifier {
   String? _selectedFolderPath;
   bool _isLoading = false;
   String? _errorMessage;
+  bool _isLocked = false;
 
   List<FolderTreeNode> get rootNodes => _rootNodes;
   String? get selectedFolderPath => _selectedFolderPath;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
   bool get hasSelection => _selectedFolderPath != null;
+  bool get isLocked => _isLocked;
 
   /// Initialize with storage volumes and public directories
-  Future<void> initialize() async {
+  Future<void> initialize({String? initialPath}) async {
     _isLoading = true;
     _errorMessage = null;
+    if (initialPath != null) {
+      _selectedFolderPath = initialPath;
+    }
     notifyListeners();
 
     try {
       final volumesEither = await PathService.volumes();
-      final publicDirsEither = await PathService.publicDirs();
 
       final List<FolderTreeNode> nodes = [];
 
-      // Add public directories first
-      publicDirsEither.fold(
-        (error) {
-          debugPrint('Error loading public dirs: $error');
-          _errorMessage = error.toString();
-        },
-        (publicDirs) {
-          for (final entry in publicDirs.entries) {
-            final fileInfo = FileInfo(
-              name: entry.key,
-              path: entry.value.path,
-              extension: '',
-              size: 0,
-              isDirectory: true,
-              lastModified: DateTime.now(),
-              parentDirectory: entry.value.parent.path,
-            );
-
-            nodes.add(FolderTreeNode(fileInfo: fileInfo, depth: 0));
-          }
-        },
-      );
-
-      // Add storage volumes
+      // Only add Internal Storage volume
       volumesEither.fold(
         (error) {
           debugPrint('Error loading volumes: $error');
-          _errorMessage ??= error.toString();
+          _errorMessage = error.toString();
         },
         (volumes) {
           for (final volume in volumes) {
             final name = _extractVolumeName(volume.path);
-            final fileInfo = FileInfo(
-              name: name,
-              path: volume.path,
-              extension: '',
-              size: 0,
-              isDirectory: true,
-              lastModified: DateTime.now(),
-              parentDirectory: volume.parent.path,
-            );
+            // Only add internal storage
+            if (name == 'Internal Storage' ||
+                volume.path.contains('emulated/0')) {
+              final fileInfo = FileInfo(
+                name: 'Internal Storage',
+                path: volume.path,
+                extension: '',
+                size: 0,
+                isDirectory: true,
+                lastModified: DateTime.now(),
+                parentDirectory: volume.parent.path,
+              );
 
-            nodes.add(FolderTreeNode(fileInfo: fileInfo, depth: 0));
+              // Create node with expanded state
+              final internalStorageNode = FolderTreeNode(
+                fileInfo: fileInfo,
+                depth: 0,
+                isExpanded: true,
+                isSelected: _selectedFolderPath == fileInfo.path,
+              );
+              nodes.add(internalStorageNode);
+              break; // Only add the first internal storage found
+            }
           }
         },
       );
 
       _rootNodes = nodes;
+
+      // Load children for Internal Storage automatically
+      if (nodes.isNotEmpty) {
+        await _loadChildren(nodes.first);
+      }
     } catch (e) {
       _errorMessage = 'Failed to load folders: $e';
       debugPrint(_errorMessage);
@@ -127,7 +125,11 @@ class FolderPickerProvider extends ChangeNotifier {
 
           // Convert FileInfo to FolderTreeNode
           final children = folders.map((info) {
-            return FolderTreeNode(fileInfo: info, depth: parentNode.depth + 1);
+            return FolderTreeNode(
+              fileInfo: info,
+              depth: parentNode.depth + 1,
+              isSelected: _selectedFolderPath == info.path,
+            );
           }).toList();
 
           // Update parent with children
@@ -147,17 +149,39 @@ class FolderPickerProvider extends ChangeNotifier {
     }
   }
 
-  /// Select a folder (single selection only)
+  /// Select a folder (single selection only) - toggles if same folder clicked
   void selectFolder(FolderTreeNode node) {
-    // Deselect all folders first
-    _deselectAllFolders();
+    // Prevent selection if locked
+    if (_isLocked) return;
 
-    // Select the clicked folder
-    final updatedNode = node.copyWith(isSelected: true);
-    _updateNodeInTree(node, updatedNode);
-    _selectedFolderPath = node.path;
+    // If clicking the already selected folder, deselect it
+    if (_selectedFolderPath == node.path) {
+      _deselectAllFolders();
+      notifyListeners();
+    } else {
+      // Deselect all folders and select the new one
+      _rootNodes = _rootNodes
+          .map((root) => _selectNodeInTree(root, node.path))
+          .toList();
+      _selectedFolderPath = node.path;
+      notifyListeners();
+    }
+  }
 
+  /// Lock selection to prevent further changes
+  void lockSelection() {
+    _isLocked = true;
     notifyListeners();
+  }
+
+  /// Recursively deselect all nodes and select the target node by path
+  FolderTreeNode _selectNodeInTree(FolderTreeNode current, String targetPath) {
+    final isTarget = current.path == targetPath;
+    final updatedChildren = current.children
+        .map((child) => _selectNodeInTree(child, targetPath))
+        .toList();
+
+    return current.copyWith(isSelected: isTarget, children: updatedChildren);
   }
 
   /// Deselect all folders recursively

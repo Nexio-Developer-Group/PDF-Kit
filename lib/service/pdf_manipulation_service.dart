@@ -9,15 +9,28 @@ import 'package:flutter/foundation.dart';
 class PdfManipulationService {
   PdfManipulationService._();
 
+  static void _report(
+    void Function(double progress01, String stage)? onProgress,
+    double progress01,
+    String stage,
+  ) {
+    try {
+      onProgress?.call(progress01.clamp(0.0, 1.0), stage);
+    } catch (_) {}
+  }
+
   /// Rearranges PDF pages to new order (1-based indices), rotates specified pages, removes unwanted pages
   static Future<Either<String, String>> manipulatePdf({
     required String pdfPath,
-    List<int>? reorderPages, // e.g., [3, 1, 2] for page 3 first
-    Map<int, double>?
-    pagesToRotate, // 1-based indices to rotation angle (0, 90, 180, 270)
-    List<int>? pagesToRemove, // 1-based indices to delete
+    List<int>? reorderPages,
+    Map<int, double>? pagesToRotate,
+    List<int>? pagesToRemove,
+    String?
+    destinationPath, // 🆕 Optional: Save specific path instead of overwrite
+    void Function(double progress01, String stage)? onProgress,
   }) async {
     try {
+      _report(onProgress, 0.03, 'Validating inputs');
       // Validate inputs
       if (reorderPages != null && reorderPages.isEmpty) {
         return const Left('Reorder pages list cannot be empty');
@@ -29,7 +42,10 @@ class PdfManipulationService {
         return const Left('PDF file not found');
       }
 
-      final String outputPath = _outputPathFor(pdfPath, '_manipulated');
+      _report(onProgress, 0.10, 'Reading PDF');
+
+      // Determine temporary output path
+      // final String outputPath = _outputPathFor(pdfPath, '_manipulated');
 
       // Load PDF document using pdfx to get page count and render pages
       final pdfxDoc = await pdfx.PdfDocument.openFile(pdfPath);
@@ -60,19 +76,28 @@ class PdfManipulationService {
         return const Left('All pages were removed, PDF cannot be empty');
       }
 
-      debugPrint('📋 [PdfManipulationService] Final order: $finalOrder');
+      _report(
+        onProgress,
+        0.15,
+        'Processing ${finalOrder.length} page${finalOrder.length == 1 ? '' : 's'}',
+      );
 
       // Create new PDF document
       final pw.Document newPdf = pw.Document();
 
       // Render and add each page in the desired order
-      for (int pageNum in finalOrder) {
+      for (var i = 0; i < finalOrder.length; i++) {
+        final pageNum = finalOrder[i];
         if (pageNum < 1 || pageNum > totalPages) {
-          debugPrint(
-            '⚠️ [PdfManipulationService] Skipping invalid page: $pageNum',
-          );
           continue;
         }
+
+        final p = 0.18 + (0.72 * ((i + 1) / finalOrder.length));
+        _report(
+          onProgress,
+          p,
+          'Rendering page $pageNum (${i + 1}/${finalOrder.length})',
+        );
 
         try {
           final pdfxPage = await pdfxDoc.getPage(pageNum);
@@ -87,12 +112,7 @@ class PdfManipulationService {
 
           await pdfxPage.close();
 
-          if (pageImage == null) {
-            debugPrint(
-              '⚠️ [PdfManipulationService] Failed to render page $pageNum',
-            );
-            continue;
-          }
+          if (pageImage == null) continue;
 
           // Get rotation angle for this page (default 0)
           final rotationAngle = pagesToRotate?[pageNum] ?? 0.0;
@@ -105,7 +125,6 @@ class PdfManipulationService {
           double pageHeight = pdfxPage.height;
 
           if (rotationAngle == 90 || rotationAngle == 270) {
-            // Swap dimensions for 90/270 rotation
             final temp = pageWidth;
             pageWidth = pageHeight;
             pageHeight = temp;
@@ -123,14 +142,7 @@ class PdfManipulationService {
               },
             ),
           );
-
-          debugPrint(
-            '✅ [PdfManipulationService] Added page $pageNum (rotation: $rotationAngle°)',
-          );
         } catch (e) {
-          debugPrint(
-            '❌ [PdfManipulationService] Error processing page $pageNum: $e',
-          );
           await pdfxDoc.close();
           return Left('Error processing page $pageNum: ${e.toString()}');
         }
@@ -138,25 +150,43 @@ class PdfManipulationService {
 
       await pdfxDoc.close();
 
-      // Save manipulated PDF to temporary file
+      // Save logic:
+      // If destinationPath provided -> Save there.
+      // Else -> Overwrite original.
+
       final bytes = await newPdf.save();
-      await File(outputPath).writeAsBytes(bytes);
 
-      debugPrint('💾 [PdfManipulationService] Saved to temp: $outputPath');
+      _report(onProgress, 0.92, 'Writing output');
 
-      // Replace original with manipulated output
-      await pdfFile.writeAsBytes(bytes);
+      if (destinationPath != null && destinationPath.isNotEmpty) {
+        // Save to specific destination (copy mode)
+        final destFile = File(destinationPath);
+        // ensure parent exists
+        if (!await destFile.parent.exists()) {
+          await destFile.parent.create(recursive: true);
+        }
+        await destFile.writeAsBytes(bytes);
+        debugPrint('💾 [PdfManipulationService] Saved to: $destinationPath');
+        _report(onProgress, 1.0, 'Done');
+        return Right(destinationPath);
+      } else {
+        // Overwrite original
+        // Write to temp first for safety
+        final String tempPath = _outputPathFor(pdfPath, '_manipulated');
+        await File(tempPath).writeAsBytes(bytes);
 
-      debugPrint('✅ [PdfManipulationService] Replaced original: $pdfPath');
+        // Replace original
+        await pdfFile.writeAsBytes(bytes);
 
-      // Clean up temporary file
-      try {
-        await File(outputPath).delete();
-      } catch (_) {
-        debugPrint('⚠️ [PdfManipulationService] Failed to delete temp file');
+        // Cleanup temp
+        try {
+          await File(tempPath).delete();
+        } catch (_) {}
+
+        debugPrint('✅ [PdfManipulationService] Overwrote original: $pdfPath');
+        _report(onProgress, 1.0, 'Done');
+        return Right(pdfPath);
       }
-
-      return Right(pdfPath);
     } on FileSystemException catch (e) {
       return Left('File error: ${e.message}');
     } catch (e) {

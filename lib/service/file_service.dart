@@ -4,6 +4,7 @@ import 'package:dartz/dartz.dart';
 import 'package:path/path.dart' as p;
 import 'package:pdf_kit/models/file_model.dart';
 import 'package:pdf_kit/service/pdf_merge_service.dart' show CustomException;
+import 'package:pdf_kit/service/recent_file_service.dart';
 
 /// Service for general file operations like delete, rename, copy, move, etc.
 class FileService {
@@ -30,6 +31,11 @@ class FileService {
       }
 
       await file.delete();
+
+      // Best-effort: also remove from recent files storage.
+      try {
+        await RecentFilesService.removeRecentFile(fileInfo.path);
+      } catch (_) {}
       return const Right(true);
     } catch (e) {
       return Left(

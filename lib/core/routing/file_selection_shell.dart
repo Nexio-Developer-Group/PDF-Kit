@@ -21,6 +21,7 @@ ShellRoute buildSelectionShellRoute({
       final maxStr = state.uri.queryParameters['max'];
       final minStr = state.uri.queryParameters['min'];
       final allowed = state.uri.queryParameters['allowed'];
+      // final fileType = state.uri.queryParameters['fileType'];
       final maxSelectable = int.tryParse(maxStr ?? '');
       final minSelectable = int.tryParse(minStr ?? '');
 
@@ -99,6 +100,15 @@ ShellRoute buildSelectionShellRoute({
                   if (maxSelectable != null) 'max': maxSelectable.toString(),
                 },
               );
+            } else if (action.contains('split')) {
+              rootNavKey.currentContext!.pushNamed(
+                AppRouteName.splitPdf,
+                queryParameters: {
+                  'selectionId': selectionId,
+                  if (minSelectable != null) 'min': minSelectable.toString(),
+                  if (maxSelectable != null) 'max': maxSelectable.toString(),
+                },
+              );
             } else if (action.contains('image')) {
               rootNavKey.currentContext!.pushNamed(
                 AppRouteName.pdfToImage,
@@ -161,6 +171,11 @@ ShellRoute buildSelectionShellRoute({
                   AppRouteName.reorderPdf,
                   extra: files,
                 );
+              } else if (action.contains('split')) {
+                rootNavKey.currentContext!.pushNamed(
+                  AppRouteName.splitPdf,
+                  extra: files,
+                );
               } else if (action.contains('image')) {
                 rootNavKey.currentContext!.pushNamed(
                   AppRouteName.pdfToImage,
@@ -180,6 +195,32 @@ ShellRoute buildSelectionShellRoute({
     },
     routes: [
       GoRoute(
+        name: AppRouteName.recentFilesFullscreen,
+        path: '/recent-files-fullscreen',
+        pageBuilder: (context, state) => MaterialPage(
+          key: state.pageKey,
+          child: RecentFilesPage(
+            isFullscreenRoute: true,
+            selectable: true,
+            selectionId: state.uri.queryParameters['selectionId'],
+            selectionActionText: state.uri.queryParameters['actionText'],
+          ),
+        ),
+      ),
+      GoRoute(
+        name: AppRouteName.recentFilesSearchFullscreen,
+        path: '/recent-files-search-fullscreen',
+        pageBuilder: (context, state) => MaterialPage(
+          key: state.pageKey,
+          child: RecentFilesSearchPage(
+            isFullscreenRoute: true,
+            selectable: true,
+            selectionId: state.uri.queryParameters['selectionId'],
+            selectionActionText: state.uri.queryParameters['actionText'],
+          ),
+        ),
+      ),
+      GoRoute(
         name: AppRouteName.filesRootFullscreen,
         path: '/files-fullscreen',
         pageBuilder: (context, state) => MaterialPage(
@@ -188,6 +229,7 @@ ShellRoute buildSelectionShellRoute({
             isFullscreenRoute: true,
             selectionId: state.uri.queryParameters['selectionId'],
             selectionActionText: state.uri.queryParameters['actionText'],
+            fileType: state.uri.queryParameters['fileType'],
           ),
         ),
         routes: [
@@ -218,6 +260,7 @@ ShellRoute buildSelectionShellRoute({
                     selectionId: state.uri.queryParameters['selectionId'],
                     selectionActionText:
                         state.uri.queryParameters['actionText'],
+                    fileType: state.uri.queryParameters['fileType'],
                   ),
                 ),
               ),

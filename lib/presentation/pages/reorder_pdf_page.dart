@@ -1,14 +1,19 @@
 import 'dart:io';
+import 'dart:async';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:pdf_kit/presentation/provider/provider_export.dart';
 import 'package:pdfx/pdfx.dart' as pdfx;
 import 'package:pdf_kit/core/app_export.dart';
 import 'package:pdf_kit/models/file_model.dart';
+import 'package:pdf_kit/presentation/widgets/non_dismissible_progress_dialog.dart';
 import 'package:pdf_kit/service/pdf_manipulation_service.dart';
 import 'package:pdf_kit/service/recent_file_service.dart';
 import 'package:pdf_kit/presentation/component/pdf_page_thumbnail.dart';
 import 'package:reorderable_grid_view/reorderable_grid_view.dart';
+import 'package:path/path.dart' as p;
+
+import 'package:pdf_kit/service/path_service.dart';
 import 'package:pdf_kit/presentation/pages/home_page.dart';
 
 class ReorderPdfPage extends StatefulWidget {
@@ -28,10 +33,52 @@ class _ReorderPdfPageState extends State<ReorderPdfPage> {
   bool _isLoading = true;
   int _totalPages = 0;
   final Map<int, Uint8List?> _pageCache = {};
+  FileInfo? _selectedDestinationFolder;
+
+  final ProgressDialogController _progressDialog = ProgressDialogController();
+
+  Future<void> _loadDefaultDestination() async {
+    try {
+      final savedPath = Prefs.getString(Constants.pdfOutputFolderPathKey);
+      if (savedPath != null) {
+        final dir = Directory(savedPath);
+        if (await dir.exists()) {
+          setState(() {
+            _selectedDestinationFolder = FileInfo(
+              name: p.basename(savedPath),
+              path: savedPath,
+              extension: '',
+              size: 0,
+              isDirectory: true,
+              lastModified: DateTime.now(),
+            );
+          });
+          return;
+        }
+      }
+      final publicDirsResult = await PathService.publicDirs();
+      publicDirsResult.fold((error) {}, (publicDirs) {
+        final downloadsDir = publicDirs['Downloads'];
+        if (downloadsDir != null) {
+          setState(() {
+            _selectedDestinationFolder = FileInfo(
+              name: 'Downloads',
+              path: downloadsDir.path,
+              extension: '',
+              size: 0,
+              isDirectory: true,
+              lastModified: DateTime.now(),
+            );
+          });
+        }
+      });
+    } catch (_) {}
+  }
 
   @override
   void initState() {
     super.initState();
+    _loadDefaultDestination();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadPdfInfo();
     });
@@ -145,7 +192,25 @@ class _ReorderPdfPageState extends State<ReorderPdfPage> {
 
     setState(() => _isProcessing = true);
 
+    final progress = ValueNotifier<double>(0.0);
+    final stage = ValueNotifier<String>('Starting…');
+    Timer? creepTimer;
+
     try {
+      _progressDialog.show(
+        context: context,
+        title: t.t('reorder_pdf_title'),
+        progress: progress,
+        stage: stage,
+      );
+
+      creepTimer = Timer.periodic(const Duration(milliseconds: 140), (_) {
+        if (!mounted) return;
+        if (progress.value < 0.98) {
+          progress.value = (progress.value + 0.003).clamp(0.0, 0.98).toDouble();
+        }
+      });
+
       // Convert rotation map from degrees to page numbers with rotation
       final Map<int, double> rotationMap = {};
       for (var entry in _rotations.entries) {
@@ -154,13 +219,32 @@ class _ReorderPdfPageState extends State<ReorderPdfPage> {
         }
       }
 
+      final destinationPath = _selectedDestinationFolder != null
+          ? p.join(
+              _selectedDestinationFolder!.path,
+              '${p.basenameWithoutExtension(file.name)}_reordered.pdf',
+            )
+          : null;
+
       // Call manipulation service
       final result = await PdfManipulationService.manipulatePdf(
         pdfPath: file.path,
         reorderPages: hasReordered ? _pageOrder : null,
         pagesToRotate: rotationMap.isEmpty ? null : rotationMap,
         pagesToRemove: _removedPages.isEmpty ? null : _removedPages.toList(),
+        destinationPath: destinationPath,
+        onProgress: (p01, s) {
+          if (!mounted) return;
+          stage.value = s;
+          if (p01 > progress.value) progress.value = p01.clamp(0.0, 1.0);
+        },
       );
+
+      if (mounted) {
+        progress.value = 1.0;
+        stage.value = 'Done';
+        _progressDialog.dismiss(context);
+      }
 
       setState(() => _isProcessing = false);
 
@@ -204,6 +288,13 @@ class _ReorderPdfPageState extends State<ReorderPdfPage> {
       setState(() => _isProcessing = false);
       debugPrint('❌ [ReorderPdfPage] Exception: $e');
       _showError('Unexpected error: ${e.toString()}');
+    } finally {
+      creepTimer?.cancel();
+      progress.dispose();
+      stage.dispose();
+      if (mounted) {
+        _progressDialog.dismiss(context);
+      }
     }
   }
 
@@ -218,14 +309,20 @@ class _ReorderPdfPageState extends State<ReorderPdfPage> {
     );
   }
 
-  Future<void> _previewPage(int pageNum, String pdfPath) async {
+  Future<void> _previewPage(
+    int pageNum,
+    String pdfPath, {
+    double rotationDegrees = 0.0,
+  }) async {
     // Open a full-screen preview dialog for the page
     try {
       final doc = await pdfx.PdfDocument.openFile(pdfPath);
       final page = await doc.getPage(pageNum);
+      final pageWidth = page.width;
+      final pageHeight = page.height;
       final pageImage = await page.render(
-        width: page.width * 2,
-        height: page.height * 2,
+        width: pageWidth * 2,
+        height: pageHeight * 2,
         format: pdfx.PdfPageImageFormat.png,
         backgroundColor: '#FFFFFF',
       );
@@ -234,25 +331,60 @@ class _ReorderPdfPageState extends State<ReorderPdfPage> {
 
       if (!mounted || pageImage == null) return;
 
+      final quarterTurns =
+          (((rotationDegrees / 90).round() % 4) + 4) % 4; // 0..3
+      final rotatedAspectRatio = (quarterTurns % 2 == 0)
+          ? (pageWidth / pageHeight)
+          : (pageHeight / pageWidth);
+
       showDialog(
         context: context,
-        builder: (context) => Dialog(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              AppBar(
-                title: Text('Page $pageNum Preview'),
-                leading: IconButton(
-                  icon: const Icon(Icons.close),
-                  onPressed: () => Navigator.pop(context),
-                ),
+        builder: (context) {
+          final screenSize = MediaQuery.sizeOf(context);
+          final maxBodyHeight = screenSize.height * 0.78;
+          final maxBodyWidth = screenSize.width - 32;
+
+          // Choose the body size that fits within screen while respecting aspect ratio.
+          var bodyWidth = maxBodyWidth;
+          var bodyHeight = bodyWidth / rotatedAspectRatio;
+          if (bodyHeight > maxBodyHeight) {
+            bodyHeight = maxBodyHeight;
+            bodyWidth = bodyHeight * rotatedAspectRatio;
+          }
+
+          final image = Image.memory(pageImage.bytes, fit: BoxFit.contain);
+          final rotated = quarterTurns == 0
+              ? image
+              : RotatedBox(quarterTurns: quarterTurns, child: image);
+
+          return Dialog(
+            insetPadding: const EdgeInsets.all(16),
+            child: SizedBox(
+              width: double.infinity,
+              height: screenSize.height * 0.85,
+              child: Column(
+                children: [
+                  AppBar(
+                    title: Text('Page $pageNum Preview'),
+                    leading: IconButton(
+                      icon: const Icon(Icons.close),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                  ),
+                  Expanded(
+                    child: Center(
+                      child: SizedBox(
+                        width: bodyWidth,
+                        height: bodyHeight,
+                        child: InteractiveViewer(child: rotated),
+                      ),
+                    ),
+                  ),
+                ],
               ),
-              Expanded(
-                child: InteractiveViewer(child: Image.memory(pageImage.bytes)),
-              ),
-            ],
-          ),
-        ),
+            ),
+          );
+        },
       );
     } catch (e) {
       debugPrint('❌ [ReorderPdfPage] Preview error: $e');
@@ -278,61 +410,47 @@ class _ReorderPdfPageState extends State<ReorderPdfPage> {
           ),
           bottomNavigationBar: files.isNotEmpty && !_isLoading
               ? Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.surface,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
-                        offset: const Offset(0, -2),
-                        blurRadius: 8,
-                      ),
-                    ],
-                  ),
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
                   child: SafeArea(
-                    child: ElevatedButton(
-                      onPressed: _isProcessing
-                          ? null
-                          : () => _reorderPdf(selection),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: theme.colorScheme.primary,
-                        foregroundColor: theme.colorScheme.onPrimary,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: _isProcessing
-                          ? Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                SizedBox(
-                                  width: 20,
-                                  height: 20,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    valueColor: AlwaysStoppedAnimation<Color>(
-                                      theme.colorScheme.onPrimary,
+                    child: SizedBox(
+                      width: double.infinity,
+                      height: 48,
+                      child: FilledButton(
+                        onPressed: _isProcessing
+                            ? null
+                            : () => _reorderPdf(selection),
+                        child: _isProcessing
+                            ? Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      valueColor: AlwaysStoppedAnimation<Color>(
+                                        theme.colorScheme.onPrimary,
+                                      ),
                                     ),
                                   ),
-                                ),
-                                const SizedBox(width: 12),
-                                const Text(
-                                  'Processing...',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
+                                  const SizedBox(width: 12),
+                                  const Text(
+                                    'Processing...',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
+                                ],
+                              )
+                            : Text(
+                                t.t('reorder_pdf_button'),
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
                                 ),
-                              ],
-                            )
-                          : Text(
-                              t.t('reorder_pdf_button'),
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
                               ),
-                            ),
+                      ),
                     ),
                   ),
                 )
@@ -340,7 +458,7 @@ class _ReorderPdfPageState extends State<ReorderPdfPage> {
           body: files.isEmpty
               ? Center(
                   child: Padding(
-                    padding: const EdgeInsets.all(32),
+                    padding: screenPadding,
                     child: Text(
                       t.t('reorder_pdf_no_file'),
                       textAlign: TextAlign.center,
@@ -351,7 +469,7 @@ class _ReorderPdfPageState extends State<ReorderPdfPage> {
               : _isLoading
               ? const Center(
                   child: Padding(
-                    padding: EdgeInsets.all(48.0),
+                    padding: screenPadding,
                     child: CircularProgressIndicator(),
                   ),
                 )
@@ -359,7 +477,7 @@ class _ReorderPdfPageState extends State<ReorderPdfPage> {
                   children: [
                     // Header section (non-scrollable)
                     Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+                      padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -483,6 +601,7 @@ class _ReorderPdfPageState extends State<ReorderPdfPage> {
                                       : () => _previewPage(
                                           pageNum,
                                           files.first.path,
+                                          rotationDegrees: rotation,
                                         ),
                                   isRemoved: isRemoved,
                                   showRotateButton: true,

@@ -15,9 +15,13 @@ final _homeNavKey = GlobalKey<NavigatorState>(debugLabel: 'home');
 final _filesNavKey = GlobalKey<NavigatorState>(debugLabel: 'files');
 final _settingsNavKey = GlobalKey<NavigatorState>(debugLabel: 'settings');
 
+/// Global route observer to track page visibility
+final routeObserver = RouteObserver<ModalRoute>();
+
 final appRouter = GoRouter(
   navigatorKey: _rootNavKey,
   initialLocation: '/splash',
+  observers: [routeObserver],
   errorBuilder: (context, state) =>
       NotFoundPage(routeName: state.uri.toString()),
   routes: [
@@ -82,13 +86,13 @@ final appRouter = GoRouter(
       builder: (context, state) =>
           ShowPdfPage(path: state.uri.queryParameters['path']),
     ),
-    // Full featured PDF viewer (dark-themed page)
+    // Full featured file viewer (dark-themed page, supports PDFs and images)
     GoRoute(
       name: AppRouteName.pdfViewer,
       path: '/pdf/viewer',
       parentNavigatorKey: _rootNavKey,
       builder: (context, state) =>
-          PdfViewerPage(path: state.uri.queryParameters['path']),
+          FileViewerPage(path: state.uri.queryParameters['path']),
     ),
     GoRoute(
       name: AppRouteName.mergePdf,
@@ -160,9 +164,26 @@ final appRouter = GoRouter(
       path: '/folder-picker',
       name: AppRouteName.folderPickScreen,
       pageBuilder: (context, state) {
+        String? initialPath;
+        String? title;
+        String? description;
+
+        if (state.extra is Map<String, dynamic>) {
+          final args = state.extra as Map<String, dynamic>;
+          initialPath = args['path'] as String?;
+          title = args['title'] as String?;
+          description = args['description'] as String?;
+        } else if (state.extra is String) {
+          initialPath = state.extra as String?;
+        }
+
         return MaterialPage(
           key: state.pageKey,
-          child: const FolderPickerPage(),
+          child: FolderPickerPage(
+            initialPath: initialPath,
+            title: title,
+            description: description,
+          ),
         );
       },
     ),
@@ -248,6 +269,27 @@ final appRouter = GoRouter(
         return ChangeNotifierProvider(
           create: (_) => SelectionProvider(),
           child: const ReorderPdfPage(),
+        );
+      },
+    ),
+    GoRoute(
+      name: AppRouteName.splitPdf,
+      path: '/pdf/split',
+      parentNavigatorKey: _rootNavKey,
+      builder: (context, state) {
+        final selectionId = state.uri.queryParameters['selectionId'];
+        if (selectionId != null) {
+          try {
+            final provider = Get.find<SelectionManager>().of(selectionId);
+            return ChangeNotifierProvider<SelectionProvider>.value(
+              value: provider,
+              child: SplitPdfPage(selectionId: selectionId),
+            );
+          } catch (_) {}
+        }
+        return ChangeNotifierProvider(
+          create: (_) => SelectionProvider(),
+          child: const SplitPdfPage(),
         );
       },
     ),

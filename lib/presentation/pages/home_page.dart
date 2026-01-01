@@ -42,7 +42,7 @@ class _HomeTabState extends State<HomeTab> {
           Expanded(
             child: Padding(
               padding: EdgeInsets.symmetric(
-                horizontal: screenPadding.left + 12,
+                horizontal: screenPadding.left,
               ),
               child: RecentFilesSection(
                 onGetStartedPrimary: () =>
@@ -61,7 +61,7 @@ class _HomeTabState extends State<HomeTab> {
   Widget _buildHeader(BuildContext context) {
     return Container(
       height: 56,
-      padding: const EdgeInsets.symmetric(horizontal: 12),
+      // padding: const EdgeInsets.symmetric(horizontal: 12),
       alignment: Alignment.center,
       child: Row(
         children: [
@@ -122,6 +122,7 @@ class QuickActionsGrid extends StatelessWidget {
       builder: (context, constraints) {
         const crossAxisCount = 4;
         return GridView.builder(
+          padding: EdgeInsets.zero,
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
           itemCount: items.length,
@@ -313,6 +314,7 @@ class _RecentFilesSectionState extends State<RecentFilesSection> {
 
     return FutureBuilder<List<FileInfo>>(
       future: _recentFilesFuture,
+      
       builder: (context, snapshot) {
         debugPrint(
           '🔧 [RecentFilesSection] FutureBuilder state: ${snapshot.connectionState}',
@@ -324,7 +326,7 @@ class _RecentFilesSectionState extends State<RecentFilesSection> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               title,
-              const SizedBox(height: 12),
+              const SizedBox(height: 8),
               const Center(
                 child: Padding(
                   padding: EdgeInsets.all(24.0),
@@ -343,7 +345,7 @@ class _RecentFilesSectionState extends State<RecentFilesSection> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               title,
-              const SizedBox(height: 12),
+              const SizedBox(height: 8),
               _GetStartedCard(
                 primary: widget.onGetStartedPrimary,
                 secondary: widget.onGetStartedSecondary,
@@ -366,7 +368,7 @@ class _RecentFilesSectionState extends State<RecentFilesSection> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               title,
-              const SizedBox(height: 12),
+              const SizedBox(height: 8),
               _GetStartedCard(
                 primary: widget.onGetStartedPrimary,
                 secondary: widget.onGetStartedSecondary,
@@ -392,11 +394,11 @@ class _RecentFilesSectionState extends State<RecentFilesSection> {
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 8),
             Expanded(
               child: ListView.separated(
                 itemCount: files.length,
-                separatorBuilder: (_, __) => const SizedBox(height: 12),
+                separatorBuilder: (_, __) => const SizedBox(height: 8),
                 itemBuilder: (context, index) {
                   final file = files[index];
                   return DocEntryCard(

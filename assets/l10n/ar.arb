@@ -84,6 +84,11 @@
   "new_folder_field_hint": "أدخل اسم المجلد",
 
   "folder_picker_title": "تحديد المجلد",
+  "folder_picker_description": "تصفح واختر مجلدًا حيث تريد حفظ ملفاتك",
+  "folder_picker_description_downloads": "مجلد التنزيلات",
+  "folder_picker_description_images": "مجلد الصور",
+  "folder_picker_description_screenshots": "مجلد لقطات الشاشة",
+  "folder_picker_no_folder_selected": "لم يتم تحديد أي مجلد بعد",
   "folder_picker_select_button": "اختيار",
   "folder_picker_unable_to_load_title": "تعذر تحميل المجلدات",
   "folder_picker_no_folders": "لا توجد مجلدات متاحة",

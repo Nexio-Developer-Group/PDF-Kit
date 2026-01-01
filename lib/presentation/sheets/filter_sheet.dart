@@ -5,6 +5,7 @@ import 'package:pdf_kit/core/app_export.dart';
 class FilterSheet extends StatefulWidget {
   final SortOption currentSort;
   final Set<TypeFilter> currentTypes;
+  final String? currentFileType; // From functionality (all/pdf/images)
   final ValueChanged<SortOption> onSortChanged;
   final ValueChanged<Set<TypeFilter>> onTypeFiltersChanged;
 
@@ -12,6 +13,7 @@ class FilterSheet extends StatefulWidget {
     super.key,
     required this.currentSort,
     required this.currentTypes,
+    this.currentFileType,
     required this.onSortChanged,
     required this.onTypeFiltersChanged,
   });
@@ -31,8 +33,18 @@ class _FilterSheetState extends State<FilterSheet> {
     _sort = widget.currentSort;
     _types = Set.from(widget.currentTypes);
 
+    // If type filters are empty, initialize based on fileType
     if (_types.isEmpty) {
-      _types.addAll([TypeFilter.folder, TypeFilter.pdf, TypeFilter.image]);
+      if (widget.currentFileType == 'pdf') {
+        // For PDF-only mode, show folders + PDFs
+        _types.addAll([TypeFilter.folder, TypeFilter.pdf]);
+      } else if (widget.currentFileType == 'images') {
+        // For images-only mode, show folders + images
+        _types.addAll([TypeFilter.folder, TypeFilter.image]);
+      } else {
+        // For 'all' or null, show everything
+        _types.addAll([TypeFilter.folder, TypeFilter.pdf, TypeFilter.image]);
+      }
     }
   }
 

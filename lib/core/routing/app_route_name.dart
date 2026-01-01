@@ -17,6 +17,7 @@ class AppRouteName {
   static const pdfToImage = 'pdf.toImage';
   static const imagesToPdf = 'images.toPdf';
   static const reorderPdf = 'pdf.reorder';
+  static const splitPdf = 'pdf.split';
   static const pdfViewer = 'pdf.viewer';
   static const signPdf = 'pdf.sign';
   static const filesRootFullscreen = 'files.root.fullscreen';
@@ -24,4 +25,6 @@ class AppRouteName {
   static const filesSearchFullscreen = 'files.search.fullscreen'; // NEW
   static const folderPickScreen = 'folder.picker';
   static const recentFilesSearch = 'recentFiles.search';
+  static const recentFilesFullscreen = 'recentFiles.fullscreen';
+  static const recentFilesSearchFullscreen = 'recentFiles.search.fullscreen';
 }

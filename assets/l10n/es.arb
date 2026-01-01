@@ -81,6 +81,11 @@
   "new_folder_field_hint": "Ingrese el nombre de la carpeta",
 
   "folder_picker_title": "Seleccionar carpeta",
+  "folder_picker_description": "Buscar y seleccionar una carpeta donde desea guardar sus archivos",
+  "folder_picker_description_downloads": "Carpeta de descargas",
+  "folder_picker_description_images": "Carpeta de imágenes",
+  "folder_picker_description_screenshots": "Carpeta de capturas de pantalla",
+  "folder_picker_no_folder_selected": "Aún no se ha seleccionado ninguna carpeta",
   "folder_picker_select_button": "SELECCIONAR",
   "folder_picker_unable_to_load_title": "No se pueden cargar las carpetas",
   "folder_picker_no_folders": "No hay carpetas disponibles",

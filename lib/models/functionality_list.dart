@@ -18,7 +18,8 @@ List<Functionality> getActions(BuildContext context) {
         final selectionId = 'merge_${DateTime.now().microsecondsSinceEpoch}';
         try {
           final mgr = Get.find<SelectionManager>();
-          mgr.of(selectionId);
+          final provider = mgr.of(selectionId);
+          provider.setFileType('all');
         } catch (_) {}
 
         await Future.delayed(const Duration(milliseconds: 150));
@@ -31,6 +32,8 @@ List<Functionality> getActions(BuildContext context) {
             'selectionId': selectionId,
             'actionText': t('merge_pdf_title'),
             'min': '2', // Merge requires at least 2 files
+            'allowed': 'unprotected',
+            'fileType': 'all',
           },
         );
 
@@ -51,7 +54,8 @@ List<Functionality> getActions(BuildContext context) {
             'images_to_pdf_${DateTime.now().microsecondsSinceEpoch}';
         try {
           final mgr = Get.find<SelectionManager>();
-          mgr.of(selectionId);
+          final provider = mgr.of(selectionId);
+          provider.setFileType('images');
         } catch (_) {}
 
         final result = await context.pushNamed(
@@ -61,6 +65,7 @@ List<Functionality> getActions(BuildContext context) {
             'actionText': t('images_to_pdf_title'),
             'min': '2', // Require at least 2 images
             'allowed': 'images', // Only allow image files
+            'fileType': 'images',
           },
         );
 
@@ -80,7 +85,8 @@ List<Functionality> getActions(BuildContext context) {
         final selectionId = 'split_${DateTime.now().microsecondsSinceEpoch}';
         try {
           final mgr = Get.find<SelectionManager>();
-          mgr.of(selectionId);
+          final provider = mgr.of(selectionId);
+          provider.setFileType('pdf');
         } catch (_) {}
 
         final result = await context.pushNamed(
@@ -90,11 +96,17 @@ List<Functionality> getActions(BuildContext context) {
             'actionText': t('split_pdf_title'),
             'max': '1', // Only one PDF at a time
             'min': '1',
-            'allowed': 'pdf-only',
+            'allowed': 'unprotected',
+            'fileType': 'pdf',
           },
         );
 
         if (result == true) {
+          // Navigate to split PDF page
+          await context.pushNamed(
+            AppRouteName.splitPdf,
+            queryParameters: {'selectionId': selectionId},
+          );
           RecentFilesSection.refreshNotifier.value++;
         }
       },
@@ -110,7 +122,8 @@ List<Functionality> getActions(BuildContext context) {
         final selectionId = 'protect_${DateTime.now().microsecondsSinceEpoch}';
         try {
           final mgr = Get.find<SelectionManager>();
-          mgr.of(selectionId);
+          final provider = mgr.of(selectionId);
+          provider.setFileType('pdf');
         } catch (_) {}
 
         final result = await context.pushNamed(
@@ -121,6 +134,7 @@ List<Functionality> getActions(BuildContext context) {
             'max': '1',
             'min': '1',
             'allowed': 'unprotected',
+            'fileType': 'pdf',
           },
         );
 
@@ -140,7 +154,8 @@ List<Functionality> getActions(BuildContext context) {
         final selectionId = 'unlock_${DateTime.now().microsecondsSinceEpoch}';
         try {
           final mgr = Get.find<SelectionManager>();
-          mgr.of(selectionId);
+          final provider = mgr.of(selectionId);
+          provider.setFileType('pdf');
         } catch (_) {}
 
         final result = await context.pushNamed(
@@ -151,6 +166,7 @@ List<Functionality> getActions(BuildContext context) {
             'max': '1',
             'min': '1',
             'allowed': 'protected',
+            'fileType': 'pdf',
           },
         );
 
@@ -170,7 +186,8 @@ List<Functionality> getActions(BuildContext context) {
         final selectionId = 'compress_${DateTime.now().microsecondsSinceEpoch}';
         try {
           final mgr = Get.find<SelectionManager>();
-          mgr.of(selectionId);
+          final provider = mgr.of(selectionId);
+          provider.setFileType('pdf');
         } catch (_) {}
 
         final result = await context.pushNamed(
@@ -180,7 +197,8 @@ List<Functionality> getActions(BuildContext context) {
             'actionText': t('compress_pdf_button'),
             'max': '1',
             'min': '1',
-            'allowed': 'pdf-only',
+            'allowed': 'unprotected',
+            'fileType': 'pdf',
           },
         );
 
@@ -201,7 +219,8 @@ List<Functionality> getActions(BuildContext context) {
             'pdf_to_image_${DateTime.now().microsecondsSinceEpoch}';
         try {
           final mgr = Get.find<SelectionManager>();
-          mgr.of(selectionId);
+          final provider = mgr.of(selectionId);
+          provider.setFileType('pdf');
         } catch (_) {}
 
         final result = await context.pushNamed(
@@ -211,7 +230,8 @@ List<Functionality> getActions(BuildContext context) {
             'actionText': t('pdf_to_image_title'),
             'max': '1',
             'min': '1',
-            'allowed': 'pdf-only',
+            'allowed': 'unprotected',
+            'fileType': 'pdf',
           },
         );
 
@@ -231,7 +251,8 @@ List<Functionality> getActions(BuildContext context) {
         final selectionId = 'reorder_${DateTime.now().microsecondsSinceEpoch}';
         try {
           final mgr = Get.find<SelectionManager>();
-          mgr.of(selectionId);
+          final provider = mgr.of(selectionId);
+          provider.setFileType('pdf');
         } catch (_) {}
 
         final result = await context.pushNamed(
@@ -241,7 +262,8 @@ List<Functionality> getActions(BuildContext context) {
             'actionText': t('reorder_pdf_title'),
             'max': '1',
             'min': '1',
-            'allowed': 'pdf-only',
+            'allowed': 'unprotected',
+            'fileType': 'pdf',
           },
         );
 

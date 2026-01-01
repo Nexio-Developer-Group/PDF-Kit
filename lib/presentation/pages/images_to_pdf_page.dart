@@ -1,6 +1,9 @@
 // lib/presentation/pages/images_to_pdf_page.dart
 
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
+import 'dart:async';
+import 'dart:io';
 import 'package:pdf_kit/models/file_model.dart';
 import 'package:pdf_kit/presentation/component/document_tile.dart';
 import 'package:pdf_kit/presentation/provider/selection_provider.dart';
@@ -10,7 +13,10 @@ import 'package:pdf_kit/service/path_service.dart';
 import 'package:pdf_kit/core/app_export.dart';
 import 'package:pdf_kit/presentation/layouts/selection_layout.dart';
 import 'package:pdf_kit/presentation/pages/home_page.dart';
+import 'package:pdf_kit/presentation/widgets/non_dismissible_progress_dialog.dart';
+
 import 'package:path/path.dart' as p;
+// import 'dart:io'; // Assuming it's already there or needed
 import 'dart:ui';
 
 class ImagesToPdfPage extends StatefulWidget {
@@ -26,8 +32,10 @@ class _ImagesToPdfPageState extends State<ImagesToPdfPage> {
   late final TextEditingController _nameCtrl;
   bool _isConverting = false;
   FileInfo? _selectedDestinationFolder;
-  bool _isLoadingDefaultFolder = true;
+
   bool _reorderMode = false;
+
+  final ProgressDialogController _progressDialog = ProgressDialogController();
 
   @override
   void initState() {
@@ -48,17 +56,36 @@ class _ImagesToPdfPageState extends State<ImagesToPdfPage> {
     super.dispose();
   }
 
-  /// Load default destination folder (Downloads)
+  /// Load default destination folder (User Pref -> Downloads)
   Future<void> _loadDefaultDestination() async {
-    setState(() => _isLoadingDefaultFolder = true);
+
 
     try {
+      // 1. Check for saved preference
+      final savedPath = Prefs.getString(Constants.pdfOutputFolderPathKey);
+      if (savedPath != null) {
+        final dir = Directory(savedPath);
+        if (await dir.exists()) {
+          setState(() {
+            _selectedDestinationFolder = FileInfo(
+              name: p.basename(savedPath),
+              path: savedPath,
+              extension: '',
+              size: 0,
+              isDirectory: true,
+              lastModified: DateTime.now(),
+            );
+          });
+          return;
+        }
+      }
+
+      // 2. Fallback to public Downloads directory
       final publicDirsResult = await PathService.publicDirs();
 
       publicDirsResult.fold(
         (error) {
           debugPrint('Failed to load default destination: $error');
-          setState(() => _isLoadingDefaultFolder = false);
         },
         (publicDirs) {
           final downloadsDir = publicDirs['Downloads'];
@@ -72,48 +99,16 @@ class _ImagesToPdfPageState extends State<ImagesToPdfPage> {
                 isDirectory: true,
                 lastModified: DateTime.now(),
               );
-              _isLoadingDefaultFolder = false;
             });
-          } else {
-            setState(() => _isLoadingDefaultFolder = false);
           }
         },
       );
     } catch (e) {
       debugPrint('Error loading default destination: $e');
-      setState(() => _isLoadingDefaultFolder = false);
     }
   }
 
   /// Open folder picker and update destination
-  Future<void> _selectDestinationFolder() async {
-    final selectedPath = await context.pushNamed<String>(
-      AppRouteName.folderPickScreen,
-    );
-
-    if (selectedPath != null && mounted) {
-      setState(() {
-        _selectedDestinationFolder = FileInfo(
-          name: selectedPath.split('/').last,
-          path: selectedPath,
-          extension: '',
-          size: 0,
-          isDirectory: true,
-          lastModified: DateTime.now(),
-        );
-      });
-
-      if (mounted) {
-        final t = AppLocalizations.of(context);
-        final msg = t
-            .t('images_to_pdf_destination_snackbar')
-            .replaceAll('{folderName}', _selectedDestinationFolder!.name);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(msg), duration: const Duration(seconds: 2)),
-        );
-      }
-    }
-  }
 
   String _displayName(FileInfo f) {
     try {
@@ -151,7 +146,32 @@ class _ImagesToPdfPageState extends State<ImagesToPdfPage> {
     BuildContext context,
     SelectionProvider selection,
   ) async {
+    if (_isConverting) return;
+
     setState(() => _isConverting = true);
+
+    final progress = ValueNotifier<double>(0.02);
+    final stage = ValueNotifier<String>('Preparing…');
+
+    Timer? smoothTimer;
+    void bumpProgress(double value01) {
+      final next = value01.clamp(0.0, 1.0);
+      if (next > progress.value) progress.value = next;
+    }
+
+    _progressDialog.show(
+      context: context,
+      title: 'Images to PDF',
+      progress: progress,
+      stage: stage,
+    );
+
+    smoothTimer = Timer.periodic(const Duration(milliseconds: 250), (_) {
+      // Smoothly creep forward between real updates (never reach 100%).
+      if (progress.value < 0.92) {
+        bumpProgress(progress.value + 0.01);
+      }
+    });
 
     final t = AppLocalizations.of(context);
     final defaultName = t.t('images_to_pdf_default_file_name');
@@ -162,14 +182,39 @@ class _ImagesToPdfPageState extends State<ImagesToPdfPage> {
 
     final files = selection.files;
 
-    // Pass destination folder to merge service
-    final result = await PdfMergeService.mergePdfs(
-      files: files,
-      outputFileName: outName,
-      destinationPath: _selectedDestinationFolder?.path,
-    );
+    late final result;
+    try {
+      // Pass destination folder to merge service
+      result = await PdfMergeService.mergePdfs(
+        files: files,
+        outputFileName: outName,
+        destinationPath: _selectedDestinationFolder?.path,
+        onProgress: (p01, s) {
+          stage.value = s;
+          bumpProgress(p01);
+        },
+      );
+    } finally {
+      try {
+        bumpProgress(1.0);
+        stage.value = 'Done';
+      } catch (_) {}
 
-    setState(() => _isConverting = false);
+      smoothTimer.cancel();
+      if (mounted) {
+        setState(() => _isConverting = false);
+      } else {
+        _isConverting = false;
+      }
+
+      if (mounted) {
+        _progressDialog.dismiss(context);
+      }
+
+      smoothTimer = null;
+      progress.dispose();
+      stage.dispose();
+    }
 
     result.fold(
       (error) {
@@ -267,32 +312,30 @@ class _ImagesToPdfPageState extends State<ImagesToPdfPage> {
             child: CustomScrollView(
               slivers: [
                 SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                  padding: screenPadding,
                   sliver: SliverToBoxAdapter(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
                           t.t('images_to_pdf_title'),
-                          style: theme.textTheme.headlineMedium?.copyWith(
-                            fontSize: 28,
+                          style: theme.textTheme.headlineSmall?.copyWith(
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 12),
                         Text(
                           t.t('images_to_pdf_description'),
                           style: theme.textTheme.bodyMedium?.copyWith(
-                            fontSize: 14,
-                            height: 1.5,
+                            height: 1.4,
                           ),
                         ),
-                        const SizedBox(height: 24),
+                        const SizedBox(height: 16),
 
                         // File Name section
                         Text(
                           t.t('images_to_pdf_file_name_label'),
-                          style: theme.textTheme.titleMedium,
+                          style: theme.textTheme.titleSmall,
                         ),
                         const SizedBox(height: 8),
                         TextField(
@@ -317,21 +360,10 @@ class _ImagesToPdfPageState extends State<ImagesToPdfPage> {
                             ),
                           ),
                         ),
-                        const SizedBox(height: 24),
+                        const SizedBox(height: 16),
 
                         // Destination Folder Section
-                        Text(
-                          t.t('images_to_pdf_save_to_folder_label'),
-                          style: theme.textTheme.titleMedium,
-                        ),
-                        const SizedBox(height: 8),
-                        _DestinationFolderSelector(
-                          selectedFolder: _selectedDestinationFolder,
-                          isLoading: _isLoadingDefaultFolder,
-                          onTap: _selectDestinationFolder,
-                          disabled: _isConverting,
-                        ),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 12),
                         Row(
                           children: [
                             Expanded(
@@ -342,7 +374,7 @@ class _ImagesToPdfPageState extends State<ImagesToPdfPage> {
                                       '{count}',
                                       files.length.toString(),
                                     ),
-                                style: theme.textTheme.titleMedium,
+                                style: theme.textTheme.titleSmall,
                               ),
                             ),
                             FilledButton(
@@ -403,16 +435,7 @@ class _ImagesToPdfPageState extends State<ImagesToPdfPage> {
           ),
           bottomNavigationBar: Container(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-            decoration: BoxDecoration(
-              color: Colors.transparent,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
-                  offset: const Offset(0, -2),
-                  blurRadius: 8,
-                ),
-              ],
-            ),
+            decoration: BoxDecoration(color: Colors.transparent),
             child: SafeArea(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -420,7 +443,7 @@ class _ImagesToPdfPageState extends State<ImagesToPdfPage> {
                   // Add More Files Button
                   SizedBox(
                     width: double.infinity,
-                    height: 56,
+                    height: 48,
                     child: OutlinedButton.icon(
                       onPressed: _isConverting
                           ? null
@@ -445,7 +468,7 @@ class _ImagesToPdfPageState extends State<ImagesToPdfPage> {
                   // Convert Button
                   SizedBox(
                     width: double.infinity,
-                    height: 56,
+                    height: 48,
                     child: FilledButton(
                       onPressed: (files.length >= 2 && !_isConverting)
                           ? () => _handleConvert(context, selection)
@@ -474,113 +497,4 @@ class _ImagesToPdfPageState extends State<ImagesToPdfPage> {
   }
 }
 
-// Destination Folder Selector Widget
-class _DestinationFolderSelector extends StatelessWidget {
-  final FileInfo? selectedFolder;
-  final bool isLoading;
-  final VoidCallback onTap;
-  final bool disabled;
-
-  const _DestinationFolderSelector({
-    required this.selectedFolder,
-    required this.isLoading,
-    required this.onTap,
-    this.disabled = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final t = AppLocalizations.of(context);
-
-    return InkWell(
-      onTap: disabled ? null : onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          border: Border.all(
-            color: disabled
-                ? theme.colorScheme.onSurfaceVariant.withOpacity(0.15)
-                : theme.colorScheme.primary.withOpacity(0.3),
-            width: 1,
-          ),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: isLoading
-            ? Row(
-                children: [
-                  SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(
-                        theme.colorScheme.primary,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Text(
-                    t.t('images_to_pdf_loading_default_folder'),
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: theme.colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                ],
-              )
-            : Row(
-                children: [
-                  Icon(
-                    Icons.folder,
-                    color: disabled
-                        ? theme.colorScheme.onSurfaceVariant.withOpacity(0.4)
-                        : theme.colorScheme.primary,
-                    size: 24,
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          selectedFolder?.name ??
-                              t.t('images_to_pdf_select_folder_placeholder'),
-                          style: theme.textTheme.bodyLarge?.copyWith(
-                            fontWeight: FontWeight.w500,
-                            color: disabled
-                                ? theme.colorScheme.onSurfaceVariant
-                                      .withOpacity(0.5)
-                                : null,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        if (selectedFolder != null) ...[
-                          const SizedBox(height: 2),
-                          Text(
-                            selectedFolder!.path,
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: theme.colorScheme.onSurfaceVariant
-                                  .withOpacity(disabled ? 0.4 : 1.0),
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ],
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Icon(
-                    Icons.chevron_right,
-                    color: theme.colorScheme.onSurfaceVariant.withOpacity(
-                      disabled ? 0.3 : 1.0,
-                    ),
-                  ),
-                ],
-              ),
-      ),
-    );
-  }
-}
+// Remove _DestinationFolderSelector since we use the shared one

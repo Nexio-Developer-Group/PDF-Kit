@@ -11,7 +11,12 @@ class SelectionProvider extends ChangeNotifier {
   int? _maxSelectable; // optional upper limit
   int? _minSelectable; // optional lower limit
   String? _allowedFilter; // 'protected', 'unprotected', or null for all
+  String?
+  _fileType; // 'all', 'pdf', 'images' - defines the scope of file filtering
   // String? _lastErrorMessage; // surfaced when exceeding limit
+
+  // Cache for PDF protection status checks to avoid repeated file I/O
+  final Map<String, bool> _protectionStatusCache = {};
 
   // Callback for custom file validation (returns error message if invalid, null if valid)
   Future<String?> Function(FileInfo)? validateFileForSelection;
@@ -26,6 +31,7 @@ class SelectionProvider extends ChangeNotifier {
 
   int? get maxSelectable => _maxSelectable;
   int? get minSelectable => _minSelectable;
+  String? get fileType => _fileType;
   int? _lastLimitCount; // instead of String? _lastErrorMessage
 
   int getRotation(String path) => _rotations[path] ?? 0;
@@ -50,6 +56,7 @@ class SelectionProvider extends ChangeNotifier {
       _selected.clear();
       _rotations.clear();
       _orderedFiles.clear();
+      _protectionStatusCache.clear();
       notifyListeners();
     }
   }
@@ -66,6 +73,11 @@ class SelectionProvider extends ChangeNotifier {
 
   void setAllowedFilter(String? value) {
     _allowedFilter = value;
+    notifyListeners();
+  }
+
+  void setFileType(String? value) {
+    _fileType = value;
     notifyListeners();
   }
 
@@ -123,28 +135,40 @@ class SelectionProvider extends ChangeNotifier {
       return await _validateImageOnly(file);
     }
 
-    // Check if file is PDF for protection filters
+    // For protection filters (protected/unprotected), only validate PDFs
+    // Non-PDF files pass validation automatically
     if (file.extension.toLowerCase() != 'pdf') {
-      return 'Only PDF files can be selected.';
+      return null; // Non-PDF files are allowed
     }
 
-    // Check protection status
+    // Check protection status for PDF files
     try {
-      final result = await PdfProtectionService.isPdfProtected(
-        pdfPath: file.path,
-      );
+      // Check cache first to avoid repeated file I/O
+      bool isProtected;
+      if (_protectionStatusCache.containsKey(file.path)) {
+        isProtected = _protectionStatusCache[file.path]!;
+      } else {
+        // Not in cache - perform the check and cache the result
+        final result = await PdfProtectionService.isPdfProtected(
+          pdfPath: file.path,
+        );
 
-      return result.fold(
-        (failure) => null, // If check fails, allow selection
-        (isProtected) {
-          if (_allowedFilter == 'protected' && !isProtected) {
-            return 'This PDF is not protected with a password.';
-          } else if (_allowedFilter == 'unprotected' && isProtected) {
-            return 'This PDF is already protected with a password.';
-          }
-          return null;
-        },
-      );
+        isProtected = result.fold(
+          (failure) => false, // If check fails, assume not protected
+          (protected) => protected,
+        );
+
+        // Cache the result for future checks
+        _protectionStatusCache[file.path] = isProtected;
+      }
+
+      // Validate based on filter
+      if (_allowedFilter == 'protected' && !isProtected) {
+        return 'This PDF is not protected with a password.';
+      } else if (_allowedFilter == 'unprotected' && isProtected) {
+        return 'Action not allowed on protected PDF. Unlock it first to proceed.';
+      }
+      return null;
     } catch (e) {
       return null; // If service unavailable, allow selection
     }

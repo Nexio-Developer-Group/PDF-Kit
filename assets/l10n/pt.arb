@@ -84,6 +84,11 @@
   "new_folder_field_hint": "Digite o nome da pasta",
 
   "folder_picker_title": "Selecionar pasta",
+  "folder_picker_description": "Navegue e selecione uma pasta onde deseja salvar seus arquivos",
+  "folder_picker_description_downloads": "Pasta de downloads",
+  "folder_picker_description_images": "Pasta de imagens",
+  "folder_picker_description_screenshots": "Pasta de capturas de tela",
+  "folder_picker_no_folder_selected": "Nenhuma pasta selecionada ainda",
   "folder_picker_select_button": "SELECIONAR",
   "folder_picker_unable_to_load_title": "Não foi possível carregar as pastas",
   "folder_picker_no_folders": "Nenhuma pasta disponível",

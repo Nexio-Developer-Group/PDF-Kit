@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:pdf_kit/models/file_model.dart';
 import 'package:pdf_kit/presentation/component/document_tile.dart';
+import 'package:pdf_kit/presentation/layouts/layout_export.dart';
+import 'package:pdf_kit/presentation/provider/provider_export.dart';
 import 'package:pdf_kit/service/recent_file_service.dart';
 import 'package:pdf_kit/core/app_export.dart';
 import 'package:pdf_kit/presentation/sheets/clear_recent_files_sheet.dart';
@@ -9,7 +11,20 @@ import 'package:pdf_kit/service/file_service.dart';
 import 'package:pdf_kit/presentation/pages/home_page.dart';
 
 class RecentFilesPage extends StatefulWidget {
-  const RecentFilesPage({Key? key}) : super(key: key);
+  final bool selectable;
+  final String? selectionActionText;
+  final String? selectionId;
+  final bool? isFullscreenRoute;
+  final void Function(List<FileInfo> files)? onSelectionAction;
+
+  const RecentFilesPage({
+    Key? key,
+    this.selectable = false,
+    this.selectionActionText,
+    this.selectionId,
+    this.isFullscreenRoute = false,
+    this.onSelectionAction,
+  }) : super(key: key);
 
   @override
   State<RecentFilesPage> createState() => _RecentFilesPageState();
@@ -18,6 +33,7 @@ class RecentFilesPage extends StatefulWidget {
 class _RecentFilesPageState extends State<RecentFilesPage> {
   List<FileInfo> _files = [];
   bool _isLoading = true;
+  final GlobalKey<AnimatedListState> _listKey = GlobalKey<AnimatedListState>();
 
   @override
   void initState() {
@@ -25,6 +41,17 @@ class _RecentFilesPageState extends State<RecentFilesPage> {
     debugPrint('📱 [RecentFilesPage] initState called');
     _loadRecentFiles();
   }
+
+  SelectionProvider? _maybeProvider() {
+    try {
+      return SelectionScope.of(context);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  bool get _selectionEnabled =>
+      widget.selectable && (_maybeProvider()?.isEnabled ?? false);
 
   Future<void> _loadRecentFiles() async {
     debugPrint('🔄 [RecentFilesPage] Loading recent files...');
@@ -55,10 +82,14 @@ class _RecentFilesPageState extends State<RecentFilesPage> {
 
   void _handleFileOpen(FileInfo file) {
     debugPrint('🔓 [RecentFilesPage] Opening file: ${file.name}');
-    context.pushNamed(
-      AppRouteName.showPdf,
-      queryParameters: {'path': file.path},
-    );
+    if (_selectionEnabled) {
+      _maybeProvider()?.toggle(file);
+    } else {
+      context.pushNamed(
+        AppRouteName.showPdf,
+        queryParameters: {'path': file.path},
+      );
+    }
   }
 
   Future<void> _handleFileDelete(FileInfo file) async {
@@ -249,7 +280,7 @@ class _RecentFilesPageState extends State<RecentFilesPage> {
                     : _files.isEmpty
                     ? _buildEmptyState(context, theme)
                     : AnimatedList(
-                        key: GlobalKey<AnimatedListState>(),
+                        key: _listKey,
                         padding: const EdgeInsets.only(bottom: 16),
                         initialItemCount: _files.length,
                         itemBuilder: (context, i, animation) {
@@ -268,16 +299,32 @@ class _RecentFilesPageState extends State<RecentFilesPage> {
                               child: Padding(
                                 padding: const EdgeInsets.only(
                                   bottom: 8,
-                                  left: 4,
-                                  right: 4,
+                                  // left: 4,
+                                  // right: 4,
                                 ),
                                 child: DocEntryCard(
                                   info: _files[i],
+                                  selectable: _selectionEnabled,
+                                  selected:
+                                      (_maybeProvider()?.isSelected(
+                                        _files[i].path,
+                                      ) ??
+                                      false),
+                                  onToggleSelected: _selectionEnabled
+                                      ? () =>
+                                            _maybeProvider()?.toggle(_files[i])
+                                      : null,
                                   onOpen: () => _handleFileOpen(_files[i]),
+                                  onLongPress: () {
+                                    if (!_selectionEnabled) {
+                                      _maybeProvider()?.enable();
+                                    }
+                                    _maybeProvider()?.toggle(_files[i]);
+                                  },
                                   onMenu: (action) =>
                                       _handleFileMenu(_files[i], action),
                                   onRemove: () => _handleFileDelete(_files[i]),
-                                  showRemove: true,
+                                  showRemove: !_selectionEnabled,
                                   showEdit: false,
                                 ),
                               ),
@@ -298,7 +345,7 @@ class _RecentFilesPageState extends State<RecentFilesPage> {
 
     return Container(
       height: 56,
-      padding: const EdgeInsets.symmetric(horizontal: 12),
+      // padding: const EdgeInsets.symmetric(horizontal: 12),
       alignment: Alignment.center,
       child: Row(
         children: [
@@ -314,7 +361,7 @@ class _RecentFilesPageState extends State<RecentFilesPage> {
                 width: 40,
                 height: 40,
                 child: Image.asset(
-                  'assets/app_icon1.png',
+                  'assets/app_icon.png',
                   width: 40,
                   height: 40,
                   fit: BoxFit.cover,
@@ -339,26 +386,40 @@ class _RecentFilesPageState extends State<RecentFilesPage> {
           IconButton(
             icon: const Icon(Icons.search),
             onPressed: () {
-              context.pushNamed(AppRouteName.recentFilesSearch);
+              // Navigate to appropriate search route based on mode
+              final routeName = widget.isFullscreenRoute == true
+                  ? AppRouteName.recentFilesSearchFullscreen
+                  : AppRouteName.recentFilesSearch;
+
+              final params = <String, String>{};
+              if (widget.selectionId != null) {
+                params['selectionId'] = widget.selectionId!;
+              }
+              if (widget.selectionActionText != null) {
+                params['actionText'] = widget.selectionActionText!;
+              }
+
+              context.pushNamed(routeName, queryParameters: params);
             },
             tooltip: t.t('common_search'),
           ),
-          PopupMenuButton<String>(
-            padding: EdgeInsets.zero,
-            icon: const Icon(Icons.more_vert),
-            tooltip: t.t('files_more_tooltip'),
-            onSelected: (value) {
-              if (value == 'clear_all') {
-                _openClearRecentFilesSheet();
-              }
-            },
-            itemBuilder: (context) => [
-              PopupMenuItem(
-                value: 'clear_all',
-                child: Text(t.t('recent_files_clear_menu')),
-              ),
-            ],
-          ),
+          if (!_selectionEnabled)
+            PopupMenuButton<String>(
+              padding: EdgeInsets.zero,
+              icon: const Icon(Icons.more_vert),
+              tooltip: t.t('files_more_tooltip'),
+              onSelected: (value) {
+                if (value == 'clear_all') {
+                  _openClearRecentFilesSheet();
+                }
+              },
+              itemBuilder: (context) => [
+                PopupMenuItem(
+                  value: 'clear_all',
+                  child: Text(t.t('recent_files_clear_menu')),
+                ),
+              ],
+            ),
         ],
       ),
     );

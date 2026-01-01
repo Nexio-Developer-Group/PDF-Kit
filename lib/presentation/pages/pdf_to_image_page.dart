@@ -1,11 +1,14 @@
 // lib/presentation/pages/pdf_to_image_page.dart
 
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:pdf_kit/models/file_model.dart';
 import 'package:pdf_kit/presentation/component/document_tile.dart';
 import 'package:pdf_kit/presentation/component/pdf_page_selector.dart';
+import 'package:pdf_kit/presentation/component/destination_folder_selector.dart';
 import 'package:pdf_kit/presentation/layouts/layout_export.dart';
 import 'package:pdf_kit/presentation/provider/selection_provider.dart';
+import 'package:pdf_kit/presentation/widgets/non_dismissible_progress_dialog.dart';
 import 'package:pdf_kit/service/pdf_to_image_service.dart';
 import 'package:pdf_kit/service/path_service.dart';
 import 'package:pdf_kit/service/recent_file_service.dart';
@@ -27,6 +30,7 @@ class PdfToImagePage extends StatefulWidget {
 class _PdfToImagePageState extends State<PdfToImagePage> {
   late final TextEditingController _nameCtrl;
   bool _isConverting = false;
+  final ProgressDialogController _progressDialog = ProgressDialogController();
   FileInfo? _selectedDestinationFolder;
   bool _isLoadingDefaultFolder = true;
   bool _isPageSelectorMode = false;
@@ -38,7 +42,7 @@ class _PdfToImagePageState extends State<PdfToImagePage> {
   void initState() {
     super.initState();
     _nameCtrl = TextEditingController();
-    _loadDefaultDestination();
+    // _loadDefaultDestination called in didChangeDependencies
     // PDF to image requires exactly 1 PDF file
     WidgetsBinding.instance.addPostFrameCallback((_) {
       try {
@@ -54,11 +58,40 @@ class _PdfToImagePageState extends State<PdfToImagePage> {
     super.dispose();
   }
 
-  /// Load default destination folder (Downloads)
-  Future<void> _loadDefaultDestination() async {
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final files = context.read<SelectionProvider>().files;
+    if (files.isNotEmpty) {
+      _loadDefaultDestination(files.first.path);
+    } else {
+      _loadDefaultDestination(null);
+    }
+  }
+
+  /// Load default destination folder (Source Dir -> Downloads)
+  Future<void> _loadDefaultDestination(String? sourcePath) async {
     setState(() => _isLoadingDefaultFolder = true);
 
     try {
+      if (sourcePath != null) {
+        final parentDir = Directory(p.dirname(sourcePath));
+        if (await parentDir.exists()) {
+          setState(() {
+            _selectedDestinationFolder = FileInfo(
+              name: p.basename(parentDir.path),
+              path: parentDir.path,
+              extension: '',
+              size: 0,
+              isDirectory: true,
+              lastModified: DateTime.now(),
+            );
+            _isLoadingDefaultFolder = false;
+          });
+          return;
+        }
+      }
+
       final publicDirsResult = await PathService.publicDirs();
 
       publicDirsResult.fold(
@@ -93,14 +126,22 @@ class _PdfToImagePageState extends State<PdfToImagePage> {
 
   /// Open folder picker and update destination
   Future<void> _selectDestinationFolder() async {
+    final t = AppLocalizations.of(context);
     final selectedPath = await context.pushNamed<String>(
       AppRouteName.folderPickScreen,
+      extra: {
+        'path': _selectedDestinationFolder?.path,
+        'title': t.t(
+          'pdf_to_image_select_folder_title',
+        ), // Assuming key exists or using text
+        'description': t.t('pdf_to_image_select_folder_description'),
+      },
     );
 
     if (selectedPath != null && mounted) {
       setState(() {
         _selectedDestinationFolder = FileInfo(
-          name: selectedPath.split('/').last,
+          name: p.basename(selectedPath),
           path: selectedPath,
           extension: '',
           size: 0,
@@ -174,11 +215,17 @@ class _PdfToImagePageState extends State<PdfToImagePage> {
   ) async {
     setState(() => _isConverting = true);
 
+    final progress = ValueNotifier<double>(0.0);
+    final stage = ValueNotifier<String>('Starting…');
+    Timer? creepTimer;
+
     final t = AppLocalizations.of(context);
     final files = selection.files;
 
     if (files.isEmpty) {
       setState(() => _isConverting = false);
+      progress.dispose();
+      stage.dispose();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -195,41 +242,74 @@ class _PdfToImagePageState extends State<PdfToImagePage> {
         ? _suggestDefaultName(pdfFile)
         : _nameCtrl.text.trim();
 
-    // Get total page count for the PDF
-    int totalPages = 0;
+    late final result;
     try {
-      final pdfDoc = await pdfx.PdfDocument.openFile(pdfFile.path);
-      totalPages = pdfDoc.pagesCount;
-      await pdfDoc.close();
-    } catch (e) {
-      debugPrint('Error getting page count: $e');
+      _progressDialog.show(
+        context: context,
+        title: t.t('pdf_to_image_page_title'),
+        progress: progress,
+        stage: stage,
+      );
+
+      creepTimer = Timer.periodic(const Duration(milliseconds: 140), (_) {
+        if (!mounted) return;
+        if (progress.value < 0.98) {
+          progress.value = (progress.value + 0.003).clamp(0.0, 0.98).toDouble();
+        }
+      });
+
+      stage.value = 'Analyzing PDF…';
+
+      // Get total page count for the PDF
+      int totalPages = 0;
+      try {
+        final pdfDoc = await pdfx.PdfDocument.openFile(pdfFile.path);
+        totalPages = pdfDoc.pagesCount;
+        await pdfDoc.close();
+      } catch (e) {
+        debugPrint('Error getting page count: $e');
+      }
+
+      _totalPages = totalPages;
+
+      // Use selected pages if any selection was made; otherwise, use all pages.
+      List<int> pagesToConvert;
+      if (_selectedPages.isEmpty) {
+        pagesToConvert = List.generate(totalPages, (index) => index + 1);
+      } else {
+        pagesToConvert = _selectedPages.toList()..sort();
+      }
+
+      // Determine output directory - use the selected folder directly
+      Directory? outputDir;
+      if (_selectedDestinationFolder != null) {
+        outputDir = Directory(_selectedDestinationFolder!.path);
+      }
+
+      result =
+          await PdfSelectedPagesToImagesService.exportSelectedPagesToImages(
+            inputPdf: File(pdfFile.path),
+            pageNumbers: pagesToConvert,
+            outputDirectory: outputDir,
+            fileNamePrefix: outputName, // Pass the prefix separately
+            onProgress: (p, s) {
+              if (!mounted) return;
+              stage.value = s;
+              if (p > progress.value) progress.value = p.clamp(0.0, 1.0);
+            },
+          );
+
+      if (mounted) {
+        progress.value = 1.0;
+        stage.value = 'Done';
+        _progressDialog.dismiss(context);
+      }
+    } finally {
+      creepTimer?.cancel();
+      progress.dispose();
+      stage.dispose();
+      if (mounted) setState(() => _isConverting = false);
     }
-
-    _totalPages = totalPages;
-
-    // Use selected pages if any selection was made; otherwise, use all pages.
-    List<int> pagesToConvert;
-    if (_selectedPages.isEmpty) {
-      pagesToConvert = List.generate(totalPages, (index) => index + 1);
-    } else {
-      pagesToConvert = _selectedPages.toList()..sort();
-    }
-
-    // Determine output directory - use the selected folder directly
-    Directory? outputDir;
-    if (_selectedDestinationFolder != null) {
-      outputDir = Directory(_selectedDestinationFolder!.path);
-    }
-
-    final result =
-        await PdfSelectedPagesToImagesService.exportSelectedPagesToImages(
-          inputPdf: File(pdfFile.path),
-          pageNumbers: pagesToConvert,
-          outputDirectory: outputDir,
-          fileNamePrefix: outputName, // Pass the prefix separately
-        );
-
-    setState(() => _isConverting = false);
 
     result.fold(
       (error) {
@@ -337,21 +417,11 @@ class _PdfToImagePageState extends State<PdfToImagePage> {
                   }
                 },
               ),
-              actions: _isPageSelectorMode
-                  ? [
-                      TextButton(
-                        onPressed: () {
-                          setState(() => _isPageSelectorMode = false);
-                        },
-                        child: Text(t.t('common_done')),
-                      ),
-                    ]
-                  : null,
             ),
             body: SafeArea(
               child: _isPageSelectorMode && files.isNotEmpty
                   ? Padding(
-                      padding: const EdgeInsets.all(16),
+                      padding: screenPadding,
                       child: PdfPageSelector(
                         pdfFile: File(files.first.path),
                         initialSelectedPages: _selectedPages,
@@ -415,7 +485,7 @@ class _PdfToImagePageState extends State<PdfToImagePage> {
                             ),
                           ),
                           const SizedBox(height: 8),
-                          _DestinationFolderSelector(
+                          DestinationFolderSelector(
                             selectedFolder: _selectedDestinationFolder,
                             isLoading: _isLoadingDefaultFolder,
                             onTap: _selectDestinationFolder,
@@ -564,7 +634,7 @@ class _PdfToImagePageState extends State<PdfToImagePage> {
               child: SafeArea(
                 child: SizedBox(
                   width: double.infinity,
-                  height: 56,
+                  height: 48,
                   child: FilledButton(
                     onPressed: _isPageSelectorMode
                         ? () {
@@ -601,110 +671,6 @@ class _PdfToImagePageState extends State<PdfToImagePage> {
           ),
         );
       },
-    );
-  }
-}
-
-// Destination Folder Selector Widget
-class _DestinationFolderSelector extends StatelessWidget {
-  final FileInfo? selectedFolder;
-  final bool isLoading;
-  final VoidCallback onTap;
-  final bool disabled;
-
-  const _DestinationFolderSelector({
-    required this.selectedFolder,
-    required this.isLoading,
-    required this.onTap,
-    this.disabled = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final t = AppLocalizations.of(context);
-
-    return InkWell(
-      onTap: disabled ? null : onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          border: Border.all(
-            color: disabled
-                ? theme.colorScheme.onSurfaceVariant.withOpacity(0.15)
-                : theme.colorScheme.primary.withOpacity(0.3),
-            width: 1,
-          ),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: isLoading
-            ? Row(
-                children: [
-                  SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(
-                        theme.colorScheme.primary,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Text(
-                    t.t('pdf_to_image_loading_default_folder'),
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: theme.colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                ],
-              )
-            : Row(
-                children: [
-                  Icon(
-                    Icons.folder,
-                    color: disabled
-                        ? theme.colorScheme.onSurfaceVariant.withOpacity(0.4)
-                        : theme.colorScheme.primary,
-                    size: 24,
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          selectedFolder?.name ??
-                              t.t('pdf_to_image_select_folder_placeholder'),
-                          style: theme.textTheme.bodyLarge,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        if (selectedFolder != null) ...[
-                          const SizedBox(height: 2),
-                          Text(
-                            selectedFolder!.path,
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: theme.colorScheme.onSurfaceVariant,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ],
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Icon(
-                    Icons.chevron_right,
-                    color: theme.colorScheme.onSurfaceVariant.withOpacity(
-                      disabled ? 0.3 : 1.0,
-                    ),
-                  ),
-                ],
-              ),
-      ),
     );
   }
 }

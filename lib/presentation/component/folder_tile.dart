@@ -5,14 +5,8 @@ import 'package:pdf_kit/models/file_model.dart';
 class FolderEntryCard extends StatelessWidget {
   final FileInfo info;
   final VoidCallback? onTap;
-  final ValueChanged<String>? onMenuSelected;
 
-  const FolderEntryCard({
-    super.key,
-    required this.info,
-    this.onTap,
-    this.onMenuSelected,
-  });
+  const FolderEntryCard({super.key, required this.info, this.onTap});
 
   bool get _isDir => info.isDirectory;
 
@@ -37,18 +31,18 @@ class FolderEntryCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         onTap: onTap,
         child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8),
+          padding: const EdgeInsets.symmetric(vertical: 6),
           child: Row(
             children: [
               Padding(
-                padding: const EdgeInsets.only(right: 18, left: 18),
+                padding: const EdgeInsets.only(right: 12, left: 12),
                 child: ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(10),
                   child: Image.asset(
                     // default asset inside the widget: keep path consistent in pubspec
                     'assets/folder.png',
-                    width: 56,
-                    height: 56,
+                    width: 44,
+                    height: 44,
                     fit: BoxFit.cover,
                   ),
                 ),
@@ -65,7 +59,9 @@ class FolderEntryCard extends StatelessWidget {
                       info.name,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context).textTheme.titleMedium,
+                      style: Theme.of(context).textTheme.bodyLarge!.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                     // const SizedBox(height: 4),
                     Row(
@@ -73,7 +69,7 @@ class FolderEntryCard extends StatelessWidget {
                       children: [
                         Icon(
                           Icons.description_outlined,
-                          size: 16,
+                          size: 14,
                           color: Theme.of(
                             context,
                           ).colorScheme.onSurface.withAlpha(153),
@@ -104,14 +100,12 @@ class FolderEntryCard extends StatelessWidget {
                 ),
                 // ),
               ),
-              PopupMenuButton<String>(
-                onSelected: onMenuSelected,
-                itemBuilder: (ctx) => const [
-                  PopupMenuItem(value: 'open', child: Text('Open')),
-                  PopupMenuItem(value: 'rename', child: Text('Rename')),
-                  PopupMenuItem(value: 'delete', child: Text('Delete')),
-                ],
-                icon: const Icon(Icons.more_vert),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                child: Icon(
+                  Icons.chevron_right,
+                  color: Theme.of(context).colorScheme.onSurface.withAlpha(128),
+                ),
               ),
             ],
           ),
