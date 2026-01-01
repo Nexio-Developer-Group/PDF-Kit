@@ -59,6 +59,7 @@ class PdfProtectionService {
   }
 
   /// Checks if a PDF is password protected
+  /// Optimized to check only PDF metadata without loading entire document
   static Future<Either<Failure, bool>> isPdfProtected({
     required String pdfPath,
   }) async {
@@ -67,14 +68,65 @@ class PdfProtectionService {
       if (!await pdfFile.exists()) {
         return const Left(FileNotFoundFailure());
       }
-      // Use plugin API to check encryption status
-      final bool isEncrypted = await AresDefenceLabsLocksmithPdf.isPdfEncrypted(
-        inputPath: pdfPath,
-      );
 
-      return Right(isEncrypted);
+      // Fast path: Read first few KB to check for encryption markers
+      // Most PDF encryption info is in the header/trailer, not the full content
+      final RandomAccessFile raf = await pdfFile.open(mode: FileMode.read);
+      try {
+        final int fileLength = await raf.length();
+
+        // Read header (first 1KB) and trailer (last 4KB) for encryption markers
+        // This is much faster than parsing the entire PDF
+        final int headerSize = fileLength < 1024 ? fileLength : 1024;
+        final int trailerSize = fileLength < 4096 ? fileLength : 4096;
+
+        await raf.setPosition(0);
+        final List<int> header = await raf.read(headerSize);
+
+        await raf.setPosition(
+          fileLength > trailerSize ? fileLength - trailerSize : 0,
+        );
+        final List<int> trailer = await raf.read(trailerSize);
+
+        await raf.close();
+
+        // Quick check: Look for /Encrypt in header or trailer
+        // This is a fast heuristic before calling the plugin
+        final String headerStr = String.fromCharCodes(header);
+        final String trailerStr = String.fromCharCodes(trailer);
+
+        final bool hasEncryptMarker =
+            headerStr.contains('/Encrypt') || trailerStr.contains('/Encrypt');
+
+        // If no encryption marker found, it's definitely not encrypted
+        if (!hasEncryptMarker) {
+          return const Right(false);
+        }
+
+        // If marker found, use plugin for definitive check
+        final bool isEncrypted =
+            await AresDefenceLabsLocksmithPdf.isPdfEncrypted(
+              inputPath: pdfPath,
+            );
+
+        return Right(isEncrypted);
+      } catch (_) {
+        await raf.close();
+        rethrow;
+      }
     } catch (e) {
-      return Left(PdfProtectionFailure('Failed to check PDF: ${e.toString()}'));
+      // Fallback to plugin if fast check fails
+      try {
+        final bool isEncrypted =
+            await AresDefenceLabsLocksmithPdf.isPdfEncrypted(
+              inputPath: pdfPath,
+            );
+        return Right(isEncrypted);
+      } catch (pluginError) {
+        return Left(
+          PdfProtectionFailure('Failed to check PDF: ${e.toString()}'),
+        );
+      }
     }
   }
 

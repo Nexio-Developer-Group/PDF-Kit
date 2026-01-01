@@ -1,4 +1,3 @@
-// lib/service/pdf_compress_service.dart
 import 'dart:io';
 
 import 'package:dartz/dartz.dart';
@@ -9,25 +8,15 @@ import 'package:pdf_kit/models/file_model.dart';
 import 'package:pdf_kit/service/pdf_merge_service.dart' show CustomException;
 import 'package:pdf_kit/service/pdf_rasterization_service.dart';
 
-/// Compress a PDF by rasterizing it, compressing page images,
-/// and rebuilding a flattened PDF (via PdfRasterizationService).
 class PdfCompressService {
   PdfCompressService._();
 
-  /// Compress the provided [fileInfo] which must be a PDF.
-  ///
-  /// - Uses PdfRasterizationService.rasterizeAndCompressPdf under the hood.
-  /// - [level] parameter is ignored since rasterization uses fixed quality (80%)
-  /// - Writes the final file into [destinationPath] if provided, otherwise
-  ///   falls back to the original parent directory or temp directory.
-  /// - Returns a new [FileInfo] describing the compressed PDF.
   static Future<Either<CustomException, FileInfo>> compressFile({
     required FileInfo fileInfo,
-    int level = 1, // Ignored, kept for compatibility
+    int level = 1,
     String? destinationPath,
   }) async {
     try {
-      // 1. Validate input type.
       final isPdf = fileInfo.extension.toLowerCase() == 'pdf';
       if (!isPdf) {
         return left(
@@ -48,65 +37,82 @@ class PdfCompressService {
         );
       }
 
-      // 2. Resolve destination directory.
-      final Directory targetDir = await _resolveDestination(
+      final targetDir = await _resolveDestination(
         destinationPath: destinationPath,
         fallbackOriginalParent: fileInfo.parentDirectory,
       );
 
-      // 3. Run rasterization + compression pipeline.
-      final rasterResult =
-          await PdfRasterizationService.rasterizeAndCompressPdf(
-            inputPdf: inputFile,
-          );
+      // Ensure directory exists (your older code required it to already exist).
+      if (!await targetDir.exists()) {
+        await targetDir.create(recursive: true);
+      }
 
-      // 4. Map rasterization result into CustomException / FileInfo.
-      return await rasterResult.fold(
-        (failure) async {
-          return left(
-            CustomException(
-              message: failure.message,
-              code: 'RASTERIZATION_FAILED',
+      final originalBase = p.basenameWithoutExtension(fileInfo.name);
+      final baseName = '${originalBase}_compressed';
+
+      final newName = _uniqueFileName(
+        baseDir: targetDir.path,
+        baseName: baseName,
+      );
+      final finalPath = p.join(targetDir.path, newName);
+
+      final preset = _presetForLevel(level);
+
+      // 1st pass with requested level
+      final first = await PdfRasterizationService.rasterizeAndCompressPdf(
+        inputPdf: inputFile,
+        outputPath: finalPath,
+        dpi: preset.dpi,
+        jpegQuality: preset.jpegQuality,
+        maxLongSidePx: preset.maxLongSidePx,
+      );
+
+      // If success but not smaller, auto-retry once with stronger preset.
+      final Either<CustomException, File> finalResult = await first.fold(
+        (e) async => left(e),
+        (outFile) async {
+          final inSize = (await inputFile.stat()).size;
+          final outSize = (await outFile.stat()).size;
+
+          if (outSize >= inSize) {
+            // Stronger fallback (one retry max).
+            final strong = _presetForLevel(3);
+            try {
+              await outFile.delete();
+            } catch (_) {}
+
+            return PdfRasterizationService.rasterizeAndCompressPdf(
+              inputPdf: inputFile,
+              outputPath: finalPath,
+              dpi: strong.dpi,
+              jpegQuality: strong.jpegQuality,
+              maxLongSidePx: strong.maxLongSidePx,
+            );
+          }
+          return right(outFile);
+        },
+      );
+
+      return await finalResult.fold(
+        (failure) async => left(
+          CustomException(
+            message: failure.message,
+            code: failure.code ?? 'RASTERIZATION_FAILED',
+          ),
+        ),
+        (finalFile) async {
+          final stats = await finalFile.stat();
+          return right(
+            FileInfo(
+              name: p.basename(finalFile.path),
+              path: finalFile.path,
+              extension: 'pdf',
+              size: stats.size,
+              lastModified: stats.modified,
+              mimeType: 'application/pdf',
+              parentDirectory: p.dirname(finalFile.path),
             ),
           );
-        },
-        (rasterizedFile) async {
-          // Decide final filename in targetDir.
-          final originalBase = p.basenameWithoutExtension(fileInfo.name);
-          final baseName = '${originalBase}_compressed';
-
-          final newName = _uniqueFileName(
-            baseDir: targetDir.path,
-            baseName: baseName,
-          );
-          final finalPath = p.join(targetDir.path, newName);
-
-          // If rasterizer already saved to the desired path, reuse it;
-          // otherwise copy then optionally delete the temp one.
-          File finalFile;
-          if (rasterizedFile.path == finalPath) {
-            finalFile = rasterizedFile;
-          } else {
-            finalFile = await rasterizedFile.copy(finalPath);
-            // Best-effort cleanup.
-            if (rasterizedFile.path != inputFile.path) {
-              await rasterizedFile.delete().catchError((_) => rasterizedFile);
-            }
-          }
-
-          final stats = await finalFile.stat();
-
-          final resultInfo = FileInfo(
-            name: p.basename(finalFile.path),
-            path: finalFile.path,
-            extension: 'pdf',
-            size: stats.size,
-            lastModified: stats.modified,
-            mimeType: 'application/pdf',
-            parentDirectory: p.dirname(finalFile.path),
-          );
-
-          return right(resultInfo);
         },
       );
     } catch (e) {
@@ -119,28 +125,23 @@ class PdfCompressService {
     }
   }
 
-  /// Resolve destination directory:
-  /// - [destinationPath] if valid
-  /// - else original file parent
-  /// - else app temp directory. [web:46][web:55]
   static Future<Directory> _resolveDestination({
     String? destinationPath,
     String? fallbackOriginalParent,
   }) async {
     if (destinationPath != null && destinationPath.isNotEmpty) {
       final dir = Directory(destinationPath);
-      if (await dir.exists()) return dir;
+      return dir;
     }
 
     if (fallbackOriginalParent != null && fallbackOriginalParent.isNotEmpty) {
       final dir = Directory(fallbackOriginalParent);
-      if (await dir.exists()) return dir;
+      return dir;
     }
 
     return getTemporaryDirectory();
   }
 
-  /// Generate a unique PDF filename in [baseDir] with base name [baseName].
   static String _uniqueFileName({
     required String baseDir,
     required String baseName,
@@ -153,4 +154,44 @@ class PdfCompressService {
     }
     return candidate;
   }
+
+  static CompressPreset getDefaultPreset() {
+    return _presetForLevel(1);
+  }
+
+  static CompressPreset _presetForLevel(int level) {
+    // Tuned for "smaller + faster" defaults.
+    switch (level) {
+      case 3: // strong
+        return const CompressPreset(
+          dpi: 96,
+          jpegQuality: 55,
+          maxLongSidePx: 1400,
+        );
+      case 2: // medium
+        return const CompressPreset(
+          dpi: 120,
+          jpegQuality: 65,
+          maxLongSidePx: 1800,
+        );
+      case 1: // light (still optimized)
+      default:
+        return const CompressPreset(
+          dpi: 144,
+          jpegQuality: 75,
+          maxLongSidePx: 2200,
+        );
+    }
+  }
+}
+
+class CompressPreset {
+  final int dpi;
+  final int jpegQuality;
+  final int maxLongSidePx;
+  const CompressPreset({
+    required this.dpi,
+    required this.jpegQuality,
+    required this.maxLongSidePx,
+  });
 }

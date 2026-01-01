@@ -21,7 +21,7 @@ ShellRoute buildSelectionShellRoute({
       final maxStr = state.uri.queryParameters['max'];
       final minStr = state.uri.queryParameters['min'];
       final allowed = state.uri.queryParameters['allowed'];
-      final fileType = state.uri.queryParameters['fileType'];
+      // final fileType = state.uri.queryParameters['fileType'];
       final maxSelectable = int.tryParse(maxStr ?? '');
       final minSelectable = int.tryParse(minStr ?? '');
 

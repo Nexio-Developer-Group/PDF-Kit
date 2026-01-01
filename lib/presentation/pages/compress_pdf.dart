@@ -175,6 +175,27 @@ class _CompressPdfPageState extends State<CompressPdfPage> {
     }
   }
 
+  Widget _buildInfoRow(BuildContext context, String label, String value) {
+    final theme = Theme.of(context);
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: theme.textTheme.bodyMedium?.copyWith(
+            color: theme.colorScheme.onSurfaceVariant,
+          ),
+        ),
+        Text(
+          value,
+          style: theme.textTheme.bodyMedium?.copyWith(
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     print(AppLocalizations.of(context).t('compress_pdf_title'));
@@ -292,6 +313,36 @@ class _CompressPdfPageState extends State<CompressPdfPage> {
                               ],
                             ),
                             const SizedBox(height: 12),
+                            // Display actual compression factors from the service
+                            Builder(
+                              builder: (context) {
+                                final preset =
+                                    PdfCompressService.getDefaultPreset();
+                                return Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    _buildInfoRow(
+                                      context,
+                                      'Quality',
+                                      '${preset.jpegQuality}%',
+                                    ),
+                                    const SizedBox(height: 4),
+                                    _buildInfoRow(
+                                      context,
+                                      'DPI',
+                                      '${preset.dpi}',
+                                    ),
+                                    const SizedBox(height: 4),
+                                    _buildInfoRow(
+                                      context,
+                                      'Max Resolution',
+                                      '${preset.maxLongSidePx} px',
+                                    ),
+                                  ],
+                                );
+                              },
+                            ),
+                            const SizedBox(height: 12),
                             Row(
                               children: [
                                 Icon(
@@ -302,7 +353,7 @@ class _CompressPdfPageState extends State<CompressPdfPage> {
                                 const SizedBox(width: 8),
                                 Expanded(
                                   child: Text(
-                                    'This will compress your PDF by rasterizing pages at optimized quality (80%). Expected reduction: $_estimatedReduction',
+                                    'Rasterization is enabled to ensure maximum compatibility. Expected reduction: $_estimatedReduction',
                                     style: theme.textTheme.bodySmall?.copyWith(
                                       color: theme.colorScheme.onSurfaceVariant,
                                     ),
