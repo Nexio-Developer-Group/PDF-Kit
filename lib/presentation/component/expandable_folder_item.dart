@@ -35,7 +35,7 @@ class ExpandableFolderItem extends StatelessWidget {
               color: node.isSelected
                   ? Theme.of(
                       context,
-                    ).colorScheme.primaryContainer.withOpacity(0.2)
+                    ).colorScheme.primaryContainer.withValues(alpha: 0.2)
                   : null,
               border: node.isSelected
                   ? Border(
@@ -102,7 +102,7 @@ class ExpandableFolderItem extends StatelessWidget {
                       size: 20,
                       color: Theme.of(
                         context,
-                      ).colorScheme.onSurfaceVariant.withOpacity(0.6),
+                      ).colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
                     ),
                     onPressed: () => provider.toggleExpansion(node),
                     padding: EdgeInsets.zero,
@@ -128,7 +128,7 @@ class ExpandableFolderItem extends StatelessWidget {
                 left: BorderSide(
                   color: Theme.of(
                     context,
-                  ).colorScheme.outlineVariant.withOpacity(0.5),
+                  ).colorScheme.outlineVariant.withValues(alpha: 0.5),
                   width: 1.5,
                 ),
               ),
@@ -152,7 +152,7 @@ class ExpandableFolderItem extends StatelessWidget {
                 left: BorderSide(
                   color: Theme.of(
                     context,
-                  ).colorScheme.outlineVariant.withOpacity(0.5),
+                  ).colorScheme.outlineVariant.withValues(alpha: 0.5),
                   width: 1.5,
                 ),
               ),
@@ -168,7 +168,7 @@ class ExpandableFolderItem extends StatelessWidget {
                       strokeWidth: 2,
                       color: Theme.of(
                         context,
-                      ).colorScheme.primary.withOpacity(0.6),
+                      ).colorScheme.primary.withValues(alpha: 0.6),
                     ),
                   ),
                   const SizedBox(width: 10),

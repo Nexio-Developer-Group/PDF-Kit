@@ -66,6 +66,32 @@ class AppTheme {
   static ThemeData lightTheme = ThemeData(
     brightness: Brightness.light,
     useMaterial3: true,
+
+    // bottomSheetTheme: const BottomSheetThemeData(
+    //   backgroundColor: Color(0xFFFFFFFF),
+    //   modalBackgroundColor: Color(0xFFFFFFFF),
+    //   elevation: 8,
+    //   modalElevation: 16,
+    //   modalBarrierColor: Color(0x33000000),
+    //   shape: RoundedRectangleBorder(
+    //     borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+    //   ),
+    // ),
+    bottomSheetTheme: const BottomSheetThemeData(
+  backgroundColor: Colors.white,           // ThemeData.canvasColor
+  modalBackgroundColor: Colors.white,
+  shadowColor: Colors.transparent,
+  elevation: 0,                             // persistent sheet
+  modalElevation: 16,                       // modal sheet
+  modalBarrierColor: Colors.black54,        // 0x8A000000
+  shape: RoundedRectangleBorder(
+    borderRadius: BorderRadius.vertical(
+      top: Radius.circular(16),
+    ),
+  ),
+),
+
+
     colorScheme: ColorScheme(
       brightness: Brightness.light,
       primary: primaryLight,
@@ -438,6 +464,15 @@ class AppTheme {
   static ThemeData darkTheme = ThemeData(
     brightness: Brightness.dark,
     useMaterial3: true,
+
+    bottomSheetTheme: const BottomSheetThemeData(
+      backgroundColor: Color(0xFF2D2D2D),
+      modalBackgroundColor: Color(0xFF2D2D2D),
+      elevation: 8,
+      modalElevation: 16,
+      modalBarrierColor: Color(0x22FFFFFF),
+    ),
+
     colorScheme: ColorScheme(
       brightness: Brightness.dark,
       primary: primaryDark,

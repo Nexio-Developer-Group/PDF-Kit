@@ -2,8 +2,6 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:pdf_kit/providers/file_system_provider.dart';
 import 'package:pdf_kit/core/app_export.dart';
-import 'package:pdf_kit/core/constants.dart';
-import 'package:pdf_kit/core/utility/storage_utility.dart';
 import 'package:pdf_kit/service/recent_file_service.dart';
 import 'package:pdf_kit/models/file_model.dart';
 import 'package:pdf_kit/presentation/component/document_tile.dart';
@@ -66,7 +64,7 @@ class _FilesRootPageState extends State<FilesRootPage> with RouteAware {
   @override
   void didPopNext() {
     // Called when the top route has been popped off, and this route shows up.
-    print('🔄 [FilesRootPage] Returning to page, refreshing data...');
+    debugPrint('🔄 [FilesRootPage] Returning to page, refreshing data...');
     _refresh();
   }
 
@@ -124,21 +122,21 @@ class _FilesRootPageState extends State<FilesRootPage> with RouteAware {
     // 1. Check if user has a stored path
     String? storedPath = _getStoredPath(prefsKey);
 
-    print('🔍 [Folder Navigation] Checking folder access');
-    print('📁 [Folder Navigation] Stored path: ${storedPath ?? "none"}');
-    print('📂 [Folder Navigation] Default path: $defaultPath');
+    debugPrint('🔍 [Folder Navigation] Checking folder access');
+    debugPrint('📁 [Folder Navigation] Stored path: ${storedPath ?? "none"}');
+    debugPrint('📂 [Folder Navigation] Default path: $defaultPath');
 
     // 2. Validate stored path if it exists
     if (storedPath != null) {
       bool storedExists = await _folderExists(storedPath);
       if (storedExists) {
-        print(
+        debugPrint(
           '✅ [Folder Navigation] Stored folder exists. Navigating to: $storedPath',
         );
         _navigateToFolder(storedPath);
         return;
       } else {
-        print('❌ [Folder Navigation] Stored folder not found. Falling back.');
+        debugPrint('❌ [Folder Navigation] Stored folder not found. Falling back.');
         // Optional: clear invalid stored path?
         // Prefs.remove(prefsKey);
       }
@@ -147,7 +145,7 @@ class _FilesRootPageState extends State<FilesRootPage> with RouteAware {
     // 3. Check default path
     bool defaultExists = await _folderExists(defaultPath);
     if (defaultExists) {
-      print(
+      debugPrint(
         '✅ [Folder Navigation] Default folder exists. Navigating to: $defaultPath',
       );
       // We don't necessarily force-save the default path unless we want to lock it in.
@@ -159,7 +157,7 @@ class _FilesRootPageState extends State<FilesRootPage> with RouteAware {
     }
 
     // 4. Default also missing -> Show Picker
-    print(
+    debugPrint(
       '🎯 [Folder Navigation] Default folder missing. Showing folder picker.',
     );
 
@@ -187,7 +185,7 @@ class _FilesRootPageState extends State<FilesRootPage> with RouteAware {
 
     // If user selected a path
     if (selectedPath != null && selectedPath.isNotEmpty) {
-      print('💾 [Folder Navigation] User selected path: $selectedPath');
+      debugPrint('💾 [Folder Navigation] User selected path: $selectedPath');
 
       // Save to storage
       await Prefs.setString(prefsKey, selectedPath);
@@ -195,7 +193,7 @@ class _FilesRootPageState extends State<FilesRootPage> with RouteAware {
       // Navigate to the selected folder
       _navigateToFolder(selectedPath);
     } else {
-      print('🚫 [Folder Navigation] User cancelled folder selection');
+      debugPrint('🚫 [Folder Navigation] User cancelled folder selection');
     }
   }
 
@@ -216,6 +214,15 @@ class _FilesRootPageState extends State<FilesRootPage> with RouteAware {
       params['fileType'] = widget.fileType!;
     }
 
+    // CRITICAL: Pass the 'op' parameter so routing works correctly
+    final currentOp = GoRouterState.of(context).uri.queryParameters['op'];
+    if (currentOp != null && currentOp.isNotEmpty) {
+      params['op'] = currentOp;
+      debugPrint(
+        '🔗 [FilesRootPage] Passing op="$currentOp" to folder navigation',
+      );
+    }
+
     context.pushNamed(routeName, queryParameters: params);
   }
 
@@ -232,7 +239,7 @@ class _FilesRootPageState extends State<FilesRootPage> with RouteAware {
           child: Column(
             children: [
               // Header
-              Container(
+              SizedBox(
                 height: 56,
                 child: Row(
                   children: [
@@ -242,7 +249,7 @@ class _FilesRootPageState extends State<FilesRootPage> with RouteAware {
                       decoration: BoxDecoration(
                         color: Theme.of(
                           context,
-                        ).colorScheme.primary.withOpacity(0.15),
+                        ).colorScheme.primary.withValues(alpha: 0.15),
                         shape: BoxShape.circle,
                       ),
                       child: ClipOval(
@@ -545,10 +552,12 @@ class _FilesRootPageState extends State<FilesRootPage> with RouteAware {
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
-        side: BorderSide(
-          color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
-          width: 1,
-        ),
+        side: Theme.of(context).brightness == Brightness.light
+            ? BorderSide(
+                color: Theme.of(context).colorScheme.outline.withValues(alpha:0.15),
+                width: 1,
+              )
+            : BorderSide.none,
       ),
       margin: EdgeInsets.zero,
       child: InkWell(
@@ -596,21 +605,19 @@ class _FilesRootPageState extends State<FilesRootPage> with RouteAware {
                   children: [
                     Text(
                       storageName,
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
+                      style: Theme.of(context).textTheme.bodyMedium,
                     ),
                     // const SizedBox(height: 4),
-                    Text(
-                      root.path,
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Theme.of(
-                          context,
-                        ).textTheme.bodySmall?.color?.withOpacity(0.7),
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
+                    // Text(
+                    //   root.path,
+                    //   style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    //     color: Theme.of(
+                    //       context,
+                    //     ).textTheme.bodySmall?.color?.withOpacity(0.7),
+                    //   ),
+                    //   maxLines: 1,
+                    //   overflow: TextOverflow.ellipsis,
+                    // ),
                   ],
                 ),
               ),
@@ -637,10 +644,12 @@ class _FilesRootPageState extends State<FilesRootPage> with RouteAware {
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
-        side: BorderSide(
-          color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
-          width: 1,
-        ),
+        side: Theme.of(context).brightness == Brightness.light
+            ? BorderSide(
+                color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.15),
+                width: 1,
+              )
+            : BorderSide.none,
       ),
       child: InkWell(
         onTap: onTap,
@@ -653,7 +662,7 @@ class _FilesRootPageState extends State<FilesRootPage> with RouteAware {
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(
-                  color: color.withOpacity(0.15),
+                  color: color.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Icon(icon, size: 24, color: color),
@@ -842,7 +851,7 @@ class _FilesRootPageState extends State<FilesRootPage> with RouteAware {
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: Theme.of(
                           context,
-                        ).textTheme.bodySmall?.color?.withOpacity(0.7),
+                        ).textTheme.bodySmall?.color?.withValues(alpha: 0.7),
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -1030,19 +1039,7 @@ class _FilesRootPageState extends State<FilesRootPage> with RouteAware {
     final files = _cachedRecentFiles ?? [];
 
     if (files.isEmpty) {
-      return Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Center(
-          child: Text(
-            AppLocalizations.of(context).t('recent_files_empty'),
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: Theme.of(
-                context,
-              ).textTheme.bodySmall?.color?.withOpacity(0.7),
-            ),
-          ),
-        ),
-      );
+      return _buildCompactRecentEmptyState(context);
     }
 
     final pvd = _maybeProvider();
@@ -1114,12 +1111,32 @@ class _FilesRootPageState extends State<FilesRootPage> with RouteAware {
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
               color: Theme.of(
                 context,
-              ).textTheme.bodySmall?.color?.withOpacity(0.7),
+              ).textTheme.bodySmall?.color?.withValues(alpha: 0.7),
             ),
           ),
         ),
       );
     }
+
+    // Apply saved sort option (name/date)
+    final sortPref = Prefs.getString(Constants.filesSortOptionKey);
+    final sortOption = sortPref == 'modified'
+        ? SortOption.modified
+        : SortOption.name;
+
+    filteredFiles.sort((a, b) {
+      switch (sortOption) {
+        case SortOption.modified:
+          final aTime = a.lastModified ?? DateTime(0);
+          final bTime = b.lastModified ?? DateTime(0);
+          return bTime.compareTo(aTime);
+        case SortOption.name:
+        case SortOption.type:
+          if (a.isDirectory && !b.isDirectory) return -1;
+          if (!a.isDirectory && b.isDirectory) return 1;
+          return a.name.toLowerCase().compareTo(b.name.toLowerCase());
+      }
+    });
 
     return ListView.separated(
       shrinkWrap: true,
@@ -1131,6 +1148,7 @@ class _FilesRootPageState extends State<FilesRootPage> with RouteAware {
         final file = filteredFiles[index];
         return DocEntryCard(
           info: file,
+          showViewerOptionsSheet: !widget.isFullscreenRoute,
           selectable: _selectionEnabled,
           selected: (pvd?.isSelected(file.path) ?? false),
           onToggleSelected: _selectionEnabled ? () => pvd?.toggle(file) : null,
@@ -1149,6 +1167,44 @@ class _FilesRootPageState extends State<FilesRootPage> with RouteAware {
     );
   }
 
+  Widget _buildCompactRecentEmptyState(BuildContext context) {
+    final t = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+
+    // A smaller/compact version of RecentFilesPage._buildEmptyState.
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.history,
+              size: 40,
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.3),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              t.t('recent_files_empty_title'),
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 4),
+            Text(
+              t.t('recent_files_empty_message'),
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Future<void> _handleFileMenu(FileInfo file, String action) async {
     switch (action) {
       case 'open':
@@ -1159,7 +1215,7 @@ class _FilesRootPageState extends State<FilesRootPage> with RouteAware {
         result.fold(
           (error) {
             if (mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
+              AppSnackbar.showSnackBar(
                 SnackBar(
                   content: Text('Error: $error'),
                   backgroundColor: Theme.of(context).colorScheme.error,
@@ -1170,9 +1226,8 @@ class _FilesRootPageState extends State<FilesRootPage> with RouteAware {
           (updatedFiles) {
             if (mounted) {
               _loadRecentFiles();
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Removed from recent files')),
-              );
+              final t = AppLocalizations.of(context);
+              AppSnackbar.show(t.t('snackbar_removed_from_recent'));
             }
           },
         );
@@ -1186,7 +1241,7 @@ class _FilesRootPageState extends State<FilesRootPage> with RouteAware {
             result.fold(
               (exception) {
                 if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
+                  AppSnackbar.showSnackBar(
                     SnackBar(
                       content: Text(exception.message),
                       backgroundColor: Theme.of(context).colorScheme.error,
@@ -1197,9 +1252,8 @@ class _FilesRootPageState extends State<FilesRootPage> with RouteAware {
               (renamedFileInfo) {
                 if (mounted) {
                   _loadRecentFiles();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('File renamed successfully')),
-                  );
+                  final t = AppLocalizations.of(context);
+                  AppSnackbar.show(t.t('snackbar_file_renamed'));
                 }
               },
             );

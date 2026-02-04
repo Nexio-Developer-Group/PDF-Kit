@@ -6,6 +6,10 @@
   "app_nav_settings": "सेटिंग्स",
   "settings_title": "सेटिंग्स",
 
+  "settings_language_title": "भाषा",
+  "settings_language_label": "ऐप की भाषा",
+  "settings_language_description": "ऐप में उपयोग होने वाली भाषा चुनें।",
+
   "common_cancel": "रद्द करें",
   "common_clear_all": "सभी साफ़ करें",
   "common_clear": "साफ़ करें",
@@ -13,6 +17,10 @@
   "common_retry": "पुनः प्रयास करें",
   "common_open": "खोलें",
   "common_rename": "नाम बदलें",
+  "rename_sheet_title": "नाम बदलें",
+  "rename_field_label": "नया नाम",
+  "rename_field_hint": "नया नाम दर्ज करें",
+  "rename_button": "नाम बदलें",
   "common_delete": "हटाएँ",
   "common_share": "साझा करें",
   "common_search": "खोजें",
@@ -212,6 +220,10 @@
 
   ,"selection_limit_error": "आप अधिकतम {count, plural, one {# फ़ाइल} other {# फ़ाइलें}} चुन सकते हैं।"
   ,"@selection_limit_error": {"description": "Shown when user exceeds maximum selectable files.", "placeholders": {"count": {"type": "int"}}}
+  ,"selection_limit_error_single": "आप अधिकतम {count} फ़ाइल चुन सकते हैं।"
+  ,"@selection_limit_error_single": {"description": "Shown when user exceeds maximum selectable files (exactly 1 allowed).", "placeholders": {"count": {"type": "int"}}}
+  ,"selection_limit_error_multiple": "आप अधिकतम {count} फ़ाइलें चुन सकते हैं।"
+  ,"@selection_limit_error_multiple": {"description": "Shown when user exceeds maximum selectable files (more than 1 allowed).", "placeholders": {"count": {"type": "int"}}}
 
   ,"compress_pdf_title": "PDF संपीड़ित करें"
   ,"compress_pdf_description": "स्मार्ट संपीड़न के साथ PDF का आकार कम करें, गुणवत्ता समायोजित करें, सेव स्थान चुनें और फ़ाइल का नाम बदलें। PDF कभी भी जोड़ें और जल्दी से एक हल्का, अनुकूलित दस्तावेज़ बनाएँ।"
@@ -225,6 +237,7 @@
   ,"compress_pdf_low_sub": "सबसे बड़ा आकार, बेहतर गुणवत्ता"
   ,"compress_pdf_button": "संपीड़ित करें"
   ,"compress_pdf_compressing": "संपीड़ित किया जा रहा है..."
+  ,"compress_pdf_service_warning": "नोट: यह कंप्रेशन फीचर अभी विकास के तहत है और बड़ी PDF फ़ाइलों के साथ बेहतर काम करता है। छोटी फ़ाइलों में ज्यादा कंप्रेशन नहीं हो सकता।"
   ,"compress_pdf_select_first_error": "पहले एक PDF चुनें"
   ,"compress_pdf_result_pattern": "\"{original}\" ({level}) → {result} संपीड़ित"
   ,"@compress_pdf_result_pattern": {"description": "Snackbar pattern after compression.", "placeholders": {"original": {"type": "String"}, "level": {"type": "String"}, "result": {"type": "String"}}}
@@ -269,7 +282,7 @@
 
   ,"common_edit": "संपादित करें"
   ,"common_remove": "हटाएँ"
-  ,"common_open_snackbar": "खोला गया"
+  ,"common_open_snackbar": "खोलें"
 
   ,"selection_action_default": "क्रिया"
   ,"selection_selected_label": "{count} चयनित"
@@ -299,10 +312,60 @@
   ,"settings_grid_view_layout_subtitle": "फ़ाइलें और फ़ोल्डर कैसे दिखें"
   ,"settings_pdf_content_fit_title": "PDF सामग्री फ़िट मोड"
   ,"settings_pdf_content_fit_subtitle": "चित्र और PDF कैसे फिट हों"
+  ,"pdf_content_fit_settings_page_title": "PDF सामग्री फ़िट"
+  ,"pdf_content_fit_settings_description": "दर्शक में पीडीएफ और छवियाँ कैसे फिट हों चुनें। यह केवल स्क्रीन पर सामग्री के प्रदर्शन को प्रभावित करता है।"
+  ,"pdf_content_fit_settings_choose_mode_label": "मोड चुनें"
+  ,"pdf_content_fit_settings_applied_snackbar": "सामग्री फिट अपडेट हो गया"
+  ,"pdf_content_fit_mode_original_title": "Original"
+  ,"pdf_content_fit_mode_original_description": "सामग्री को उसके मूल आकार में दिखाएँ।"
+  ,"pdf_content_fit_mode_fit_title": "Fit"
+  ,"pdf_content_fit_mode_fit_description": "उपलब्ध स्थान के भीतर पूरी सामग्री फिट करें।"
+  ,"pdf_content_fit_mode_crop_title": "Crop"
+  ,"pdf_content_fit_mode_crop_description": "स्थान भरें और अतिरिक्त भागों को क्रॉप करें।"
   ,"settings_help_center_title": "सहायता केंद्र"
   ,"settings_help_center_subtitle": "मदद, प्रश्न और उत्तर"
-  ,"settings_about_pdf_kit_title": "About PDF-Kit"
-  ,"settings_about_pdf_kit_subtitle": "इस ऐप का विवरण देखें"
+  ,"help_section_all": "सभी"
+  ,"help_section_general": "सामान्य"
+  ,"help_section_features": "फ़ीचर्स"
+  ,"help_section_files": "फ़ाइलें"
+  ,"help_section_troubleshooting": "समस्या निवारण"
+  ,"help_search_hint": "खोजें"
+  ,"help_clear_tooltip": "साफ़ करें"
+  ,"help_no_results": "कोई प्रश्न नहीं मिला। कृपया अन्य खोज करें।"
+  
+  ,"help_faq_general_1_question": "PDF सेवा से मैं क्या कर सकता हूँ?"
+  ,"help_faq_general_1_answer": "PDF सेवा आपके डिवाइस पर पीडीएफ और फ़ाइलों को मैनेज करने में मदद करता है। आप मर्ज, स्प्लिट, कंप्रेस, पेज रीऑर्डर, इमेज को पीडीएफ में कन्वर्ट, पीडीएफ को इमेज में कन्वर्ट, और पासवर्ड प्रोटेक्शन ऐड/रिमूव कर सकते हैं।"
+  ,"help_faq_general_2_question": "मेरी जेनरेट की गई पीडीएफ कहाँ सेव होती है?"
+  ,"help_faq_general_2_answer": "आउटपुट उस डेस्टिनेशन फ़ोल्डर में सेव होता है जो फ़्लो के दौरान चुना गया था। आप सेटिंग्स → डिफ़ॉल्ट सेव लोकेशन से डिफ़ॉल्ट फ़ोल्डर भी सेट कर सकते हैं।"
+  ,"help_faq_general_3_question": "डिफ़ॉल्ट सेव लोकेशन कैसे बदलें?"
+  ,"help_faq_general_3_answer": "सेटिंग्स → डिफ़ॉल्ट सेव लोकेशन खोलें, एक फ़ोल्डर चुनें, और कन्फ़र्म करें। नए आउटपुट वहाँ सेव होंगे जब तक आप किसी एक्शन के दौरान अलग फ़ोल्डर नहीं चुनते।"
+  
+  ,"help_faq_features_1_question": "मल्टीपल पीडीएफ को एक में मर्ज कैसे करें?"
+  ,"help_faq_features_1_answer": "होम टूल ग्रिड पर मर्ज टैप करें, कम से कम 2 पीडीएफ सेलेक्ट करें, फिर मर्ज करने के लिए कंटीन्यू करें। अगर मर्ज स्क्रीन ऑप्शन देती है तो आप मर्ज करने से पहले फ़ाइलों को रीऑर्डर कर सकते हैं।"
+  ,"help_faq_features_2_question": "इमेज को एक पीडीएफ में कैसे कन्वर्ट करें?"
+  ,"help_faq_features_2_answer": "Images to PDF टैप करें, 2+ इमेज सेलेक्ट करें, फिर कंटीन्यू करें। अगर प्रॉम्प्ट हो तो इमेज अरेंज करें, और जेनरेट की गई पीडीएफ सेव करें।"
+  ,"help_faq_features_3_question": "पीडीएफ को पेजेज/फ़ाइलों में स्प्लिट कैसे करें?"
+  ,"help_faq_features_3_answer": "Split टैप करें, एक पीडीएफ सेलेक्ट करें, फिर Split स्क्रीन पर पेज रेंज या स्प्लिट ऑप्शन चुनें और रिज़ल्ट सेव करें।"
+  ,"help_faq_features_4_question": "पीडीएफ में पेज कैसे रीऑर्डर करें?"
+  ,"help_faq_features_4_answer": "Reorder टैप करें, एक पीडीएफ सेलेक्ट करें, फिर पेजेज को ड्रैग करके रीअरेंज करें। अपडेटेड ऑर्डर के साथ नई पीडीएफ एक्सपोर्ट करने के लिए सेव करें।"
+  ,"help_faq_features_5_question": "पीडीएफ कंप्रेशन कैसे काम करता है?"
+  ,"help_faq_features_5_answer": "Compress टैप करें, एक पीडीएफ सेलेक्ट करें, फिर कंप्रेशन लेवल चुनें (अगर उपलब्ध हो)। ज़्यादा कंप्रेशन आमतौर पर फ़ाइल साइज़ कम करता है लेकिन क्वालिटी कम हो सकती है।"
+  ,"help_faq_features_6_question": "पीडीएफ में पासवर्ड कैसे ऐड करें?"
+  ,"help_faq_features_6_answer": "Protect टैप करें, एक पीडीएफ चुनें (अनप्रोटेक्टेड होनी चाहिए), पासवर्ड एंटर करें, और सेव करें। पासवर्ड सुरक्षित रखें—इसके बिना फ़ाइल नहीं खुल सकती।"
+  ,"help_faq_features_7_question": "पीडीएफ से पासवर्ड कैसे रिमूव करें?"
+  ,"help_faq_features_7_answer": "Unlock/Remove Password टैप करें, एक प्रोटेक्टेड पीडीएफ चुनें, जब पूछा जाए तो सही पासवर्ड एंटर करें, फिर अनलॉक की गई कॉपी सेव करें।"
+  
+  ,"help_faq_files_1_question": "कौन सी फ़ाइलें सपोर्टेड हैं?"
+  ,"help_faq_files_1_answer": "ऐप पीडीएफ और कॉमन इमेज फ़ॉर्मेट पर फ़ोकस करता है। व्यूअर पीडीएफ और इमेज (GIF प्रीव्यू सहित) सपोर्ट करता है। अगर फ़ाइल नहीं खुल रही है, तो चेक करें कि एक्सटेंशन सपोर्टेड टाइप से मैच करता है।"
+  ,"help_faq_files_2_question": "फ़ाइल जल्दी कैसे ढूंढें?"
+  ,"help_faq_files_2_answer": "फ़ाइल एक्सप्लोरर स्क्रीन (Files/Search) में सर्च फ़ीचर का उपयोग करें। आप होम स्क्रीन से Recent Files भी खोल सकते हैं और हाल के डॉक्युमेंट फिर से खोल सकते हैं।"
+  
+  ,"help_faq_troubleshooting_1_question": "मैं अपनी फ़ाइलें या फ़ोल्डर नहीं देख पा रहा। क्या करूँ?"
+  ,"help_faq_troubleshooting_1_answer": "यह आमतौर पर परमिशन की समस्या है। Android पर, जब पूछा जाए तो स्टोरेज/फ़ाइल एक्सेस अलाउ करें (या सिस्टम सेटिंग्स → ऐप्स → PDF सेवा → Permissions से)। Android 11+ पर, ब्रॉड ब्राउज़िंग के लिए 'All files access' की ज़रूरत हो सकती है।"
+  ,"help_faq_troubleshooting_2_question": "मेरा एक्शन फ़ेल क्यों हुआ या एम्प्टी आउटपुट क्यों मिला?"
+  ,"help_faq_troubleshooting_2_answer": "आम कारण हैं गलत फ़ाइल टाइप सेलेक्ट करना (जैसे प्रोटेक्टेड पीडीएफ उन एक्शन के लिए जिन्हें अनप्रोटेक्टेड चाहिए), बहुत कम फ़ाइलें सेलेक्ट करना, या स्टोरेज परमिशन मिसिंग होना। एक्शन फिर से ट्राई करें और सुनिश्चित करें कि पिकर पर दिखाए गए सिलेक्शन रूल्स सैटिस्फ़ाई हों।"
+  ,"settings_about_pdf_kit_title": "PDF Seva के बारे में"
+  ,"settings_about_pdf_kit_subtitle": "PDF Seva क्या करता है और अनुमतियों का उपयोग कैसे करता है"
   ,"settings_about_us_title": "हमारे बारे में"
 
   ,"action_watermark_label": "वॉटरमार्क"
@@ -315,6 +378,70 @@
   ,"action_coming_soon_toast": "{feature} शीघ्र उपलब्ध होगा"
   ,"@action_coming_soon_toast": {"placeholders": {"feature": {"type": "String"}}}
   ,"settings_about_us_subtitle": "हमारी दृष्टि और कार्य शैली जानें"
+
+  ,"about_us_org_name": "Nexio Technologies"
+  ,"about_us_description": "हम आधुनिक संगठनों के लिए डिजिटल आधार प्रदान करते हैं। NexioTech Cloud अनुकूलित cloud समाधानों और आधुनिक IT सेवाओं के माध्यम से आपके कार्यप्रवाह को अनुकूलित करने में विशेषज्ञता रखता है। हमारा मिशन उन्नत तकनीक और दैनिक दक्षता के बीच की खाई को पाटना है, एक निर्बाध डिजिटल वातावरण बनाना जहाँ आपका व्यवसाय फल-फूल सके।"
+  ,"about_us_links_section_title": "लिंक"
+  ,"about_us_link_website_title": "Website"
+  ,"about_us_link_help_title": "सहायता"
+  ,"about_us_link_connect_title": "संपर्क करें"
+  ,"about_us_link_call_title": "कॉल करें"
+  ,"about_us_link_github_title": "GitHub Organization"
+
+  ,"about_pdf_kit_section_app_info": "ऐप की जानकारी"
+  ,"about_pdf_kit_section_what_is": "PDF Seva क्या है?"
+  ,"about_pdf_kit_section_features": "सुविधाएँ"
+  ,"about_pdf_kit_section_permissions": "अनुमतियाँ"
+  ,"about_pdf_kit_section_privacy": "डेटा और प्राइवेसी"
+
+  ,"about_pdf_kit_app_name_label": "ऐप का नाम"
+  ,"about_pdf_kit_package_name_label": "पैकेज नाम"
+  ,"about_pdf_kit_version_label": "वर्जन"
+  ,"about_pdf_kit_api_levels_label": "एपीआई लेवल"
+  ,"about_pdf_kit_target_sdk_label": "टार्गेट एसडीके"
+
+  ,"about_pdf_kit_description_1": "PDF Seva एक हल्का पीडीएफ यूटिलिटी ऐप है जो आपको अपने डिवाइस में सेव पीडीएफ फाइलों को देखने, मैनेज करने और जरूरी काम करने देता है।"
+  ,"about_pdf_kit_description_2": "डॉक्यूमेंट के सभी ऑपरेशन लोकल तरीके से होते हैं ताकि चीजें तेज, आसान और आपके कंट्रोल में रहें।"
+
+  ,"about_pdf_kit_feature_1": "डिवाइस स्टोरेज से पीडीएफ फाइलों को एक्सेस और ब्राउज करें"
+  ,"about_pdf_kit_feature_2": "पीडीएफ डॉक्यूमेंट को आसानी से देखें"
+  ,"about_pdf_kit_feature_3": "पीडीएफ फाइलों को छोटे पीडीएफ में स्प्लिट करें"
+  ,"about_pdf_kit_feature_4": "कई पीडीएफ फाइलों को एक डॉक्यूमेंट में मर्ज करें"
+  ,"about_pdf_kit_feature_5": "पीडीएफ डॉक्यूमेंट को ऑर्गनाइज और मैनेज करें"
+  ,"about_pdf_kit_feature_6": "हाल की पीडीएफ फाइलों को जल्दी एक्सेस करें"
+
+  ,"about_pdf_kit_permission_all_files_title": "सभी फाइलों की एक्सेस"
+  ,"about_pdf_kit_permission_all_files_purpose": "आपके डिवाइस स्टोरेज में पीडीएफ पढ़ें और लिखें।"
+  ,"about_pdf_kit_permission_photos_title": "फोटो / इमेज"
+  ,"about_pdf_kit_permission_photos_purpose": "इमेज से जुड़े ऑपरेशन के लिए इस्तेमाल होता है।"
+  ,"about_pdf_kit_permission_videos_title": "वीडियो"
+  ,"about_pdf_kit_permission_videos_purpose": "सिर्फ तब इस्तेमाल होता है जब आप वीडियो चुनते हैं (अगर जरूरी हो)।"
+
+  ,"about_pdf_kit_permissions_description": "PDF Seva स्टोरेज/मीडिया परमिशन मांग सकता है ताकि यह आपकी पीडीएफ दिखा सके और नई फाइलें सेव कर सके। इस ऐप की परमिशन सेटिंग खोलने के लिए नीचे किसी भी परमिशन पर टैप करें।"
+  ,"about_pdf_kit_permissions_android_only": "परमिशन स्टेटस सिर्फ एंड्रॉयड पर दिखता है।"
+  ,"about_pdf_kit_permissions_read_error": "इस डिवाइस पर परमिशन स्टेटस नहीं पढ़ा जा सका।"
+
+  ,"about_pdf_kit_privacy_bullet_1": "ऐप का उपयोग करने के लिए किसी खाते या साइन-अप की आवश्यकता नहीं है"
+  ,"about_pdf_kit_privacy_bullet_2": "आपके दस्तावेज़ आपके डिवाइस पर स्थानीय रूप से संसाधित किए जाते हैं और कभी भी बाहरी सर्वर पर अपलोड नहीं किए जाते"
+  ,"about_pdf_kit_privacy_bullet_3": "हम व्यक्तिगत दस्तावेज़, फ़ाइल सामग्री या उपयोगकर्ता-पहचान योग्य जानकारी एकत्र नहीं करते हैं"
+  ,"about_pdf_kit_privacy_bullet_4": "ऐप के प्रदर्शन और सुविधाओं को बेहतर बनाने के लिए गुमनाम उपयोग विश्लेषण एकत्र किया जा सकता है"
+  ,"about_pdf_kit_privacy_bullet_5": "ऐप की समस्याओं की पहचान और सुधार में मदद के लिए क्रैश रिपोर्ट गुमनाम रूप से एकत्र की जाती हैं"
+  ,"about_pdf_kit_privacy_bullet_6": "वैकल्पिक सूचनाएं सक्षम करने के लिए क्लाउड मैसेजिंग टोकन सुरक्षित रूप से संग्रहीत किए जा सकते हैं"
+
+  ,"about_pdf_kit_privacy_policy_title": "प्राइवेसी पॉलिसी"
+  ,"about_pdf_kit_privacy_policy_subtitle": "प्राइवेसी पॉलिसी लिंक यहाँ है"
+
+  ,"about_pdf_kit_permission_status_granted": "दी गई"
+  ,"about_pdf_kit_permission_status_limited": "सीमित"
+  ,"about_pdf_kit_permission_status_denied": "अस्वीकृत"
+  ,"about_pdf_kit_permission_status_restricted": "प्रतिबंधित"
+  ,"about_pdf_kit_permission_status_blocked": "ब्लॉक"
+  ,"about_pdf_kit_permission_status_provisional": "अस्थायी"
+  ,"about_pdf_kit_permission_status_unknown": "अज्ञात"
+
+  ,"about_pdf_kit_error_invalid_privacy_url": "प्राइवेसी पॉलिसी यूआरएल गलत है"
+  ,"about_pdf_kit_error_could_not_open_link": "लिंक नहीं खोला जा सका"
+
   ,"language_settings_page_title": "भाषा सेटिंग्स"
   ,"language_settings_choose_label": "ऐप भाषा चुनें"
   ,"language_option_english": "English"
@@ -402,7 +529,191 @@
 "onboarding_button_get_started": "प्रारंभ करें",
 "onboarding_button_back": "वापस"
 , "onboarding_tagline": "हर PDF कार्य के लिए आपका संपूर्ण टूलकिट।"
-, "selection_min_error": "कम से कम {count} आइटम चुनें।"
+, "selection_min_error": "कम से कम {count} आइटम चुनें।",
 
+"snackbar_merge_done": "Merge completed successfully",
+"snackbar_compress_done": "Compression completed successfully",
+"snackbar_images_to_pdf_done": "PDF created successfully",
+  "snackbar_pdf_to_image_done": "छवियाँ सफलतापूर्वक बनाई गईं",
+  "snackbar_split_done": "स्प्लिट सफलतापूर्वक पूर्ण",
+  "snackbar_protect_done": "PDF सफलतापूर्वक सुरक्षित",
+  "snackbar_unlock_done": "PDF सफलतापूर्वक अनलॉक",
+  "snackbar_reorder_done": "रीऑर्डर सफलतापूर्वक पूर्ण",
+
+  "images_to_pdf_title": "छवियों से PDF",
+  "images_to_pdf_description": "कई छवियों को एक PDF में कन्वर्ट करें। क्रम बदलने के लिए ड्रैग करें, नाम बदलें, सेव स्थान चुनें, और कभी भी छवियाँ जोड़ें या संपादित करें।",
+  "images_to_pdf_file_name_label": "फ़ाइल नाम",
+  "images_to_pdf_file_name_hint": "आउटपुट फ़ाइल नाम टाइप करें",
+  "images_to_pdf_save_to_folder_label": "फ़ोल्डर में सेव करें",
+  "images_to_pdf_files_selected": "{count} छवियाँ चयनित",
+  "@images_to_pdf_files_selected": {
+    "description": "Label showing number of images selected for conversion.",
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "images_to_pdf_reorder": "क्रम बदलें",
+  "images_to_pdf_done": "पूर्ण",
+  "images_to_pdf_add_more_files": "और छवियाँ जोड़ें",
+  "images_to_pdf_button": "PDF में कन्वर्ट करें",
+  "images_to_pdf_loading_default_folder": "डिफ़ॉल्ट फ़ोल्डर लोड हो रहा है...",
+  "images_to_pdf_select_folder_placeholder": "फ़ोल्डर चुनें",
+  "images_to_pdf_destination_snackbar": "गंतव्य: {folderName}",
+  "@images_to_pdf_destination_snackbar": {
+    "description": "Snackbar message showing chosen destination folder.",
+    "placeholders": {"folderName": {"type": "String"}}
+  },
+  "images_to_pdf_default_file_name": "इमेज डॉक्यूमेंट",
+
+  "split_pdf_title": "PDF स्प्लिट करें",
+  "split_pdf_description": "अपने PDF से निकालने के लिए पेज रेंज चुनें",
+  "split_pdf_selected_pdf_label": "चयनित PDF",
+  "split_pdf_page_preview_label": "पेज प्रीव्यू",
+  "split_pdf_destination_folder_label": "गंतव्य फ़ोल्डर",
+  "split_pdf_naming_pattern_label": "आउटपुट नामकरण पैटर्न",
+  "split_pdf_naming_pattern_hint": "filename_____",
+  "split_pdf_total_pages_helper": "कुल पेज: {count}",
+  "@split_pdf_total_pages_helper": {"placeholders": {"count": {"type": "String"}}},
+  "split_pdf_page_ranges_label": "पेज रेंज",
+  "split_pdf_no_pdf_selected": "कोई PDF चयनित नहीं",
+  "split_pdf_button": "PDF स्प्लिट करें",
+  "split_pdf_range_start_label": "शुरुआत",
+  "split_pdf_range_start_hint": "1",
+  "split_pdf_range_end_label": "अंत",
+  "split_pdf_validation_error": "कृपया कम से कम एक मान्य पेज रेंज जोड़ें",
+  "split_pdf_select_folder_title": "गंतव्य फ़ोल्डर चुनें",
+  "split_pdf_select_folder_description": "स्प्लिट की गई फ़ाइलें यहाँ सेव होंगी",
+
+  "pdf_to_image_page_title": "PDF से छवियाँ",
+  "pdf_to_image_page_description": "अपने PDF के सभी पेज को उच्च गुणवत्ता की छवि फ़ाइलों में कन्वर्ट करें। प्रत्येक पेज अलग छवि के रूप में सेव होगा।",
+  "pdf_to_image_name_label": "छवि नाम प्रीफ़िक्स",
+  "pdf_to_image_name_hint": "छवियों के लिए नाम दर्ज करें",
+  "pdf_to_image_name_helper": "छवियाँ इस तरह नामित होंगी: <name>_page_001.jpg, <name>_page_002.jpg, आदि।",
+  "pdf_to_image_destination_label": "छवियाँ सेव करें",
+  "pdf_to_image_selected_file_label": "चयनित PDF फ़ाइल",
+  "pdf_to_image_no_file_selected": "कृपया पिछली स्क्रीन से PDF फ़ाइल चुनें",
+  "pdf_to_image_pages_label": "कन्वर्ट करने के लिए पेज",
+  "pdf_to_image_select_pages_button": "पेज चुनें",
+  "pdf_to_image_select_pages_title": "पेज चुनें",
+  "pdf_to_image_pages_selected": "पेज चयनित",
+  "pdf_to_image_all_pages_info": "PDF के सभी पेज छवियों में कन्वर्ट होंगे",
+  "pdf_to_image_selected_pages_info": "{count} चयनित पेज छवियों में कन्वर्ट होंगे",
+  "@pdf_to_image_selected_pages_info": {"placeholders": {"count": {"type": "String"}}},
+  "pdf_to_image_convert_button": "छवियों में कन्वर्ट करें",
+  "pdf_to_image_converting_button": "कन्वर्ट हो रहा है...",
+  "pdf_to_image_no_file_error": "कोई PDF फ़ाइल चयनित नहीं",
+  "pdf_to_image_default_name": "PDF_Images",
+  "pdf_to_image_destination_snackbar": "गंतव्य {folderName} में बदला गया",
+  "@pdf_to_image_destination_snackbar": {"placeholders": {"folderName": {"type": "String"}}},
+  "pdf_to_image_loading_default_folder": "डिफ़ॉल्ट फ़ोल्डर लोड हो रहा है...",
+  "pdf_to_image_select_folder_placeholder": "गंतव्य फ़ोल्डर चुनें",
+  "pdf_page_selector_title": "पेज चुनें",
+  "pdf_page_selector_hint": "जैसे, 1-5, 8, 10-15",
+  "pdf_page_selector_helper": "चुनने के लिए पेज रेंज दर्ज करें, अल्पविराम से अलग करें",
+  "pdf_page_selector_selected_count": "{total} में से {count} पेज{plural} चयनित",
+  "@pdf_page_selector_selected_count": {"placeholders": {"count": {"type": "String"}, "total": {"type": "String"}, "plural": {"type": "String"}}},
+  "pdf_page_selector_error_empty": "कम से कम एक पेज चयनित होना चाहिए",
+  "pdf_page_selector_error_invalid_range": "अमान्य रेंज फ़ॉर्मेट। जैसे 1-5 का उपयोग करें",
+  "pdf_page_selector_error_invalid_number": "कृपया मान्य पेज नंबर दर्ज करें",
+  "pdf_page_selector_error_out_of_range": "पेज 1 और {total} के बीच होने चाहिए",
+  "@pdf_page_selector_error_out_of_range": {"placeholders": {"total": {"type": "String"}}},
+  "pdf_page_selector_error_start_greater": "शुरुआती पेज अंतिम पेज से कम या बराबर होना चाहिए",
+  "pdf_page_selector_error_page_out_of_range": "पेज 1 और {total} के बीच होना चाहिए",
+  "@pdf_page_selector_error_page_out_of_range": {"placeholders": {"total": {"type": "String"}}},
+  "pdf_to_image_select_folder_title": "गंतव्य फ़ोल्डर चुनें",
+  "pdf_to_image_select_folder_description": "छवियाँ यहाँ सेव होंगी",
+
+  "reorder_pdf_title": "PDF पेज रीऑर्डर करें",
+  "reorder_pdf_description": "अपने PDF से पेज को रीऑर्डर, रोटेट, या हटाएँ। प्रीव्यू के लिए पेज टैप करें, रीऑर्डर के लिए ड्रैग करें, और अपना कस्टमाइज़्ड डॉक्यूमेंट सेव करें।",
+  "reorder_pdf_button": "रीऑर्डर करें",
+  "reorder_pdf_no_file": "कोई PDF चयनित नहीं। कृपया वापस जाएँ और PDF फ़ाइल चुनें।",
+  "reorder_pdf_success": "PDF पेज सफलतापूर्वक रीऑर्डर किए गए",
+
+"action_images_to_pdf_label": "छवियों से PDF",
+"action_pdf_to_image_label": "PDF से छवि",
+"action_reorder_label": "PDF पुनर्व्यवस्थित करें",
+
+"files_quick_access_title": "त्वरित पहुँच",
+"file_quick_access_tile": "त्वरित पहुँच",
+"files_storage_title": "स्टोरेज",
+"files_loading_storage": "स्टोरेज लोड हो रहा है...",
+"files_internal_storage": "आंतरिक स्टोरेज",
+"files_sd_card": "SD कार्ड",
+"files_search_type_prompt": "खोजने के लिए टाइप करें",
+"files_pdfs_folder": "PDF",
+"files_downloads_folder": "डाउनलोड",
+"files_images_folder": "छवियाँ",
+"files_screenshots_folder": "स्क्रीनशॉट",
+
+"selection_error_pdf_only": "इस ऑपरेशन के लिए केवल PDF फ़ाइलें चुनी जा सकती हैं।",
+"selection_error_image_only": "इस ऑपरेशन के लिए केवल इमेज फ़ाइलें चुनी जा सकती हैं।",
+"selection_error_pdf_not_protected": "यह PDF पासवर्ड से प्रोटेक्टेड नहीं है।",
+"selection_error_pdf_protected": "प्रोटेक्टेड PDF पर यह एक्शन संभव नहीं। पहले इसे अनलॉक करें।",
+"snackbar_file_renamed": "फ़ाइल सफलतापूर्वक रीनेम की गई",
+"snackbar_removed_from_recent": "हाल की फ़ाइलों से हटाया गया",
+
+"progress_dialog_keep_open": "कृपया ऐप को open रखें जब तक हम finish करें।",
+"progress_dialog_merging_title": "PDF Merge हो रहा है",
+"progress_dialog_protecting_title": "PDF Protect हो रहा है",
+"progress_dialog_unlocking_title": "PDF Unlock हो रहा है",
+
+"progress_stage_preparing": "तैयारी हो रही है…",
+"progress_stage_starting": "शुरू हो रहा है…",
+"progress_stage_analyzing_pdf": "PDF का विश्लेषण हो रहा है…",
+"progress_stage_compressing": "Compress हो रहा है…",
+"progress_stage_finalizing": "अंतिम रूप दे रहे हैं…",
+"progress_stage_validating_inputs": "Inputs की जांच हो रही है",
+"progress_stage_encrypting_pdf": "PDF encrypt हो रहा है",
+"progress_stage_decrypting_pdf": "PDF decrypt हो रहा है",
+"progress_stage_writing_output": "Output लिखा जा रहा है",
+"progress_stage_cleaning_up": "साफ़ किया जा रहा है",
+"progress_stage_done": "पूर्ण",
+
+"error_file_not_found": "PDF फ़ाइल नहीं मिली",
+"error_invalid_password": "Password खाली नहीं हो सकता",
+"error_incorrect_password": "गलत password। कृपया फिर से प्रयास करें।",
+"error_failed_create_protected_pdf": "Protected PDF बनाने में विफल",
+"error_failed_create_unlocked_pdf": "Unlocked PDF बनाने में विफल",
+"error_failed_protect_pdf": "PDF protect करने में विफल",
+"error_failed_unlock_pdf": "PDF unlock करने में विफल",
+"error_failed_check_pdf": "PDF की जांच में विफल",
+"error_file_read_write": "फ़ाइल error",
+
+"snackbar_merge_done": "Merge सफलतापूर्वक पूर्ण हुआ",
+"snackbar_compress_done": "Compression सफलतापूर्वक पूर्ण हुआ",
+"snackbar_images_to_pdf_done": "PDF सफलतापूर्वक बनाया गया",
+"snackbar_pdf_to_image_done": "Images सफलतापूर्वक बनाई गईं",
+"snackbar_split_done": "Split सफलतापूर्वक पूर्ण हुआ",
+"snackbar_protect_done": "PDF सफलतापूर्वक protect किया गया",
+"snackbar_unlock_done": "PDF सफलतापूर्वक unlock किया गया",
+"snackbar_reorder_done": "Reorder सफलतापूर्वक पूर्ण हुआ",
+
+"common_done": "पूर्ण",
+"delete_file_title": "फ़ाइल हटाएं?",
+"delete_file_message": "क्या आप वाकई हटाना चाहते हैं",
+"delete_file_confirm": "हटाएं",
+"filter_file_type_pdf_mode": "PDF मोड",
+"filter_file_type_images_mode": "इमेज मोड",
+"folder_picker_description_pdfs": "सभी जेनरेट की गई और इम्पोर्ट की गई फ़ाइलें यहाँ स्टोर की जाएंगी जब तक कि आप कोई अलग स्थान नहीं चुनते।",
+"pdf_options_rename": "नाम बदलें",
+"pdf_options_delete": "हटाएं",
+"pdf_options_split": "विभाजित करें",
+"pdf_options_protect": "सुरक्षित करें / पासवर्ड हटाएं",
+"pdf_options_compress": "PDF संपीड़ित करें",
+"pdf_options_move_to_folder": "फ़ोल्डर में ले जाएं",
+"pdf_to_image_title": "PDF को इमेज में बदलें",
+"recent_files_empty": "कोई हाल की फ़ाइल नहीं",
+"recent_files_filter_empty_pdf": "केवल PDF फ़ाइलें चयन योग्य हैं",
+"recent_files_filter_empty_images": "केवल इमेज फ़ाइलें चयन योग्य हैं",
+"settings_default_camera_location_title": "डिफ़ॉल्ट कैमरा स्थान",
+"settings_default_camera_location_subtitle": "कैमरा फ़ोटो कहाँ सहेजी जाएं चुनें",
+"settings_default_screenshot_location_title": "डिफ़ॉल्ट स्क्रीनशॉट स्थान",
+"settings_default_screenshot_location_subtitle": "स्क्रीनशॉट कहाँ सहेजे जाएं चुनें",
+"settings_filter_options_description": "ऐप में फ़ाइलों और फ़ोल्डर्स को देखते समय डिफ़ॉल्ट रूप से कौन से फ़िल्टर लागू किए जाएं चुनें।",
+"snackbar_success_images_to_pdf": "सफलतापूर्वक {fileName} में बदला गया",
+"@snackbar_success_images_to_pdf": {"placeholders": {"fileName": {"type": "String"}}},
+"snackbar_success_pdf_to_image": "सफलतापूर्वक {count} पृष्ठों को {folderName} में इमेज में बदला गया",
+"@snackbar_success_pdf_to_image": {"placeholders": {"count": {"type": "String"}, "folderName": {"type": "String"}}},
+"snackbar_removed_from_recent": "हाल की फ़ाइलों से हटाया गया",
+"watermark_pdf_title": "वॉटरमार्क जोड़ें",
+"@selection_min_error": {"description": "Shown when user presses action but has selected fewer than the required minimum.", "placeholders": {"count": {"type": "int"}}}
 
 }

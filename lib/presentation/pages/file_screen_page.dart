@@ -55,16 +55,16 @@ class _AndroidFilesScreenState extends State<AndroidFilesScreen> {
   }
 
   Future<void> _boot() async {
-    print(
+    debugPrint(
       '🚀 [AndroidFilesScreen] _boot called. InitialPath: ${widget.initialPath}',
     );
     final perm = await PermissionService.requestStoragePermission();
     perm.fold(
       (_) {
-        print('❌ [AndroidFilesScreen] Permission failed');
+        debugPrint('❌ [AndroidFilesScreen] Permission failed');
       },
       (ok) async {
-        print('✅ [AndroidFilesScreen] Permission: $ok');
+        debugPrint('✅ [AndroidFilesScreen] Permission: $ok');
         if (!ok) return;
 
         // Always load the provided path (no null handling)
@@ -104,7 +104,7 @@ class _AndroidFilesScreenState extends State<AndroidFilesScreen> {
       // If initialPath is null, there's nothing to refresh in this simplified view
       // This case should ideally not be reached if initialPath is always provided
       // or if this screen is only used for specific paths.
-      print(
+      debugPrint(
         '⚠️ [AndroidFilesScreen] _refresh called with null _currentPath. No action taken.',
       );
     }
@@ -115,10 +115,12 @@ class _AndroidFilesScreenState extends State<AndroidFilesScreen> {
     if (!mounted) return;
     if (widget.isFullscreenRoute == true) {
       final params = <String, String>{'path': path};
-      if (widget.selectionId != null)
+      if (widget.selectionId != null) {
         params['selectionId'] = widget.selectionId!;
-      if (widget.selectionActionText != null)
+      }
+      if (widget.selectionActionText != null) {
         params['actionText'] = widget.selectionActionText!;
+      }
       if (widget.fileType != null) params['fileType'] = widget.fileType!;
 
       await context.pushNamed(
@@ -147,7 +149,7 @@ class _AndroidFilesScreenState extends State<AndroidFilesScreen> {
         ? provider.isLoading(_currentPath!)
         : false;
 
-    print(
+    debugPrint(
       '🖼️ [AndroidFilesScreen] build. Path: $_currentPath, Loading: $loading, Files: ${rawFiles.length}',
     );
 
@@ -282,6 +284,8 @@ class _AndroidFilesScreenState extends State<AndroidFilesScreen> {
               margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 12),
               child: DocEntryCard(
                 info: f,
+                showViewerOptionsSheet:
+                    !(widget.selectable || widget.isFullscreenRoute == true),
                 selectable: _selectionEnabled,
                 selected: (pvd?.isSelected(f.path) ?? false),
                 onToggleSelected: _selectionEnabled
@@ -319,9 +323,7 @@ class _AndroidFilesScreenState extends State<AndroidFilesScreen> {
       onRename: (newName) async {
         context.read<FileSystemProvider>().renameFile(file, newName).then((_) {
           RecentFilesSection.refreshNotifier.value++;
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('File renamed successfully')),
-          );
+          AppSnackbar.show('File renamed successfully');
         });
       },
     );

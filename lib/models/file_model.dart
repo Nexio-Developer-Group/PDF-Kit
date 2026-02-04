@@ -127,7 +127,7 @@ class FileInfo {
   name: $name,
   path: $path,
   extension: $extension,
-  size: ${readableSize},
+  size: $readableSize,
   lastModified: $lastModified,
   mimeType: $mimeType,
   parentDirectory: $parentDirectory,

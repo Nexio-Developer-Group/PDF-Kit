@@ -4,6 +4,8 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:pdfx/pdfx.dart' as pdfx;
 import 'package:flutter/foundation.dart';
+import 'package:path/path.dart' as p;
+import 'package:pdf_kit/service/analytics_service.dart';
 
 /// 📝 Service for manipulating PDF pages: reordering, rotating, removing.
 class PdfManipulationService {
@@ -29,6 +31,7 @@ class PdfManipulationService {
     destinationPath, // 🆕 Optional: Save specific path instead of overwrite
     void Function(double progress01, String stage)? onProgress,
   }) async {
+    final stopwatch = Stopwatch()..start();
     try {
       _report(onProgress, 0.03, 'Validating inputs');
       // Validate inputs
@@ -160,15 +163,44 @@ class PdfManipulationService {
 
       if (destinationPath != null && destinationPath.isNotEmpty) {
         // Save to specific destination (copy mode)
-        final destFile = File(destinationPath);
+        // Handle duplicate filenames
+        final destDir = p.dirname(destinationPath);
+        final destBaseName = p.basenameWithoutExtension(destinationPath);
+        final uniqueName = _uniqueFileName(
+          baseDir: destDir,
+          baseName: destBaseName,
+        );
+        final finalDestPath = p.join(destDir, uniqueName);
+
+        final destFile = File(finalDestPath);
         // ensure parent exists
         if (!await destFile.parent.exists()) {
           await destFile.parent.create(recursive: true);
         }
         await destFile.writeAsBytes(bytes);
-        debugPrint('💾 [PdfManipulationService] Saved to: $destinationPath');
+        debugPrint('💾 [PdfManipulationService] Saved to: $finalDestPath');
         _report(onProgress, 1.0, 'Done');
-        return Right(destinationPath);
+
+        // Analytics (duplicate block for copy path)
+        stopwatch.stop();
+        final rotatedCount = pagesToRotate?.length ?? 0;
+        final removedCount = pagesToRemove?.length ?? 0;
+        int swappedCount = 0;
+        final sortedFinal = List<int>.from(finalOrder)..sort();
+        for (int i = 0; i < finalOrder.length; i++) {
+          if (finalOrder[i] != sortedFinal[i]) {
+            swappedCount++;
+          }
+        }
+        AnalyticsService.logReorderPdf(
+          totalPagesRotated: rotatedCount,
+          totalPages: totalPages,
+          totalPagesRemoved: removedCount,
+          totalPagesSwapped: swappedCount,
+          timeTaken: stopwatch.elapsed.inMilliseconds / 1000.0,
+        );
+
+        return Right(finalDestPath);
       } else {
         // Overwrite original
         // Write to temp first for safety
@@ -185,6 +217,42 @@ class PdfManipulationService {
 
         debugPrint('✅ [PdfManipulationService] Overwrote original: $pdfPath');
         _report(onProgress, 1.0, 'Done');
+
+        // Analytics
+        stopwatch.stop();
+
+        final rotatedCount = pagesToRotate?.length ?? 0;
+        final removedCount = pagesToRemove?.length ?? 0;
+
+        // Calculate swapped
+        int swappedCount = 0;
+        // The finalOrder list represents the new sequence of pages.
+        // Example: If original was [1, 2, 3] and now is [2, 1, 3], then 1 and 2 are in different positions relative to the start.
+        // We only compare pages that exist in the final output.
+        // Ideally "swapped" means pages that are NOT in their original relative increasing order?
+        // Or simply pages that are not at index i where page number is i+1 (if we ignore removals)?
+        // Let's assume "swapped" means: count of pages in finalOrder where finalOrder[i] != (sortedFinalOrder[i]).
+        // Wait, if I remove page 1, the new list is [2, 3]. 2 is at index 0. Is it swapped?
+        // Probably not. "Swapped" implies reordering.
+        // Let's count how many pages are NOT in increasing order relative to their neighbors?
+        // Simpler metric: Count differences from sorted version of finalOrder.
+        // But finalOrder itself might be [2, 1]. Sorted is [1, 2]. Both are different from sorted idx.
+        // Let's count indices where finalOrder[i] != sortedFinalOrder[i].
+        final sortedFinal = List<int>.from(finalOrder)..sort();
+        for (int i = 0; i < finalOrder.length; i++) {
+          if (finalOrder[i] != sortedFinal[i]) {
+            swappedCount++;
+          }
+        }
+
+        AnalyticsService.logReorderPdf(
+          totalPagesRotated: rotatedCount,
+          totalPages: totalPages,
+          totalPagesRemoved: removedCount,
+          totalPagesSwapped: swappedCount,
+          timeTaken: stopwatch.elapsed.inMilliseconds / 1000.0,
+        );
+
         return Right(pdfPath);
       }
     } on FileSystemException catch (e) {
@@ -217,8 +285,21 @@ class PdfManipulationService {
   static String _outputPathFor(String inputPath, String suffix) {
     final lower = inputPath.toLowerCase();
     if (lower.endsWith('.pdf')) {
-      return inputPath.substring(0, inputPath.length - 4) + suffix + '.pdf';
+      return '${inputPath.substring(0, inputPath.length - 4)}$suffix.pdf';
     }
-    return inputPath + suffix + '.pdf';
+    return '$inputPath$suffix.pdf';
+  }
+
+  static String _uniqueFileName({
+    required String baseDir,
+    required String baseName,
+  }) {
+    var candidate = '$baseName.pdf';
+    var idx = 1;
+    while (File(p.join(baseDir, candidate)).existsSync()) {
+      candidate = '$baseName ($idx).pdf';
+      idx++;
+    }
+    return candidate;
   }
 }

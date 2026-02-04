@@ -84,7 +84,7 @@ class _FilterSheetState extends State<FilterSheet> {
         color: theme.dialogBackgroundColor,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
-          BoxShadow(color: theme.shadowColor.withOpacity(0.25), blurRadius: 16),
+          BoxShadow(color: theme.shadowColor.withValues(alpha: 0.25), blurRadius: 16),
         ],
       ),
       child: Column(
@@ -95,7 +95,7 @@ class _FilterSheetState extends State<FilterSheet> {
             height: 4,
             margin: const EdgeInsets.only(top: 10, bottom: 16),
             decoration: BoxDecoration(
-              color: theme.colorScheme.onSurface.withOpacity(0.18),
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.18),
               borderRadius: BorderRadius.circular(4),
             ),
           ),
@@ -234,19 +234,19 @@ class SelectableTile extends StatelessWidget {
   final Color? highlightColor;
 
   const SelectableTile({
-    Key? key,
+    super.key,
     required this.selected,
     required this.label,
     this.trailingIcon,
     required this.onTap,
     this.highlightColor,
-  }) : super(key: key);
+  });
   //
   @override
   Widget build(BuildContext context) {
     final Color resolvedHighlight =
         highlightColor ??
-        Theme.of(context).colorScheme.primary.withOpacity(0.08);
+        Theme.of(context).colorScheme.primary.withValues(alpha: 0.08);
     return InkWell(
       borderRadius: BorderRadius.circular(8),
       onTap: onTap,
@@ -288,7 +288,7 @@ class SelectableTile extends StatelessWidget {
                 padding: const EdgeInsets.only(right: 8),
                 child: Icon(
                   trailingIcon,
-                  color: Theme.of(context).iconTheme.color?.withOpacity(0.7),
+                  color: Theme.of(context).iconTheme.color?.withValues(alpha: 0.7),
                   size: 20,
                 ),
               ),

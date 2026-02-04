@@ -6,18 +6,25 @@ import 'package:pdf_kit/core/localization/app_localizations.dart';
 /// Shows a modal bottom sheet with PDF info and action options:
 /// - Preview image (thumbnail of first page)
 /// - File name, location, size, page count
-/// - Actions: rename, delete, split, protect/unlock, compress, move to folder
+/// - Actions: rename, delete, split, protect/unlock, compress
 Future<void> showPdfOptionsSheet({
   required BuildContext context,
   required String pdfPath,
+  bool? isPdf,
   VoidCallback? onRename,
   VoidCallback? onDelete,
   VoidCallback? onSplit,
   VoidCallback? onProtect,
   VoidCallback? onCompress,
+  VoidCallback? onMergePdf,
+  VoidCallback? onImagesToPdf,
+  VoidCallback? onPdfToImage,
+  VoidCallback? onReorder,
   VoidCallback? onMoveToFolder,
 }) {
   debugPrint('[PdfOptionsSheet] Opening for path="$pdfPath"');
+
+  final detectedIsPdf = p.extension(pdfPath).toLowerCase() == '.pdf';
 
   return showModalBottomSheet(
     context: context,
@@ -27,11 +34,16 @@ Future<void> showPdfOptionsSheet({
     builder: (ctx) {
       return _PdfOptionsSheetContent(
         pdfPath: pdfPath,
+        isPdf: isPdf ?? detectedIsPdf,
         onRename: onRename,
         onDelete: onDelete,
         onSplit: onSplit,
         onProtect: onProtect,
         onCompress: onCompress,
+        onMergePdf: onMergePdf,
+        onImagesToPdf: onImagesToPdf,
+        onPdfToImage: onPdfToImage,
+        onReorder: onReorder,
         onMoveToFolder: onMoveToFolder,
       );
     },
@@ -40,20 +52,30 @@ Future<void> showPdfOptionsSheet({
 
 class _PdfOptionsSheetContent extends StatefulWidget {
   final String pdfPath;
+  final bool isPdf;
   final VoidCallback? onRename;
   final VoidCallback? onDelete;
   final VoidCallback? onSplit;
   final VoidCallback? onProtect;
   final VoidCallback? onCompress;
+  final VoidCallback? onMergePdf;
+  final VoidCallback? onImagesToPdf;
+  final VoidCallback? onPdfToImage;
+  final VoidCallback? onReorder;
   final VoidCallback? onMoveToFolder;
 
   const _PdfOptionsSheetContent({
     required this.pdfPath,
+    required this.isPdf,
     this.onRename,
     this.onDelete,
     this.onSplit,
     this.onProtect,
     this.onCompress,
+    this.onMergePdf,
+    this.onImagesToPdf,
+    this.onPdfToImage,
+    this.onReorder,
     this.onMoveToFolder,
   });
 
@@ -85,7 +107,7 @@ class _PdfOptionsSheetContentState extends State<_PdfOptionsSheetContent> {
       final size = stat.size;
       // For page count, you'd typically parse the PDF or use a library
       // For now, placeholder:
-      final pageCount = 0; // Replace with actual logic
+      final pageCount = widget.isPdf ? 0 : null; // Replace with actual logic
 
       setState(() {
         _fileName = name;
@@ -121,6 +143,8 @@ class _PdfOptionsSheetContentState extends State<_PdfOptionsSheetContent> {
     final theme = Theme.of(context);
     final t = AppLocalizations.of(context);
 
+    final isPdf = widget.isPdf;
+
     return SafeArea(
       top: false,
       left: false,
@@ -153,8 +177,8 @@ class _PdfOptionsSheetContentState extends State<_PdfOptionsSheetContent> {
                           height: 4,
                           margin: const EdgeInsets.only(bottom: 16),
                           decoration: BoxDecoration(
-                            color: theme.colorScheme.onSurface.withOpacity(
-                              0.18,
+                            color: theme.colorScheme.onSurface.withValues(
+                              alpha: 0.18,
                             ),
                             borderRadius: BorderRadius.circular(4),
                           ),
@@ -168,12 +192,18 @@ class _PdfOptionsSheetContentState extends State<_PdfOptionsSheetContent> {
                             color: Colors.grey[200],
                             borderRadius: BorderRadius.circular(8),
                           ),
-                          child: const Center(
-                            child: Icon(
-                              Icons.picture_as_pdf,
-                              size: 48,
-                              color: Colors.red,
-                            ),
+                          child: Center(
+                            child: isPdf
+                                ? const Icon(
+                                    Icons.picture_as_pdf,
+                                    size: 48,
+                                    color: Colors.red,
+                                  )
+                                : const Icon(
+                                    Icons.image,
+                                    size: 48,
+                                    color: Colors.blueGrey,
+                                  ),
                           ),
                         ),
                         const SizedBox(height: 12),
@@ -194,7 +224,7 @@ class _PdfOptionsSheetContentState extends State<_PdfOptionsSheetContent> {
                         Text(
                           _location ?? '',
                           style: theme.textTheme.bodySmall?.copyWith(
-                            color: theme.colorScheme.onSurface.withOpacity(0.6),
+                            color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                           ),
                           textAlign: TextAlign.center,
                           maxLines: 1,
@@ -204,9 +234,13 @@ class _PdfOptionsSheetContentState extends State<_PdfOptionsSheetContent> {
 
                         // Size & page count
                         Text(
-                          '${_sizeBytes != null ? _formatBytes(_sizeBytes!) : 'Unknown size'} • ${_pageCount ?? 0} pages',
+                          isPdf
+                              ? '${_sizeBytes != null ? _formatBytes(_sizeBytes!) : 'Unknown size'} • ${_pageCount ?? 0} pages'
+                              : (_sizeBytes != null
+                                    ? _formatBytes(_sizeBytes!)
+                                    : 'Unknown size'),
                           style: theme.textTheme.bodySmall?.copyWith(
-                            color: theme.colorScheme.onSurface.withOpacity(0.5),
+                            color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
                           ),
                         ),
                         const SizedBox(height: 16),
@@ -218,36 +252,60 @@ class _PdfOptionsSheetContentState extends State<_PdfOptionsSheetContent> {
                         const SizedBox(height: 8),
 
                         // Actions list
-                        _ActionTile(
-                          icon: Icons.edit,
-                          label: t.t('pdf_options_rename'),
-                          onTap: () => _invokeAction(widget.onRename),
-                        ),
-                        _ActionTile(
-                          icon: Icons.delete,
-                          label: t.t('pdf_options_delete'),
-                          onTap: () => _invokeAction(widget.onDelete),
-                        ),
-                        _ActionTile(
-                          icon: Icons.content_cut,
-                          label: t.t('pdf_options_split'),
-                          onTap: () => _invokeAction(widget.onSplit),
-                        ),
-                        _ActionTile(
-                          icon: Icons.lock,
-                          label: t.t('pdf_options_protect'),
-                          onTap: () => _invokeAction(widget.onProtect),
-                        ),
-                        _ActionTile(
-                          icon: Icons.compress,
-                          label: t.t('pdf_options_compress'),
-                          onTap: () => _invokeAction(widget.onCompress),
-                        ),
-                        _ActionTile(
-                          icon: Icons.folder,
-                          label: t.t('pdf_options_move_to_folder'),
-                          onTap: () => _invokeAction(widget.onMoveToFolder),
-                        ),
+                        if (widget.onRename != null)
+                          _ActionTile(
+                            icon: Icons.edit,
+                            label: t.t('pdf_options_rename'),
+                            onTap: () => _invokeAction(widget.onRename),
+                          ),
+                        if (widget.onDelete != null)
+                          _ActionTile(
+                            icon: Icons.delete,
+                            label: t.t('pdf_options_delete'),
+                            onTap: () => _invokeAction(widget.onDelete),
+                          ),
+                        if (isPdf)
+                          _ActionTile(
+                            icon: Icons.content_cut,
+                            label: t.t('pdf_options_split'),
+                            onTap: () => _invokeAction(widget.onSplit),
+                          ),
+                        if (isPdf)
+                          _ActionTile(
+                            icon: Icons.lock,
+                            label: t.t('pdf_options_protect'),
+                            onTap: () => _invokeAction(widget.onProtect),
+                          ),
+                        if (isPdf)
+                          _ActionTile(
+                            icon: Icons.compress,
+                            label: t.t('pdf_options_compress'),
+                            onTap: () => _invokeAction(widget.onCompress),
+                          ),
+                        if (widget.onMergePdf != null)
+                          _ActionTile(
+                            icon: Icons.merge_type,
+                            label: t.t('action_merge_label'),
+                            onTap: () => _invokeAction(widget.onMergePdf),
+                          ),
+                        if (!isPdf && widget.onImagesToPdf != null)
+                          _ActionTile(
+                            icon: Icons.picture_as_pdf,
+                            label: t.t('action_images_to_pdf_label'),
+                            onTap: () => _invokeAction(widget.onImagesToPdf),
+                          ),
+                        if (isPdf && widget.onPdfToImage != null)
+                          _ActionTile(
+                            icon: Icons.image,
+                            label: t.t('action_pdf_to_image_label'),
+                            onTap: () => _invokeAction(widget.onPdfToImage),
+                          ),
+                        if (isPdf && widget.onReorder != null)
+                          _ActionTile(
+                            icon: Icons.reorder,
+                            label: t.t('action_reorder_label'),
+                            onTap: () => _invokeAction(widget.onReorder),
+                          ),
                       ],
                     ),
             ),

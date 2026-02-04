@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:pdf_kit/core/app_export.dart';
-import 'package:pdf_kit/core/constants.dart';
 
 class PdfKitSplashPage extends StatefulWidget {
   const PdfKitSplashPage({super.key});

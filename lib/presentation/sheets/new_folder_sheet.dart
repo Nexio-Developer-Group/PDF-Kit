@@ -67,8 +67,8 @@ Future<void> showNewFolderSheet({
                           height: 4,
                           margin: const EdgeInsets.only(top: 0, bottom: 16),
                           decoration: BoxDecoration(
-                            color: theme.colorScheme.onSurface.withOpacity(
-                              0.18,
+                            color: theme.colorScheme.onSurface.withValues(
+                              alpha: 0.18,
                             ),
                             borderRadius: BorderRadius.circular(4),
                           ),
@@ -131,8 +131,11 @@ Future<void> showNewFolderSheet({
                               child: TextButton(
                                 onPressed: () => Navigator.of(ctx).maybePop(),
                                 style: TextButton.styleFrom(
-                                  backgroundColor: const Color(0xFFE9EDFF),
-                                  foregroundColor: const Color(0xFF3D5AFE),
+                                  backgroundColor: theme
+                                      .colorScheme
+                                      .primaryContainer
+                                      .withValues(alpha: 0.3),
+                                  foregroundColor: theme.colorScheme.primary,
                                   padding: const EdgeInsets.symmetric(
                                     vertical: 16,
                                   ),

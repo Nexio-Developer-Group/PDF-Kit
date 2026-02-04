@@ -3,20 +3,22 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:path/path.dart' as p;
 import 'package:flutter_pdfview/flutter_pdfview.dart';
-import 'package:provider/provider.dart';
-import 'package:pdf_kit/presentation/sheets/pdf_options_sheet.dart';
-import 'package:pdf_kit/presentation/sheets/rename_file_sheet.dart';
-import 'package:pdf_kit/presentation/sheets/delete_file_sheet.dart';
-import 'package:pdf_kit/providers/file_system_provider.dart';
 import 'package:pdf_kit/models/file_model.dart';
+import 'package:pdf_kit/core/app_export.dart';
+import 'package:pdf_kit/presentation/sheets/pdf_options_sheet.dart';
+import 'package:pdf_kit/presentation/provider/selection_provider.dart';
+import 'package:pdf_kit/presentation/sheets/delete_file_sheet.dart';
+import 'package:pdf_kit/presentation/sheets/rename_file_sheet.dart';
+import 'package:pdf_kit/service/file_service.dart';
 
 /// Full-featured file viewer supporting both PDFs and images.
 /// - PDFs: Native rendering with zoom/pan, password protection
 /// - Images: InteractiveViewer with zoom/pan support
 class FileViewerPage extends StatefulWidget {
   final String? path;
+  final bool showOptionsSheet;
 
-  const FileViewerPage({super.key, this.path});
+  const FileViewerPage({super.key, this.path, this.showOptionsSheet = true});
 
   @override
   State<FileViewerPage> createState() => _FileViewerPageState();
@@ -168,118 +170,269 @@ class _FileViewerPageState extends State<FileViewerPage> {
     showPdfOptionsSheet(
       context: context,
       pdfPath: _currentPath!,
-      onRename: _handleRename,
-      onDelete: _handleDelete,
-      onSplit: _isPdf
-          ? () {
-              debugPrint('[FileViewer] Split action - not implemented');
-            }
-          : null,
-      onProtect: _isPdf
-          ? () {
-              debugPrint(
-                '[FileViewer] Protect/Unlock action - not implemented',
-              );
-            }
-          : null,
-      onCompress: _isPdf
-          ? () {
-              debugPrint('[FileViewer] Compress action - not implemented');
-            }
-          : null,
-      onMoveToFolder: () {
-        debugPrint('[FileViewer] Move to folder action - not implemented');
-      },
+      isPdf: _isPdf,
+      onRename: () => unawaited(_renameCurrentFile()),
+      onDelete: () => unawaited(_deleteCurrentFile()),
+      onMoveToFolder: () => unawaited(_moveCurrentFileToFolder()),
+      onMergePdf: () => _startOperationFromViewer(
+        op: 'merge',
+        actionTextKey: 'merge_pdf_title',
+        allowed: 'unprotected',
+        fileType: 'all',
+        min: 2,
+        max: null,
+        preselectIfPdfOnly: true,
+      ),
+      onImagesToPdf: () => _startOperationFromViewer(
+        op: 'images_to_pdf',
+        actionTextKey: 'images_to_pdf_title',
+        allowed: 'images',
+        fileType: 'images',
+        min: 2,
+        max: null,
+        preselectIfPdfOnly: false,
+      ),
+      onSplit: () => _startOperationFromViewer(
+        op: 'split',
+        actionTextKey: 'split_pdf_title',
+        allowed: 'unprotected',
+        fileType: 'pdf',
+        min: 1,
+        max: 1,
+        preselectIfPdfOnly: true,
+      ),
+      onProtect: () => _startOperationFromViewer(
+        op: 'protect',
+        actionTextKey: 'protect_pdf_title',
+        allowed: 'unprotected',
+        fileType: 'pdf',
+        min: 1,
+        max: 1,
+        preselectIfPdfOnly: true,
+      ),
+      onCompress: () => _startOperationFromViewer(
+        op: 'compress',
+        actionTextKey: 'compress_pdf_button',
+        allowed: 'unprotected',
+        fileType: 'pdf',
+        min: 1,
+        max: 1,
+        preselectIfPdfOnly: true,
+      ),
+      onPdfToImage: () => _startOperationFromViewer(
+        op: 'pdf_to_image',
+        actionTextKey: 'pdf_to_image_title',
+        allowed: 'unprotected',
+        fileType: 'pdf',
+        min: 1,
+        max: 1,
+        preselectIfPdfOnly: true,
+      ),
+      onReorder: () => _startOperationFromViewer(
+        op: 'reorder',
+        actionTextKey: 'reorder_pdf_title',
+        allowed: 'unprotected',
+        fileType: 'pdf',
+        min: 1,
+        max: 1,
+        preselectIfPdfOnly: true,
+      ),
     );
   }
 
-  Future<void> _handleRename() async {
-    if (_currentPath == null) return;
-
-    final file = File(_currentPath!);
-    final currentName = p.basenameWithoutExtension(_currentPath!);
-    final extension = p.extension(_currentPath!);
+  Future<void> _renameCurrentFile() async {
+    final info = await _buildCurrentFileInfo();
+    if (info == null) return;
+    if (!mounted) return;
 
     await showRenameFileSheet(
       context: context,
-      initialName: currentName,
-      onRename: (newName) async {
-        // Create FileInfo from current path
-        final stat = await file.stat();
-        final fileInfo = FileInfo(
-          name: p.basename(_currentPath!),
-          path: _currentPath!,
-          extension: extension,
-          size: stat.size,
-          lastModified: stat.modified,
-          parentDirectory: p.dirname(_currentPath!),
-          isDirectory: false,
-        );
+      initialName: info.name,
+      onRename: (newName) => unawaited(_performRename(info, newName)),
+    );
+  }
 
-        // Add extension if not present
-        final newFileName = newName.endsWith(extension)
-            ? newName
-            : '$newName$extension';
-
-        // Use FileSystemProvider to rename
-        await context.read<FileSystemProvider>().renameFile(
-          fileInfo,
-          newFileName,
-        );
-
-        // Update current path and reload
-        final newPath = p.join(p.dirname(_currentPath!), newFileName);
-
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('File renamed successfully')),
-          );
-
-          setState(() {
-            _currentPath = newPath;
-            _detectFileType();
-            if (_isPdf) {
-              _pdfViewerKey = UniqueKey(); // Reload PDF
-            }
-          });
-        }
+  Future<void> _performRename(FileInfo file, String newName) async {
+    final result = await FileService.renameFile(file, newName);
+    result.fold(
+      (err) {
+        if (!mounted) return;
+        AppSnackbar.show(err.message);
+      },
+      (updated) {
+        if (!mounted) return;
+        setState(() {
+          _currentPath = updated.path;
+          _detectFileType();
+          if (_isPdf) {
+            _pdfViewerKey = UniqueKey();
+          }
+        });
       },
     );
   }
 
-  Future<void> _handleDelete() async {
-    if (_currentPath == null) return;
-
-    final file = File(_currentPath!);
-    final fileName = p.basename(_currentPath!);
+  Future<void> _deleteCurrentFile() async {
+    final info = await _buildCurrentFileInfo();
+    if (info == null) return;
+    if (!mounted) return;
 
     await showDeleteFileSheet(
       context: context,
-      fileName: fileName,
-      onDelete: () async {
-        // Create FileInfo from current path
-        final stat = await file.stat();
-        final fileInfo = FileInfo(
-          name: fileName,
-          path: _currentPath!,
-          extension: p.extension(_currentPath!),
-          size: stat.size,
-          lastModified: stat.modified,
-          parentDirectory: p.dirname(_currentPath!),
-          isDirectory: false,
-        );
+      fileName: info.name,
+      onDelete: () => unawaited(_performDelete(info)),
+    );
+  }
 
-        // Use FileSystemProvider to delete
-        await context.read<FileSystemProvider>().deleteFile(fileInfo);
+  Future<void> _performDelete(FileInfo file) async {
+    final result = await FileService.deleteFile(file);
+    result.fold(
+      (err) {
+        if (!mounted) return;
+        AppSnackbar.show(err.message);
+      },
+      (_) {
+        if (!mounted) return;
+        Navigator.of(context).pop();
+      },
+    );
+  }
 
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('File deleted successfully')),
-          );
+  Future<void> _moveCurrentFileToFolder() async {
+    final info = await _buildCurrentFileInfo();
+    if (info == null) return;
+    if (!mounted) return;
 
-          // Navigate back after deletion
-          Navigator.of(context).pop();
+    final router = GoRouter.of(context);
+    final t = AppLocalizations.of(context);
+
+    final selectedPath = await router.pushNamed(
+      AppRouteName.folderPickScreen,
+      extra: {
+        'path': info.parentDirectory,
+        'title': t.t('folder_picker_title'),
+        'description': _isPdf
+            ? t.t('folder_picker_description_pdfs')
+            : t.t('folder_picker_description_images'),
+      },
+    );
+
+    final destinationPath = selectedPath is String ? selectedPath : null;
+    if (destinationPath == null || destinationPath.isEmpty) return;
+
+    final moved = await FileService.moveFile(
+      info,
+      destinationPath: destinationPath,
+    );
+    moved.fold(
+      (err) {
+        if (!mounted) return;
+        AppSnackbar.show(err.message);
+      },
+      (updated) {
+        if (!mounted) return;
+        setState(() {
+          _currentPath = updated.path;
+          _detectFileType();
+          if (_isPdf) {
+            _pdfViewerKey = UniqueKey();
+          }
+        });
+      },
+    );
+  }
+
+  Future<FileInfo?> _buildCurrentFileInfo() async {
+    final path = _currentPath;
+    if (path == null) return null;
+
+    final f = File(path);
+    if (!await f.exists()) return null;
+
+    final stat = await f.stat();
+    final ext = p.extension(path);
+    final extensionNoDot = ext.startsWith('.') ? ext.substring(1) : ext;
+
+    return FileInfo(
+      name: p.basename(path),
+      path: path,
+      extension: extensionNoDot,
+      size: stat.size,
+      lastModified: stat.modified,
+      parentDirectory: p.dirname(path),
+      isDirectory: false,
+    );
+  }
+
+  Future<void> _startOperationFromViewer({
+    required String op,
+    required String actionTextKey,
+    required String allowed,
+    required String fileType,
+    required int min,
+    required int? max,
+    required bool preselectIfPdfOnly,
+  }) async {
+    final path = _currentPath;
+    if (path == null) return;
+
+    final selectionId = '${op}_${DateTime.now().microsecondsSinceEpoch}';
+
+    // Prepare provider (same mechanism as functionality buttons).
+    SelectionProvider? provider;
+    try {
+      provider = Get.find<SelectionManager>().of(selectionId);
+    } catch (_) {
+      provider = null;
+    }
+
+    if (provider != null) {
+      provider.disable();
+      provider.enable();
+      provider.setAllowedFilter(allowed);
+      provider.setFileType(fileType);
+      provider.setMinSelectable(min);
+      provider.setMaxSelectable(max);
+
+      // Preselect current document when it matches the operation.
+      final info = await _buildCurrentFileInfo();
+      if (info != null) {
+        final isPdf = p.extension(info.path).toLowerCase() == '.pdf';
+        final isImage = const {
+          '.jpg',
+          '.jpeg',
+          '.png',
+          '.gif',
+          '.webp',
+          '.bmp',
+          '.heic',
+          '.heif',
+        }.contains(p.extension(info.path).toLowerCase());
+
+        final shouldPreselect = preselectIfPdfOnly ? isPdf : isImage;
+        if (shouldPreselect) {
+          await provider.toggle(info);
         }
+      }
+    }
+
+    if (!mounted) return;
+
+    final router = GoRouter.of(context);
+    final t = AppLocalizations.of(context);
+
+    // Push selection first, then auto-open operation page on top.
+    await router.pushNamed(
+      AppRouteName.filesRootFullscreen,
+      queryParameters: {
+        'selectionId': selectionId,
+        'actionText': t.t(actionTextKey),
+        'allowed': allowed,
+        'fileType': fileType,
+        'min': min.toString(),
+        if (max != null) 'max': max.toString(),
+        'op': op,
+        'auto': '1',
       },
     );
   }
@@ -307,10 +460,11 @@ class _FileViewerPageState extends State<FileViewerPage> {
             overflow: TextOverflow.ellipsis,
           ),
           actions: [
-            IconButton(
-              icon: const Icon(Icons.more_vert),
-              onPressed: _showOptionsSheet,
-            ),
+            if (widget.showOptionsSheet)
+              IconButton(
+                icon: const Icon(Icons.more_vert),
+                onPressed: _showOptionsSheet,
+              ),
           ],
         ),
         body: _error != null
@@ -375,13 +529,13 @@ class _FileViewerPageState extends State<FileViewerPage> {
                                 // Some native errors might be generic
                                 (_password == null &&
                                     error.toString().isNotEmpty)) {
-                              // HACK: Re-enable loading state and show password dialog
                               // But we can't show dialog in build. Schedule it.
                               Future.microtask(() {
-                                if (mounted && _password == null) {
+                                if (!context.mounted) return;
+                                if (_password == null) {
                                   _showPasswordDialog();
-                                } else if (mounted) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
+                                } else {
+                                  AppSnackbar.showSnackBar(
                                     const SnackBar(
                                       content: Text(
                                         'Incorrect password or file error.',
@@ -444,10 +598,10 @@ class _FileViewerPageState extends State<FileViewerPage> {
                           vertical: 8,
                         ),
                         decoration: BoxDecoration(
-                          color: Colors.black.withOpacity(0.7),
+                          color: Colors.black.withValues(alpha: 0.7),
                           borderRadius: BorderRadius.circular(20),
                           border: Border.all(
-                            color: Colors.white.withOpacity(0.3),
+                            color: Colors.white.withValues(alpha: 0.3),
                             width: 1,
                           ),
                         ),

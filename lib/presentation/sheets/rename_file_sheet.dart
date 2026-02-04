@@ -3,7 +3,7 @@ import 'package:pdf_kit/core/localization/app_localizations.dart';
 
 Future<void> showRenameFileSheet({
   required BuildContext context,
-  required String initialName,          // current file/folder name
+  required String initialName, // current file/folder name
   required ValueChanged<String>? onRename,
 }) {
   final controller = TextEditingController(text: initialName);
@@ -51,7 +51,9 @@ Future<void> showRenameFileSheet({
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(28),
                 child: Container(
-                  color: theme.dialogBackgroundColor,
+                  color:
+                      theme.dialogTheme.backgroundColor ??
+                      theme.colorScheme.surface,
                   child: Padding(
                     padding: const EdgeInsets.only(
                       left: 20,
@@ -67,13 +69,16 @@ Future<void> showRenameFileSheet({
                           height: 4,
                           margin: const EdgeInsets.only(top: 0, bottom: 16),
                           decoration: BoxDecoration(
-                            color: theme.colorScheme.onSurface.withOpacity(0.18),
+                            color: theme.colorScheme.onSurface.withValues(
+                              alpha: 0.18,
+                            ),
                             borderRadius: BorderRadius.circular(4),
                           ),
                         ),
                         Text(
-                          AppLocalizations.of(context)
-                              .t('rename_sheet_title'), // e.g. "Rename"
+                          AppLocalizations.of(
+                            context,
+                          ).t('rename_sheet_title'), // e.g. "Rename"
                           style: const TextStyle(
                             fontSize: 17,
                             fontWeight: FontWeight.w700,
@@ -89,8 +94,9 @@ Future<void> showRenameFileSheet({
                         Align(
                           alignment: Alignment.centerLeft,
                           child: Text(
-                            AppLocalizations.of(context)
-                                .t('rename_field_label'), // e.g. "New name"
+                            AppLocalizations.of(
+                              context,
+                            ).t('rename_field_label'), // e.g. "New name"
                             style: theme.textTheme.titleMedium?.copyWith(
                               fontWeight: FontWeight.w600,
                             ),
@@ -102,20 +108,24 @@ Future<void> showRenameFileSheet({
                           textInputAction: TextInputAction.done,
                           decoration: InputDecoration(
                             isDense: true,
-                            hintText: AppLocalizations.of(context)
-                                .t('rename_field_hint'), // e.g. "Enter new name"
+                            hintText: AppLocalizations.of(
+                              context,
+                            ).t('rename_field_hint'), // e.g. "Enter new name"
                             border: const UnderlineInputBorder(),
-                            enabledBorder: const UnderlineInputBorder(
-                              borderSide: BorderSide(color: Color(0xFFE0E0E0)),
-                            ),
-                            focusedBorder: const UnderlineInputBorder(
+                            enabledBorder: UnderlineInputBorder(
                               borderSide: BorderSide(
-                                color: Color(0xFF3D5AFE),
+                                color: theme.colorScheme.outline,
+                              ),
+                            ),
+                            focusedBorder: UnderlineInputBorder(
+                              borderSide: BorderSide(
+                                color: theme.colorScheme.primary,
                                 width: 2,
                               ),
                             ),
-                            contentPadding:
-                                const EdgeInsets.symmetric(vertical: 10),
+                            contentPadding: const EdgeInsets.symmetric(
+                              vertical: 10,
+                            ),
                           ),
                           onChanged: (_) => setState(() {}),
                           onSubmitted: (_) => submitRename(),
@@ -125,19 +135,22 @@ Future<void> showRenameFileSheet({
                           children: [
                             Expanded(
                               child: TextButton(
-                                onPressed: () =>
-                                    Navigator.of(ctx).maybePop(),
+                                onPressed: () => Navigator.of(ctx).maybePop(),
                                 style: TextButton.styleFrom(
-                                  backgroundColor: const Color(0xFFE9EDFF),
-                                  foregroundColor: const Color(0xFF3D5AFE),
+                                  backgroundColor: theme
+                                      .colorScheme
+                                      .primaryContainer
+                                      .withValues(alpha: 0.3),
+                                  foregroundColor: theme.colorScheme.primary,
                                   padding: const EdgeInsets.symmetric(
                                     vertical: 16,
                                   ),
                                   shape: const StadiumBorder(),
                                 ),
                                 child: Text(
-                                  AppLocalizations.of(context)
-                                      .t('common_cancel'),
+                                  AppLocalizations.of(
+                                    context,
+                                  ).t('common_cancel'),
                                 ),
                               ),
                             ),
@@ -146,13 +159,13 @@ Future<void> showRenameFileSheet({
                               child: ElevatedButton(
                                 onPressed:
                                     controller.text.trim().isEmpty ||
-                                            controller.text.trim() ==
-                                                initialName.trim()
-                                        ? null
-                                        : submitRename,
+                                        controller.text.trim() ==
+                                            initialName.trim()
+                                    ? null
+                                    : submitRename,
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFF3D5AFE),
-                                  foregroundColor: Colors.white,
+                                  backgroundColor: theme.colorScheme.primary,
+                                  foregroundColor: theme.colorScheme.onPrimary,
                                   elevation: 4,
                                   padding: const EdgeInsets.symmetric(
                                     vertical: 16,
@@ -160,8 +173,9 @@ Future<void> showRenameFileSheet({
                                   shape: const StadiumBorder(),
                                 ),
                                 child: Text(
-                                  AppLocalizations.of(context)
-                                      .t('rename_button'), // e.g. "Rename"
+                                  AppLocalizations.of(
+                                    context,
+                                  ).t('rename_button'), // e.g. "Rename"
                                 ),
                               ),
                             ),

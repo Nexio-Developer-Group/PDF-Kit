@@ -75,11 +75,12 @@ class SelectionScaffoldState extends State<SelectionScaffold> {
   void _handleProviderUpdate() {
     // Handle validation errors first (show snackbar)
     if (provider.lastValidationError != null) {
-      ScaffoldMessenger.of(context).showSnackBar(
+      final t = AppLocalizations.of(context);
+      final errorMessage = t.t(provider.lastValidationError!);
+      AppSnackbar.showSnackBar(
         SnackBar(
-          content: Text(provider.lastValidationError!),
+          content: Text(errorMessage),
           backgroundColor: Theme.of(context).colorScheme.error,
-          duration: const Duration(seconds: 3),
         ),
       );
       provider.clearValidationError();
@@ -108,6 +109,8 @@ class SelectionScaffoldState extends State<SelectionScaffold> {
 
   @override
   Widget build(BuildContext context) {
+    // Set context for localization
+    // provider.setContext(context);
     return SelectionScope(
       provider: provider,
       child: Scaffold(
@@ -194,13 +197,14 @@ class SelectionScaffoldState extends State<SelectionScaffold> {
                 icon: const Icon(Icons.checklist),
                 label: Text(selectedLabel),
                 style: Theme.of(context).elevatedButtonTheme.style?.copyWith(
+                  elevation: WidgetStateProperty.all(0),
                   backgroundColor: WidgetStateProperty.resolveWith<Color?>((
                     states,
                   ) {
                     if (states.contains(WidgetState.disabled)) {
                       return null;
                     }
-                    return Theme.of(context).colorScheme.primary.withAlpha(15);
+                    return Theme.of(context).colorScheme.primary.withAlpha(40);
                   }),
                   iconColor: WidgetStateProperty.resolveWith<Color?>((states) {
                     if (states.contains(WidgetState.disabled)) {
@@ -214,6 +218,7 @@ class SelectionScaffoldState extends State<SelectionScaffold> {
                     if (states.contains(WidgetState.disabled)) return null;
                     return theme.colorScheme.primary;
                   }),
+                  side: WidgetStateProperty.all(BorderSide.none),
                 ),
               ),
             ),
@@ -254,9 +259,9 @@ class SelectionScaffoldState extends State<SelectionScaffold> {
 class SelectionScope extends InheritedNotifier<SelectionProvider> {
   const SelectionScope({
     required SelectionProvider provider,
-    required Widget child,
-    Key? key,
-  }) : super(key: key, notifier: provider, child: child);
+    required super.child,
+    super.key,
+  }) : super(notifier: provider);
 
   static SelectionProvider of(BuildContext context) =>
       context.dependOnInheritedWidgetOfExactType<SelectionScope>()!.notifier!;

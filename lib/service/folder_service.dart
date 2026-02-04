@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:dartz/dartz.dart';
+import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:external_path/external_path.dart';
 import 'package:path_provider/path_provider.dart';
@@ -9,7 +10,7 @@ class FolderServiceAndroid {
 
   /// Creates [folderName] under [basePath].
   /// Set [requireAllFilesAccess] to true when [basePath] is a shared/public directory (e.g., Downloads).
-  /// Returns Either<String error, Directory success>.
+  /// Returns `Either<String error, Directory success>`.
   static Future<Either<String, Directory>> createFolder({
     required String basePath,
     required String folderName,
@@ -17,45 +18,49 @@ class FolderServiceAndroid {
     bool recursive = true,
   }) async {
     try {
-      print(
+      debugPrint(
         '[FolderService] createFolder(basePath: "$basePath", folderName: "$folderName", requireAllFilesAccess: $requireAllFilesAccess, recursive: $recursive)',
       );
       if (!Platform.isAndroid) {
-        print(
+        debugPrint(
           '[FolderService] Unsupported platform: ${Platform.operatingSystem}',
         );
         return left('Unsupported platform');
       }
 
       if (folderName.trim().isEmpty) {
-        print('[FolderService] Invalid name (empty after trim)');
+        debugPrint('[FolderService] Invalid name (empty after trim)');
         return left('Folder name cannot be empty');
       }
 
       final sanitized = _sanitizeFolderName(folderName);
-      print('[FolderService] Sanitized name: "$sanitized"');
+      debugPrint('[FolderService] Sanitized name: "$sanitized"');
       final targetPath = _join(basePath, sanitized);
-      print('[FolderService] Target path: $targetPath');
+      debugPrint('[FolderService] Target path: $targetPath');
 
       if (requireAllFilesAccess) {
-        print('[FolderService] Ensuring MANAGE_EXTERNAL_STORAGE permission...');
+        debugPrint(
+          '[FolderService] Ensuring MANAGE_EXTERNAL_STORAGE permission...',
+        );
         final ok = await _ensureAllFilesAccess();
-        print('[FolderService] All files access granted: $ok');
+        debugPrint('[FolderService] All files access granted: $ok');
         if (!ok) return left('All files access not granted');
       }
 
       final dir = Directory(targetPath);
       if (await dir.exists()) {
-        print('[FolderService] Already exists');
+        debugPrint('[FolderService] Already exists');
         return right(dir);
       }
 
-      print('[FolderService] Creating directory (recursive=$recursive)...');
+      debugPrint(
+        '[FolderService] Creating directory (recursive=$recursive)...',
+      );
       final created = await dir.create(recursive: recursive);
-      print('[FolderService] Created at: ${created.path}');
+      debugPrint('[FolderService] Created at: ${created.path}');
       return right(created);
     } catch (e) {
-      print('[FolderService] Error: $e');
+      debugPrint('[FolderService] Error: $e');
       return left('Failed to create folder: $e');
     }
   }
@@ -98,7 +103,7 @@ class FolderServiceAndroid {
   }
 
   /// Renames a folder from [path] to [newName].
-  /// Returns Either<String error, Directory success>.
+  /// Returns `Either<String error, Directory success>`.
   static Future<Either<String, Directory>> renameFolder({
     required String path,
     required String newName,
@@ -126,7 +131,7 @@ class FolderServiceAndroid {
   }
 
   /// Deletes a folder at [path].
-  /// Returns Either<String error, bool success>.
+  /// Returns `Either<String error, bool success>`.
   static Future<Either<String, bool>> deleteFolder({
     required String path,
   }) async {

@@ -8,10 +8,7 @@ import 'package:provider/provider.dart';
 class FolderTreeItem extends StatelessWidget {
   final FolderTreeNode node;
 
-  const FolderTreeItem({
-    super.key,
-    required this.node,
-  });
+  const FolderTreeItem({super.key, required this.node});
 
   @override
   Widget build(BuildContext context) {
@@ -25,7 +22,9 @@ class FolderTreeItem extends StatelessWidget {
       children: [
         Material(
           color: node.isSelected
-              ? Theme.of(context).colorScheme.primaryContainer.withOpacity(0.3)
+              ? Theme.of(
+                  context,
+                ).colorScheme.primaryContainer.withValues(alpha: 0.3)
               : Colors.transparent,
           child: InkWell(
             onTap: () => provider.selectFolder(node),
@@ -62,10 +61,10 @@ class FolderTreeItem extends StatelessWidget {
                     child: Text(
                       node.name,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            fontWeight: node.isSelected
-                                ? FontWeight.w600
-                                : FontWeight.w400,
-                          ),
+                        fontWeight: node.isSelected
+                            ? FontWeight.w600
+                            : FontWeight.w400,
+                      ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -86,11 +85,11 @@ class FolderTreeItem extends StatelessWidget {
                       child: Text(
                         '${node.childrenCount}',
                         style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .onSecondaryContainer,
-                              fontWeight: FontWeight.w500,
-                            ),
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.onSecondaryContainer,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
                     ),
                   ],
@@ -141,15 +140,17 @@ class FolderTreeItem extends StatelessWidget {
                 Text(
                   'Loading...',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
                 ),
               ],
             ),
           ),
 
         // Render children if expanded
-        if (node.isExpanded && !node.isLoadingChildren && node.children.isNotEmpty)
+        if (node.isExpanded &&
+            !node.isLoadingChildren &&
+            node.children.isNotEmpty)
           ...node.children.map((child) => FolderTreeItem(node: child)),
       ],
     );

@@ -7,6 +7,7 @@ import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:external_path/external_path.dart';
 import 'package:pdfx/pdfx.dart' as pdfx;
+import 'package:pdf_kit/service/analytics_service.dart';
 
 /// Reuse your existing failure type from the rasterization service.
 class PdfRasterizationFailure {
@@ -50,6 +51,7 @@ class PdfSelectedPagesToImagesService {
     String? fileNamePrefix,
     void Function(double progress01, String stage)? onProgress,
   }) async {
+    final stopwatch = Stopwatch()..start();
     try {
       _report(onProgress, 0.03, 'Validating inputs');
       if (pageNumbers.isEmpty) {
@@ -131,8 +133,16 @@ class PdfSelectedPagesToImagesService {
 
             final bytes = pageImage.bytes; // Uint8List JPEG bytes. [web:1]
 
-            final fileName =
+            String fileName =
                 '${baseName}_page_${pageIndex.toString().padLeft(3, '0')}.jpg';
+
+            // Handle duplicate filenames
+            fileName = _uniqueFileName(
+              baseDir: baseDir.path,
+              baseName: p.basenameWithoutExtension(fileName),
+              extension: 'jpg',
+            );
+
             final filePath = p.join(baseDir.path, fileName);
             final file = File(filePath);
             _report(onProgress, progress01, 'Saving $fileName');
@@ -158,6 +168,13 @@ class PdfSelectedPagesToImagesService {
           '✅ [SelectedPagesToImages] Exported ${exportedFiles.length} pages to ${baseDir.path}',
         );
         _report(onProgress, 1.0, 'Done');
+
+        stopwatch.stop();
+        AnalyticsService.logPdfToImage(
+          totalImage: exportedFiles.length,
+          timeTaken: stopwatch.elapsed.inMilliseconds / 1000.0,
+        );
+
         return right(exportedFiles);
       } finally {
         await doc.close();
@@ -188,5 +205,19 @@ class PdfSelectedPagesToImagesService {
       final docsDir = await getApplicationDocumentsDirectory();
       return docsDir;
     }
+  }
+
+  static String _uniqueFileName({
+    required String baseDir,
+    required String baseName,
+    String extension = 'jpg',
+  }) {
+    var candidate = '$baseName.$extension';
+    var idx = 1;
+    while (File(p.join(baseDir, candidate)).existsSync()) {
+      candidate = '$baseName ($idx).$extension';
+      idx++;
+    }
+    return candidate;
   }
 }

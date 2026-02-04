@@ -11,7 +11,7 @@ class FileAccessGuard {
 
   static bool _isPermDenied(Object e) {
     if (e is FileSystemException) {
-      final msg = '${e.osError?.message ?? e.message}'.toLowerCase();
+      final msg = (e.osError?.message ?? e.message).toLowerCase();
       final code = e.osError?.errorCode;
       // errno 13 = EACCES on Linux/Android
       return msg.contains('permission denied') || code == 13;

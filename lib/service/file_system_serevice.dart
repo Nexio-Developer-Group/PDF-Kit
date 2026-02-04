@@ -208,7 +208,7 @@ class FileSystemService {
   static Future<int> _countVisibleChildren(Directory dir, {int? cap}) async {
     int n = 0;
     try {
-      print("we can enter te directory atleast.");
+      debugPrint("we can enter te directory atleast.");
       // Skip if we can’t enter this directory at all.
       if (!await FileAccessGuard.canEnterDirectory(dir)) return 0;
 

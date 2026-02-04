@@ -83,7 +83,7 @@ class _BreadcrumbWidgetState extends State<BreadcrumbWidget> {
                 size: 14,
                 color: Theme.of(
                   context,
-                ).textTheme.bodySmall?.color?.withOpacity(0.5),
+                ).textTheme.bodySmall?.color?.withValues(alpha: 0.5),
               ),
             ),
 
@@ -105,7 +105,7 @@ class _BreadcrumbWidgetState extends State<BreadcrumbWidget> {
                   size: 14,
                   color: Theme.of(
                     context,
-                  ).textTheme.bodySmall?.color?.withOpacity(0.5),
+                  ).textTheme.bodySmall?.color?.withValues(alpha: 0.5),
                 ),
               ),
           ],
@@ -277,6 +277,15 @@ class _BreadcrumbChip extends StatelessWidget {
     }
     if (selectionActionText != null) {
       params['actionText'] = selectionActionText!;
+    }
+
+    // CRITICAL: Pass the 'op' parameter so routing works correctly
+    final currentOp = GoRouterState.of(context).uri.queryParameters['op'];
+    if (currentOp != null && currentOp.isNotEmpty) {
+      params['op'] = currentOp;
+      debugPrint(
+        '🔗 [Breadcrumb] Passing op="$currentOp" to folder navigation',
+      );
     }
 
     // Use go() instead of pushNamed() to replace current route

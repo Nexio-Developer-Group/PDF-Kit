@@ -1,6 +1,6 @@
 // app_router.dart
 import 'package:flutter/material.dart';
-import 'package:pdf_kit/providers/locale_provider.dart';
+import 'package:pdf_kit/presentation/pages/language_setting_page.dart';
 import 'package:pdf_kit/core/routing/file_selection_shell.dart';
 import 'package:pdf_kit/core/routing/home_shell.dart';
 import 'package:pdf_kit/presentation/pages/page_export.dart';
@@ -10,16 +10,12 @@ import 'package:pdf_kit/core/app_export.dart';
 import 'package:pdf_kit/presentation/provider/provider_export.dart';
 
 // Navigator keys
-final _rootNavKey = GlobalKey<NavigatorState>(debugLabel: 'root');
-final _homeNavKey = GlobalKey<NavigatorState>(debugLabel: 'home');
-final _filesNavKey = GlobalKey<NavigatorState>(debugLabel: 'files');
-final _settingsNavKey = GlobalKey<NavigatorState>(debugLabel: 'settings');
 
 /// Global route observer to track page visibility
 final routeObserver = RouteObserver<ModalRoute>();
 
 final appRouter = GoRouter(
-  navigatorKey: _rootNavKey,
+  navigatorKey: rootNavKey,
   initialLocation: '/splash',
   observers: [routeObserver],
   errorBuilder: (context, state) =>
@@ -28,19 +24,19 @@ final appRouter = GoRouter(
     GoRoute(
       name: AppRouteName.splash,
       path: '/splash',
-      parentNavigatorKey: _rootNavKey,
+      parentNavigatorKey: rootNavKey,
       builder: (context, state) => const PdfKitSplashPage(),
     ),
     GoRoute(
       name: AppRouteName.onboardingShell,
       path: '/onboarding-shell',
-      parentNavigatorKey: _rootNavKey,
+      parentNavigatorKey: rootNavKey,
       builder: (context, state) => const OnboardingShellPage(),
     ),
     GoRoute(
       name: AppRouteName.recentFiles,
       path: '/recent-files',
-      parentNavigatorKey: _rootNavKey,
+      parentNavigatorKey: rootNavKey,
       builder: (context, state) => const RecentFilesPage(),
     ),
     GoRoute(
@@ -52,37 +48,65 @@ final appRouter = GoRouter(
     GoRoute(
       name: 'language-settings',
       path: '/settings/language',
-      parentNavigatorKey: _rootNavKey,
-      builder: (context, state) => const LanguageSettingsPage(),
+      parentNavigatorKey: rootNavKey,
+      builder: (context, state) => LanguageSettingsPage(),
     ),
 
     GoRoute(
       name: 'theme-settings',
       path: '/settings/theme',
-      parentNavigatorKey: _rootNavKey,
+      parentNavigatorKey: rootNavKey,
       builder: (context, state) => const ThemeSettingsPage(),
     ),
 
     GoRoute(
       name: 'pdf-content-fit-settings',
       path: '/settings/pdf-content-fit',
-      parentNavigatorKey: _rootNavKey,
+      parentNavigatorKey: rootNavKey,
       builder: (context, state) => const PdfContentFitSettingsPage(),
     ),
 
-    buildHomeShellRoute(
-      homeNavKey: _homeNavKey,
-      fileNavKey: _filesNavKey,
-      settingsNavKey: _settingsNavKey,
+    GoRoute(
+      name: 'help-support',
+      path: '/settings/help-support',
+      parentNavigatorKey: rootNavKey,
+      builder: (context, state) => const HelpSupportPage(),
     ),
 
-    buildSelectionShellRoute(rootNavKey: _rootNavKey),
+    GoRoute(
+      name: 'about-pdfkit',
+      path: '/settings/about-pdf-kit',
+      parentNavigatorKey: rootNavKey,
+      builder: (context, state) => const AboutPdfKitPage(),
+    ),
+
+    GoRoute(
+      name: AppRouteName.aboutUs,
+      path: '/settings/about-us',
+      parentNavigatorKey: rootNavKey,
+      builder: (context, state) => const AboutUsPage(),
+    ),
+
+    GoRoute(
+      name: AppRouteName.filterOptions,
+      path: '/settings/filter-options',
+      parentNavigatorKey: rootNavKey,
+      builder: (context, state) => const FilterOptionsPage(),
+    ),
+
+    buildHomeShellRoute(
+      homeNavKey: homeNavKey,
+      fileNavKey: filesNavKey,
+      settingsNavKey: settingsNavKey,
+    ),
+
+    buildSelectionShellRoute(rootNavKey: rootNavKey),
 
     // App-wide overlays (above shell)
     GoRoute(
       name: AppRouteName.showPdf,
       path: '/pdf/view',
-      parentNavigatorKey: _rootNavKey,
+      parentNavigatorKey: rootNavKey,
       builder: (context, state) =>
           ShowPdfPage(path: state.uri.queryParameters['path']),
     ),
@@ -90,14 +114,22 @@ final appRouter = GoRouter(
     GoRoute(
       name: AppRouteName.pdfViewer,
       path: '/pdf/viewer',
-      parentNavigatorKey: _rootNavKey,
-      builder: (context, state) =>
-          FileViewerPage(path: state.uri.queryParameters['path']),
+      parentNavigatorKey: rootNavKey,
+      builder: (context, state) {
+        final raw = state.uri.queryParameters['showOptionsSheet'];
+        final showOptionsSheet =
+            raw == null || (raw != '0' && raw.toLowerCase() != 'false');
+
+        return FileViewerPage(
+          path: state.uri.queryParameters['path'],
+          showOptionsSheet: showOptionsSheet,
+        );
+      },
     ),
     GoRoute(
       name: AppRouteName.mergePdf,
       path: '/pdf/merge',
-      parentNavigatorKey: _rootNavKey,
+      parentNavigatorKey: rootNavKey,
       builder: (context, state) {
         final selectionId = state.uri.queryParameters['selectionId'];
         if (selectionId != null) {
@@ -118,7 +150,7 @@ final appRouter = GoRouter(
     GoRoute(
       name: AppRouteName.protectPdf,
       path: '/pdf/protect',
-      parentNavigatorKey: _rootNavKey,
+      parentNavigatorKey: rootNavKey,
       builder: (context, state) {
         final selectionId = state.uri.queryParameters['selectionId'];
         if (selectionId != null) {
@@ -140,7 +172,7 @@ final appRouter = GoRouter(
     GoRoute(
       name: AppRouteName.unlockPdf,
       path: '/pdf/unlock',
-      parentNavigatorKey: _rootNavKey,
+      parentNavigatorKey: rootNavKey,
       builder: (context, state) {
         final selectionId = state.uri.queryParameters['selectionId'];
         if (selectionId != null) {
@@ -191,7 +223,7 @@ final appRouter = GoRouter(
     GoRoute(
       name: AppRouteName.compressPdf,
       path: '/pdf/compress',
-      parentNavigatorKey: _rootNavKey,
+      parentNavigatorKey: rootNavKey,
       builder: (context, state) {
         final selectionId = state.uri.queryParameters['selectionId'];
         if (selectionId != null) {
@@ -212,7 +244,7 @@ final appRouter = GoRouter(
     GoRoute(
       name: AppRouteName.pdfToImage,
       path: '/pdf/to-image',
-      parentNavigatorKey: _rootNavKey,
+      parentNavigatorKey: rootNavKey,
       builder: (context, state) {
         final selectionId = state.uri.queryParameters['selectionId'];
         if (selectionId != null) {
@@ -233,7 +265,7 @@ final appRouter = GoRouter(
     GoRoute(
       name: AppRouteName.imagesToPdf,
       path: '/images/to-pdf',
-      parentNavigatorKey: _rootNavKey,
+      parentNavigatorKey: rootNavKey,
       builder: (context, state) {
         final selectionId = state.uri.queryParameters['selectionId'];
         if (selectionId != null) {
@@ -254,7 +286,7 @@ final appRouter = GoRouter(
     GoRoute(
       name: AppRouteName.reorderPdf,
       path: '/pdf/reorder',
-      parentNavigatorKey: _rootNavKey,
+      parentNavigatorKey: rootNavKey,
       builder: (context, state) {
         final selectionId = state.uri.queryParameters['selectionId'];
         if (selectionId != null) {
@@ -275,7 +307,7 @@ final appRouter = GoRouter(
     GoRoute(
       name: AppRouteName.splitPdf,
       path: '/pdf/split',
-      parentNavigatorKey: _rootNavKey,
+      parentNavigatorKey: rootNavKey,
       builder: (context, state) {
         final selectionId = state.uri.queryParameters['selectionId'];
         if (selectionId != null) {
@@ -296,7 +328,7 @@ final appRouter = GoRouter(
     GoRoute(
       name: AppRouteName.recentFilesSearch,
       path: '/recent-files/search',
-      parentNavigatorKey: _rootNavKey,
+      parentNavigatorKey: rootNavKey,
       builder: (context, state) => const RecentFilesSearchPage(),
     ),
   ],
@@ -335,60 +367,6 @@ class PreferencesPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = AppLocalizations.of(context);
     return Scaffold(body: Center(child: Text(t.t('preferences_title'))));
-  }
-}
-
-class LanguageSettingsPage extends StatelessWidget {
-  const LanguageSettingsPage({super.key});
-
-  static const _languages = [
-    {'code': 'en', 'key': 'language_option_english'},
-    {'code': 'hi', 'key': 'language_option_hindi'},
-    {'code': 'es', 'key': 'language_option_spanish'},
-    {'code': 'ar', 'key': 'language_option_arabic'},
-    {'code': 'bn', 'key': 'language_option_bengali'},
-    {'code': 'de', 'key': 'language_option_german'},
-    {'code': 'fr', 'key': 'language_option_french'},
-    {'code': 'ja', 'key': 'language_option_japanese'},
-    {'code': 'pt', 'key': 'language_option_portuguese'},
-    {'code': 'zh', 'key': 'language_option_chinese'},
-  ];
-
-  @override
-  Widget build(BuildContext context) {
-    final t = AppLocalizations.of(context);
-    final provider = context.watch<LocaleProvider>();
-    final current = provider.locale?.languageCode ?? 'en';
-    return Scaffold(
-      appBar: AppBar(title: Text(t.t('language_settings_page_title'))),
-      body: ListView(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(bottom: 8),
-            child: Text(
-              t.t('language_settings_choose_label'),
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-          ),
-          ..._languages.map(
-            (lang) => RadioListTile<String>(
-              title: Text(t.t(lang['key']!)),
-              value: lang['code']!,
-              groupValue: current,
-              onChanged: (v) {
-                provider.setLocale(lang['code']!);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(t.t('language_settings_applied_snackbar')),
-                  ),
-                );
-              },
-            ),
-          ),
-        ],
-      ),
-    );
   }
 }
 

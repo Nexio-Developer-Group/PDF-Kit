@@ -28,7 +28,7 @@ Future<void> showClearRecentFilesSheet({
                 borderRadius: BorderRadius.circular(28),
                 boxShadow: [
                   BoxShadow(
-                    color: Theme.of(context).shadowColor.withOpacity(0.25),
+                    color: Theme.of(context).shadowColor.withValues(alpha: 0.25),
                     blurRadius: 16,
                   ),
                 ],
@@ -62,7 +62,7 @@ class ClearRecentFilesSheet extends StatelessWidget {
             height: 4,
             margin: const EdgeInsets.only(top: 10, bottom: 16),
             decoration: BoxDecoration(
-              color: theme.colorScheme.onSurface.withOpacity(0.18),
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.18),
               borderRadius: BorderRadius.circular(4),
             ),
           ),
@@ -73,7 +73,7 @@ class ClearRecentFilesSheet extends StatelessWidget {
             height: 64,
             margin: const EdgeInsets.only(bottom: 16),
             decoration: BoxDecoration(
-              color: theme.colorScheme.error.withOpacity(0.1),
+              color: theme.colorScheme.error.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: Icon(
@@ -104,7 +104,7 @@ class ClearRecentFilesSheet extends StatelessWidget {
             child: Text(
               AppLocalizations.of(context).t('clear_recent_files_message'),
               style: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.colorScheme.onSurface.withOpacity(0.7),
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
               ),
               textAlign: TextAlign.center,
             ),
@@ -121,7 +121,7 @@ class ClearRecentFilesSheet extends StatelessWidget {
                   style: OutlinedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     side: BorderSide(
-                      color: theme.colorScheme.onSurface.withOpacity(0.12),
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.12),
                     ),
                   ),
                   child: Text(AppLocalizations.of(context).t('common_cancel')),

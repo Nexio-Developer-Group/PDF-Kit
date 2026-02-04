@@ -48,14 +48,14 @@ class PdfPageThumbnail extends StatelessWidget {
                 ? Colors.red
                 : isSelected
                 ? theme.colorScheme.primary
-                : theme.colorScheme.outline.withOpacity(0.3),
+                : theme.colorScheme.outline.withValues(alpha: 0.3),
             width: isSelected || isRemoved ? 2 : 1,
           ),
           borderRadius: BorderRadius.circular(12),
           color: isRemoved
-              ? Colors.red.withOpacity(0.08)
+              ? Colors.red.withValues(alpha: 0.08)
               : isSelected
-              ? theme.colorScheme.primaryContainer.withOpacity(0.2)
+              ? theme.colorScheme.primaryContainer.withValues(alpha: 0.2)
               : theme.colorScheme.surface,
         ),
         child: Column(
@@ -65,10 +65,10 @@ class PdfPageThumbnail extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
               decoration: BoxDecoration(
                 color: isRemoved
-                    ? Colors.red.withOpacity(0.15)
+                    ? Colors.red.withValues(alpha: 0.15)
                     : isSelected
                     ? theme.colorScheme.primaryContainer
-                    : theme.colorScheme.surfaceVariant.withOpacity(0.5),
+                    : theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
                 borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(11),
                   topRight: Radius.circular(11),
@@ -97,7 +97,7 @@ class PdfPageThumbnail extends StatelessWidget {
                       if (showRemoveButton && onRemove != null)
                         Material(
                           color: isRemoved
-                              ? Colors.red.withOpacity(0.9)
+                              ? Colors.red.withValues(alpha: 0.9)
                               : theme.colorScheme.primary,
                           borderRadius: BorderRadius.circular(16),
                           child: InkWell(

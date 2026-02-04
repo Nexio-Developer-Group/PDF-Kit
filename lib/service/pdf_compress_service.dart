@@ -6,6 +6,7 @@ import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
 import 'package:pdf_kit/models/file_model.dart';
+import 'package:pdf_kit/service/analytics_service.dart';
 import 'package:pdf_kit/service/pdf_merge_service.dart' show CustomException;
 import 'package:pdf_kit/service/pdf_rasterization_service.dart';
 
@@ -52,6 +53,7 @@ class PdfCompressService {
     String? destinationPath,
     void Function(double progress01, String stage)? onProgress,
   }) async {
+    final stopwatch = Stopwatch()..start();
     try {
       _report(onProgress, 0.03, 'Validating input');
       final isPdf = fileInfo.extension.toLowerCase() == 'pdf';
@@ -210,7 +212,15 @@ class PdfCompressService {
         parentDirectory: p.dirname(bestFile!.path),
       );
 
+      stopwatch.stop();
+      AnalyticsService.logCompressPdf(
+        totalPageNumber: pageCount ?? 0,
+        timeTaken: stopwatch.elapsed.inMilliseconds / 1000.0,
+      );
+
       return right(resultInfo);
+
+      // We can't reach here due to return. Move logging before return.
     } catch (e) {
       return left(
         CustomException(
@@ -282,7 +292,7 @@ class PdfCompressService {
     var candidate = '$baseName.pdf';
     var idx = 1;
     while (File(p.join(baseDir, candidate)).existsSync()) {
-      candidate = '${baseName}_$idx.pdf';
+      candidate = '$baseName ($idx).pdf';
       idx++;
     }
     return candidate;

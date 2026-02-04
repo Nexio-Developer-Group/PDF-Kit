@@ -1,5 +1,4 @@
 // recent_files_search_page.dart
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:pdf_kit/models/file_model.dart';
 import 'package:pdf_kit/presentation/component/document_tile.dart';
@@ -33,32 +32,26 @@ class RecentFilesSearchPage extends StatefulWidget {
 
 class _RecentFilesSearchPageState extends State<RecentFilesSearchPage> {
   final TextEditingController _controller = TextEditingController();
+  final FocusNode _searchFocusNode = FocusNode();
   List<FileInfo> _allRecentFiles = [];
   List<FileInfo> _filteredResults = [];
   String _query = '';
   bool _isLoading = true;
 
-  // Fake “Previous Search” seeds (static for now - can be made dynamic later)
-  final List<String> _previous = const [
-    'My Home Certificate',
-    'Work Documents',
-    'Recommendation Letter',
-    'Sales Report Documents',
-    'Business Plan Proposal',
-    'Job Application Letter',
-    'Legal & Terms of Reference',
-    'My National ID Card',
-  ];
+  static const int _maxPreviousTerms = 12;
+  List<String> _previousSearches = [];
 
   @override
   void initState() {
     super.initState();
     _loadRecentFiles();
+    _loadPreviousSearches();
   }
 
   @override
   void dispose() {
     _controller.dispose();
+    _searchFocusNode.dispose();
     super.dispose();
   }
 
@@ -106,6 +99,7 @@ class _RecentFilesSearchPageState extends State<RecentFilesSearchPage> {
       } else {
         final q = query.toLowerCase();
         _filteredResults = _allRecentFiles.where((f) {
+          if (f.isDirectory) return false;
           // Get filename without extension for search
           final nameWithoutExt = f.name.contains('.')
               ? f.name.substring(0, f.name.lastIndexOf('.'))
@@ -116,8 +110,59 @@ class _RecentFilesSearchPageState extends State<RecentFilesSearchPage> {
     });
   }
 
+  String _termFromFileName(String name) {
+    final dot = name.lastIndexOf('.');
+    if (dot > 0) return name.substring(0, dot);
+    return name;
+  }
+
+  void _loadPreviousSearches() {
+    try {
+      final list =
+          Prefs.getStringList(Constants.recentFilesSearchPreviousTermsKey) ??
+          const <String>[];
+      setState(() => _previousSearches = List<String>.from(list));
+    } catch (_) {
+      // Prefs might not be ready yet; fail silently.
+    }
+  }
+
+  Future<void> _persistPreviousSearches() async {
+    try {
+      await Prefs.setStringList(
+        Constants.recentFilesSearchPreviousTermsKey,
+        _previousSearches,
+      );
+    } catch (_) {
+      // ignore
+    }
+  }
+
+  Future<void> _rememberTerm(String term) async {
+    final t = term.trim();
+    if (t.isEmpty) return;
+
+    setState(() {
+      _previousSearches.removeWhere((e) => e.toLowerCase() == t.toLowerCase());
+      _previousSearches.insert(0, t);
+      if (_previousSearches.length > _maxPreviousTerms) {
+        _previousSearches = _previousSearches.take(_maxPreviousTerms).toList();
+      }
+    });
+
+    await _persistPreviousSearches();
+  }
+
+  Future<void> _deleteTerm(String term) async {
+    setState(() {
+      _previousSearches.remove(term);
+    });
+    await _persistPreviousSearches();
+  }
+
   void _handleFileOpen(FileInfo file) {
     debugPrint('🔓 [RecentFilesSearch] Opening file: ${file.name}');
+    _rememberTerm(_termFromFileName(file.name));
     if (_selectionEnabled) {
       _maybeProvider()?.toggle(file);
     } else {
@@ -129,23 +174,22 @@ class _RecentFilesSearchPageState extends State<RecentFilesSearchPage> {
   }
 
   Future<void> _handleFileDelete(FileInfo file) async {
-    final result = await RecentFilesService.removeRecentFile(file.path);
+    _rememberTerm(_termFromFileName(file.name));
     final t = AppLocalizations.of(context);
+    final result = await RecentFilesService.removeRecentFile(file.path);
 
     result.fold(
       (error) {
         debugPrint('❌ [RecentFilesSearch] Delete failed: $error');
-        if (mounted) {
-          final msg = t
+        final msg = t
               .t('snackbar_error')
               .replaceAll('{message}', error.toString());
-          ScaffoldMessenger.of(context).showSnackBar(
+          AppSnackbar.showSnackBar(
             SnackBar(
               content: Text(msg),
               backgroundColor: Theme.of(context).colorScheme.error,
             ),
           );
-        }
       },
       (updatedFiles) {
         debugPrint(
@@ -155,9 +199,7 @@ class _RecentFilesSearchPageState extends State<RecentFilesSearchPage> {
         RecentFilesSection.refreshNotifier.value++;
         if (mounted) {
           _loadRecentFiles();
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(t.t('snackbar_removed_recent'))),
-          );
+          AppSnackbar.show(t.t('snackbar_removed_recent'));
         }
       },
     );
@@ -165,6 +207,7 @@ class _RecentFilesSearchPageState extends State<RecentFilesSearchPage> {
 
   Future<void> _handleFileRename(FileInfo file) async {
     debugPrint('✏️ [RecentFilesSearch] Renaming file: ${file.name}');
+    _rememberTerm(_termFromFileName(file.name));
     await showRenameFileSheet(
       context: context,
       initialName: file.name,
@@ -176,7 +219,7 @@ class _RecentFilesSearchPageState extends State<RecentFilesSearchPage> {
               '❌ [RecentFilesSearch] Rename failed: ${exception.message}',
             );
             if (mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
+              AppSnackbar.showSnackBar(
                 SnackBar(
                   content: Text(exception.message),
                   backgroundColor: Theme.of(context).colorScheme.error,
@@ -197,9 +240,7 @@ class _RecentFilesSearchPageState extends State<RecentFilesSearchPage> {
               });
               // Trigger home page refresh
               RecentFilesSection.refreshNotifier.value++;
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('File renamed successfully')),
-              );
+              AppSnackbar.show('File renamed successfully');
             }
           },
         );
@@ -211,6 +252,7 @@ class _RecentFilesSearchPageState extends State<RecentFilesSearchPage> {
     debugPrint(
       '📋 [RecentFilesSearch] Menu action "$action" for: ${file.name}',
     );
+    _rememberTerm(_termFromFileName(file.name));
     switch (action) {
       case 'open':
         _handleFileOpen(file);
@@ -249,31 +291,42 @@ class _RecentFilesSearchPageState extends State<RecentFilesSearchPage> {
   Widget _previousSection(BuildContext context) {
     final t = AppLocalizations.of(context);
 
+    if (_previousSearches.isEmpty) {
+      return Expanded(
+        child: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.search,
+                size: 64,
+                color: Theme.of(context).disabledColor,
+              ),
+              const SizedBox(height: 16),
+              Text(
+                t.t('files_search_type_prompt'),
+                style: TextStyle(color: Theme.of(context).disabledColor),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     return Expanded(
       child: ListView(
         children: [
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 6),
-            child: Row(
-              children: [
-                Text(
-                  t.t('recent_files_search_previous_header'),
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-                const Spacer(),
-                if (!_selectionEnabled)
-                  IconButton(
-                    onPressed: () {}, // optional: clear all later
-                    icon: const Icon(Icons.close),
-                    tooltip: t.t('recent_files_search_clear_all_tooltip'),
-                  ),
-              ],
+            child: Text(
+              t.t('recent_files_search_previous_header'),
+              style: Theme.of(context).textTheme.titleMedium,
             ),
           ),
-          ..._previous.map(
+          ..._previousSearches.map(
             (label) => ListTile(
-              title: Text(label),
-              trailing: const Icon(Icons.close, size: 18),
+              leading: const Icon(Icons.history),
+              title: Text(label, style: Theme.of(context).textTheme.bodyLarge),
               onTap: () {
                 _controller.text = label;
                 _controller.selection = TextSelection.collapsed(
@@ -281,6 +334,10 @@ class _RecentFilesSearchPageState extends State<RecentFilesSearchPage> {
                 );
                 _search(label);
               },
+              trailing: IconButton(
+                icon: const Icon(Icons.close, size: 18),
+                onPressed: () => _deleteTerm(label),
+              ),
             ),
           ),
         ],
@@ -316,22 +373,16 @@ class _RecentFilesSearchPageState extends State<RecentFilesSearchPage> {
               alignment: Alignment.center,
               child: TextField(
                 controller: _controller,
+                focusNode: _searchFocusNode,
                 autofocus: true,
                 onChanged: _search,
                 style: Theme.of(context).textTheme.labelLarge,
+                textInputAction: TextInputAction.search,
                 decoration: InputDecoration(
                   border: InputBorder.none,
-                  hintText: t.t('recent_files_search_hint'),
-                  prefixIcon: const Icon(Icons.search, size: 18),
-                  suffixIcon: (_controller.text.isNotEmpty)
+                  hintText: t.t('files_search_hint'),
+                  suffixIcon: _query.trim().isNotEmpty
                       ? IconButton(
-                          constraints: const BoxConstraints(
-                            minWidth: 28,
-                            minHeight: 28,
-                          ),
-                          iconSize: 18,
-                          padding: const EdgeInsets.all(5),
-                          tooltip: t.t('common_clear'),
                           icon: const Icon(Icons.close),
                           onPressed: () {
                             _controller.clear();
@@ -349,6 +400,10 @@ class _RecentFilesSearchPageState extends State<RecentFilesSearchPage> {
   }
 
   Widget _list() {
+    if (_isLoading && _filteredResults.isEmpty) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
     return ListView.builder(
       key: const PageStorageKey('recent_search_list'),
       physics: const AlwaysScrollableScrollPhysics(),
@@ -362,13 +417,25 @@ class _RecentFilesSearchPageState extends State<RecentFilesSearchPage> {
             margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 12),
             child: DocEntryCard(
               info: f,
+              showViewerOptionsSheet:
+                  !(widget.selectable || widget.isFullscreenRoute == true),
               selectable: _selectionEnabled,
               selected: (_maybeProvider()?.isSelected(f.path) ?? false),
+              onInteract: () {
+                _rememberTerm(_termFromFileName(f.name));
+              },
+              onMenuOpened: () {
+                _rememberTerm(_termFromFileName(f.name));
+              },
               onToggleSelected: _selectionEnabled
-                  ? () => _maybeProvider()?.toggle(f)
+                  ? () {
+                      _rememberTerm(_termFromFileName(f.name));
+                      _maybeProvider()?.toggle(f);
+                    }
                   : null,
               onOpen: () => _handleFileOpen(f),
               onLongPress: () {
+                _rememberTerm(_termFromFileName(f.name));
                 if (!_selectionEnabled) {
                   _maybeProvider()?.enable();
                 }
@@ -387,31 +454,6 @@ class _RecentFilesSearchPageState extends State<RecentFilesSearchPage> {
   Widget _emptyState(BuildContext context) {
     final t = AppLocalizations.of(context);
 
-    return Expanded(
-      child: Center(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Image.asset('assets/not_found.png'),
-              const SizedBox(height: 12),
-              Text(
-                t.t('recent_files_search_no_results_title'),
-                style: Theme.of(
-                  context,
-                ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                t.t('recent_files_search_no_results_message'),
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.bodyMedium,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
+    return Expanded(child: Center(child: Text(t.t('files_search_no_results'))));
   }
 }

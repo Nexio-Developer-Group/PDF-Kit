@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'dart:async';
 import 'package:pdf_kit/models/onboarding_model.dart';
 import 'package:pdf_kit/core/app_export.dart';
-import 'package:pdf_kit/core/constants.dart';
 import 'package:pdf_kit/providers/locale_provider.dart';
+import 'package:pdf_kit/service/analytics_service.dart';
+import 'package:pdf_kit/service/device_registration_service.dart';
 
 class OnboardingShellPage extends StatefulWidget {
   const OnboardingShellPage({super.key});
@@ -32,7 +34,7 @@ class _OnboardingShellPageState extends State<OnboardingShellPage> {
     ];
   }
 
-  void _goNext(BuildContext context) {
+  Future<void> _goNext(BuildContext context) async {
     final pages = _buildPages(context);
     if (_currentIndex < pages.length - 1) {
       _pageController.nextPage(
@@ -40,15 +42,48 @@ class _OnboardingShellPageState extends State<OnboardingShellPage> {
         curve: Curves.easeOut,
       );
     } else {
-      _completeOnboarding();
+      await _completeOnboarding();
     }
   }
 
-  void _completeOnboarding() {
+  Future<void> _completeOnboarding() async {
     if (!mounted) return;
 
-    // Mark onboarding as completed and navigate to home
-    Prefs.setBool(Constants.prefsOnboardingCompletedKey, true);
+    final selectedLanguage =
+        context.read<LocaleProvider>().locale?.languageCode ??
+        Prefs.getString(Constants.prefsLanguageKey) ??
+        'en';
+
+    // Mark onboarding as completed.
+    debugPrint(
+      'Onboarding: completing onboarding, selectedLanguage=$selectedLanguage',
+    );
+    await Prefs.setBool(Constants.prefsOnboardingCompletedKey, true);
+    debugPrint('Onboarding: prefsOnboardingCompletedKey saved=true');
+
+    // Report the currently selected language for analytics.
+    debugPrint(
+      'Onboarding: setting analytics user_property selected_language=$selectedLanguage',
+    );
+    unawaited(
+      AnalyticsService.setSelectedLanguage(
+        selectedLanguage,
+        source: 'OnboardingShellPage._completeOnboarding',
+      ),
+    );
+    unawaited(
+      AnalyticsService.logLanguageChanged(
+        selectedLanguage,
+        source: 'OnboardingShellPage._completeOnboarding',
+      ),
+    );
+
+    // Fire-and-forget device registration / FCM token sync.
+    unawaited(
+      DeviceRegistrationService.instance.syncInBackgroundAfterOnboarding(),
+    );
+
+    if (!mounted) return;
     context.goNamed(AppRouteName.home);
   }
 
@@ -171,7 +206,7 @@ class _OnboardingShellPageState extends State<OnboardingShellPage> {
                       decoration: BoxDecoration(
                         color: isActive
                             ? Colors.blue
-                            : Colors.blue.withOpacity(0.3),
+                            : Colors.blue.withValues(alpha: 0.3),
                         borderRadius: BorderRadius.circular(4),
                       ),
                     );
@@ -214,7 +249,7 @@ class _OnboardingShellPageState extends State<OnboardingShellPage> {
                       const SizedBox(width: 12),
                       Expanded(
                         child: ElevatedButton(
-                          onPressed: () => _goNext(context),
+                          onPressed: () => unawaited(_goNext(context)),
                           style: ElevatedButton.styleFrom(
                             padding: const EdgeInsets.symmetric(vertical: 14),
                             shape: RoundedRectangleBorder(
@@ -391,8 +426,8 @@ class _LanguageSelectionContentState extends State<LanguageSelectionContent> {
               child: Container(
                 decoration: BoxDecoration(
                   color: isSelected
-                      ? Colors.blue.withOpacity(0.1)
-                      : Colors.grey.withOpacity(0.1),
+                      ? Colors.blue.withValues(alpha: 0.1)
+                      : Colors.grey.withValues(alpha: 0.1),
                   border: Border.all(
                     color: isSelected ? Colors.blue : Colors.grey.shade300,
                     width: isSelected ? 2 : 1,

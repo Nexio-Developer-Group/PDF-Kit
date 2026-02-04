@@ -12,17 +12,13 @@ import 'package:pdf_kit/service/file_service.dart';
 
 /// HOME TAB
 class HomeTab extends StatefulWidget {
-  const HomeTab({Key? key}) : super(key: key);
+  const HomeTab({super.key});
 
   @override
   State<HomeTab> createState() => _HomeTabState();
 }
 
 class _HomeTabState extends State<HomeTab> {
-  static void _toast(BuildContext c, String key) {
-    final t = AppLocalizations.of(c);
-    ScaffoldMessenger.of(c).showSnackBar(SnackBar(content: Text(t.t(key))));
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -41,15 +37,8 @@ class _HomeTabState extends State<HomeTab> {
           // Only the recent files section should be scrollable now.
           Expanded(
             child: Padding(
-              padding: EdgeInsets.symmetric(
-                horizontal: screenPadding.left,
-              ),
-              child: RecentFilesSection(
-                onGetStartedPrimary: () =>
-                    _toast(context, 'home_get_started_scan'),
-                onGetStartedSecondary: () =>
-                    _toast(context, 'home_get_started_import'),
-              ),
+              padding: EdgeInsets.symmetric(horizontal: screenPadding.left),
+              child: RecentFilesSection(),
             ),
           ),
         ],
@@ -70,7 +59,7 @@ class _HomeTabState extends State<HomeTab> {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.primary.withOpacity(0.15),
+              color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.15),
               shape: BoxShape.circle,
             ),
             child: ClipOval(
@@ -99,6 +88,49 @@ class _HomeTabState extends State<HomeTab> {
             ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600),
           ),
           const Spacer(),
+          // IconButton(
+          //   icon: Icon(
+          //     Theme.of(context).brightness == Brightness.dark
+          //         ? Icons.light_mode_outlined
+          //         : Icons.dark_mode_outlined,
+          //   ),
+          //   onPressed: () {
+          //     final isDark = Theme.of(context).brightness == Brightness.dark;
+          //     Provider.of<ThemeProvider>(
+          //       context,
+          //       listen: false,
+          //     ).setTheme(isDark ? 'light' : 'dark');
+          //   },
+          //   tooltip: Theme.of(context).brightness == Brightness.dark
+          //       ? 'Switch to Light Mode'
+          //       : 'Switch to Dark Mode',
+          // ),
+          // IconButton(
+          //   icon: const Icon(Icons.bug_report_outlined),
+          //   onPressed: () async {
+          //     final exception = Exception(
+          //       'Crashlytics test exception #${_rng.nextInt(1000000)}',
+          //     );
+
+          //     debugPrint(
+          //       '🧪 [HomeTab] Recording Crashlytics test error: $exception',
+          //     );
+          //     throw exception;
+          //   },
+          //   tooltip: 'Send test error to Crashlytics',
+          // ),
+          // IconButton(
+          //   icon: const Icon(Icons.delete_sweep_outlined),
+          //   onPressed: () async {
+          //     try {
+          //       await Prefs.clear();
+          //     } catch (e) {
+          //       debugPrint('⚠️ [HomeTab] Prefs.clear failed: $e');
+          //     }
+          //   },
+          //   tooltip: 'Clear local storage',
+          // ),
+          
           IconButton(
             icon: const Icon(Icons.settings),
             onPressed: () => context.go('/settings'),
@@ -114,7 +146,7 @@ class _HomeTabState extends State<HomeTab> {
 class QuickActionsGrid extends StatelessWidget {
   final List<Functionality> items;
 
-  const QuickActionsGrid({Key? key, required this.items}) : super(key: key);
+  const QuickActionsGrid({super.key, required this.items});
 
   @override
   Widget build(BuildContext context) {
@@ -144,14 +176,7 @@ class QuickActionsGrid extends StatelessWidget {
 
 /// Section that renders either a recent files list or a "Get Started" card.
 class RecentFilesSection extends StatefulWidget {
-  final VoidCallback onGetStartedPrimary;
-  final VoidCallback onGetStartedSecondary;
-
-  const RecentFilesSection({
-    Key? key,
-    required this.onGetStartedPrimary,
-    required this.onGetStartedSecondary,
-  }) : super(key: key);
+  const RecentFilesSection({super.key});
 
   /// External trigger to ask the section to reload its contents.
   /// Increment this notifier's value to request a refresh from other parts of the app.
@@ -201,11 +226,10 @@ class _RecentFilesSectionState extends State<RecentFilesSection> {
   }
 
   void _handleFileOpen(FileInfo file) {
-    debugPrint('🔓 [RecentFilesSection] Opening file: ${file.name}');
-    context.pushNamed(
-      AppRouteName.showPdf,
-      queryParameters: {'path': file.path},
+    debugPrint(
+      '🔓 [RecentFilesSection] Opening file with native opener: ${file.name}',
     );
+    OpenService.open(file.path);
   }
 
   Future<void> _handleFileDelete(FileInfo file) async {
@@ -216,7 +240,7 @@ class _RecentFilesSectionState extends State<RecentFilesSection> {
       (error) {
         debugPrint('❌ [RecentFilesSection] Delete failed: $error');
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
+          AppSnackbar.showSnackBar(
             SnackBar(
               content: Text('Error: $error'),
               backgroundColor: Theme.of(context).colorScheme.error,
@@ -230,9 +254,7 @@ class _RecentFilesSectionState extends State<RecentFilesSection> {
         );
         if (mounted) {
           setState(() => _loadRecentFiles());
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Removed from recent files')),
-          );
+          AppSnackbar.show('Removed from recent files');
         }
       },
     );
@@ -251,7 +273,7 @@ class _RecentFilesSectionState extends State<RecentFilesSection> {
               '❌ [RecentFilesSection] Rename failed: ${exception.message}',
             );
             if (mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
+              AppSnackbar.showSnackBar(
                 SnackBar(
                   content: Text(exception.message),
                   backgroundColor: Theme.of(context).colorScheme.error,
@@ -265,9 +287,7 @@ class _RecentFilesSectionState extends State<RecentFilesSection> {
             );
             if (mounted) {
               setState(() => _loadRecentFiles());
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('File renamed successfully')),
-              );
+              AppSnackbar.show('File renamed successfully');
             }
           },
         );
@@ -314,7 +334,7 @@ class _RecentFilesSectionState extends State<RecentFilesSection> {
 
     return FutureBuilder<List<FileInfo>>(
       future: _recentFilesFuture,
-      
+
       builder: (context, snapshot) {
         debugPrint(
           '🔧 [RecentFilesSection] FutureBuilder state: ${snapshot.connectionState}',
@@ -346,10 +366,7 @@ class _RecentFilesSectionState extends State<RecentFilesSection> {
             children: [
               title,
               const SizedBox(height: 8),
-              _GetStartedCard(
-                primary: widget.onGetStartedPrimary,
-                secondary: widget.onGetStartedSecondary,
-              ),
+              const _GetStartedCard(),
             ],
           );
         }
@@ -366,14 +383,7 @@ class _RecentFilesSectionState extends State<RecentFilesSection> {
           );
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              title,
-              const SizedBox(height: 8),
-              _GetStartedCard(
-                primary: widget.onGetStartedPrimary,
-                secondary: widget.onGetStartedSecondary,
-              ),
-            ],
+            children: [title, const SizedBox(height: 8), _GetStartedCard()],
           );
         }
 
@@ -396,17 +406,23 @@ class _RecentFilesSectionState extends State<RecentFilesSection> {
             ),
             const SizedBox(height: 8),
             Expanded(
-              child: ListView.separated(
-                itemCount: files.length,
-                separatorBuilder: (_, __) => const SizedBox(height: 8),
-                itemBuilder: (context, index) {
-                  final file = files[index];
-                  return DocEntryCard(
-                    info: file,
-                    onOpen: () => OpenService.open(file.path),
-                    onMenu: (action) => _handleFileMenu(file, action),
-                  );
+              child: RefreshIndicator(
+                onRefresh: () async {
+                  setState(() => _loadRecentFiles());
+                  await _recentFilesFuture;
                 },
+                child: ListView.separated(
+                  itemCount: files.length,
+                  separatorBuilder: (_, __) => const SizedBox(height: 8),
+                  itemBuilder: (context, index) {
+                    final file = files[index];
+                    return DocEntryCard(
+                      info: file,
+                      onOpen: () => OpenService.open(file.path),
+                      onMenu: (action) => _handleFileMenu(file, action),
+                    );
+                  },
+                ),
               ),
             ),
           ],
@@ -418,10 +434,7 @@ class _RecentFilesSectionState extends State<RecentFilesSection> {
 
 /// Beautiful empty state card for "Get Started".
 class _GetStartedCard extends StatelessWidget {
-  final VoidCallback primary;
-  final VoidCallback secondary;
-
-  const _GetStartedCard({required this.primary, required this.secondary});
+  const _GetStartedCard();
 
   @override
   Widget build(BuildContext context) {
@@ -430,8 +443,8 @@ class _GetStartedCard extends StatelessWidget {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            cs.primary.withOpacity(0.10),
-            cs.secondary.withOpacity(0.08),
+            cs.primary.withValues(alpha: 0.10),
+            cs.secondary.withValues(alpha: 0.08),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -445,7 +458,7 @@ class _GetStartedCard extends StatelessWidget {
             width: 64,
             height: 64,
             decoration: BoxDecoration(
-              color: cs.primary.withOpacity(0.12),
+              color: cs.primary.withValues(alpha: 0.12),
               shape: BoxShape.circle,
             ),
             child: Icon(Icons.auto_awesome, color: cs.primary, size: 34),

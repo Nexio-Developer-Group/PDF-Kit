@@ -39,6 +39,35 @@ class _FileBrowserShellState extends State<FileBrowserShell> with RouteAware {
   final Set<TypeFilter> _typeFilters = {};
   bool _typeFiltersInitialized = false;
 
+  static const _prefName = 'name';
+  static const _prefModified = 'modified';
+
+  @override
+  void initState() {
+    super.initState();
+    _sortOption = _sortFromPref(Prefs.getString(Constants.filesSortOptionKey));
+  }
+
+  SortOption _sortFromPref(String? value) {
+    switch (value) {
+      case _prefModified:
+        return SortOption.modified;
+      case _prefName:
+      default:
+        return SortOption.name;
+    }
+  }
+
+  String _sortToPref(SortOption option) {
+    switch (option) {
+      case SortOption.modified:
+        return _prefModified;
+      case SortOption.name:
+      case SortOption.type:
+        return _prefName;
+    }
+  }
+
   // Get current path from route
   String? get _currentPath {
     final uri = GoRouterState.of(context).uri;
@@ -309,8 +338,8 @@ class _FileBrowserShellState extends State<FileBrowserShell> with RouteAware {
     await showModalBottomSheet(
       context: context,
       useRootNavigator: true,
-      backgroundColor: Colors.transparent,
       isScrollControlled: true,
+      backgroundColor: Colors.transparent,
       builder: (context) {
         return Padding(
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
@@ -322,7 +351,10 @@ class _FileBrowserShellState extends State<FileBrowserShell> with RouteAware {
                 currentSort: _sortOption,
                 currentTypes: Set.from(_typeFilters),
                 currentFileType: fileType,
-                onSortChanged: (s) => setState(() => _sortOption = s),
+                onSortChanged: (s) {
+                  setState(() => _sortOption = s);
+                  Prefs.setString(Constants.filesSortOptionKey, _sortToPref(s));
+                },
                 onTypeFiltersChanged: (set) {
                   setState(() {
                     _typeFilters.clear();

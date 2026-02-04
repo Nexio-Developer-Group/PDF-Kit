@@ -157,7 +157,15 @@ class _MergePdfPageState extends State<MergePdfPage> {
           return PopScope(
             canPop: false,
             child: AlertDialog(
-              title: const Text('Merging PDF'),
+              title: Text(
+                (() {
+                  final t = AppLocalizations.of(context);
+                  final v = t.t('progress_dialog_merging_title');
+                  return v == 'progress_dialog_merging_title'
+                      ? 'Merging PDF'
+                      : v;
+                })(),
+              ),
               content: SizedBox(
                 width: 420,
                 child: Column(
@@ -194,7 +202,15 @@ class _MergePdfPageState extends State<MergePdfPage> {
                       },
                     ),
                     const SizedBox(height: 12),
-                    const Text('Please keep the app open while we finish.'),
+                    Text(
+                      (() {
+                        final t = AppLocalizations.of(context);
+                        final v = t.t('progress_dialog_keep_open');
+                        return v == 'progress_dialog_keep_open'
+                            ? 'Please keep the app open while we finish.'
+                            : v;
+                      })(),
+                    ),
                   ],
                 ),
               ),
@@ -281,7 +297,7 @@ class _MergePdfPageState extends State<MergePdfPage> {
           final msg = t
               .t('snackbar_error')
               .replaceAll('{message}', error.message);
-          ScaffoldMessenger.of(context).showSnackBar(
+          AppSnackbar.showSnackBar(
             SnackBar(
               content: Text(msg),
               backgroundColor: Theme.of(context).colorScheme.error,
@@ -289,6 +305,10 @@ class _MergePdfPageState extends State<MergePdfPage> {
           );
         },
         (mergedFile) async {
+          final successMsg = AppLocalizations.of(
+            context,
+          ).t('snackbar_merge_done');
+
           progress.value = 1.0;
           stage.value = 'Done';
           _dismissMergeProgressDialog();
@@ -307,34 +327,19 @@ class _MergePdfPageState extends State<MergePdfPage> {
 
           // Navigate to home and clear all routes, then reload home page
           selection.disable();
-          context.go('/');
+          if (context.mounted) {
+            context.go('/');
+          }
 
           // Trigger home page reload
           RecentFilesSection.refreshNotifier.value++;
 
           // Show success message after navigation
           Future.delayed(const Duration(milliseconds: 300), () {
-            if (context.mounted) {
-              final t = AppLocalizations.of(context);
-              final msg = t
-                  .t('snackbar_success_merge')
-                  .replaceAll('{fileName}', mergedFile.name);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(msg),
-                  backgroundColor: Colors.green,
-                  action: SnackBarAction(
-                    label: t.t('common_open_snackbar'),
-                    onPressed: () {
-                      context.pushNamed(
-                        AppRouteName.showPdf,
-                        queryParameters: {'path': mergedFile.path},
-                      );
-                    },
-                  ),
-                ),
-              );
-            }
+            AppSnackbar.showSuccessWithOpen(
+              message: successMsg,
+              path: mergedFile.path,
+            );
           });
         },
       );
@@ -414,8 +419,8 @@ class _MergePdfPageState extends State<MergePdfPage> {
                             border: const UnderlineInputBorder(),
                             enabledBorder: UnderlineInputBorder(
                               borderSide: BorderSide(
-                                color: theme.colorScheme.primary.withOpacity(
-                                  0.3,
+                                color: theme.colorScheme.primary.withValues(
+                                  alpha: 0.3,
                                 ),
                               ),
                             ),
@@ -482,11 +487,12 @@ class _MergePdfPageState extends State<MergePdfPage> {
                         padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
                         child: DocEntryCard(
                           info: f,
-                          showEdit: true,
-                          showRemove: true,
+                          showViewerOptionsSheet: false,
+                          showEdit: false,
+                          showRemove: false,
                           reorderable: _reorderMode,
                           disabled: _isMerging,
-                          onEdit: () => null,
+                          onEdit: () {},
                           onRemove: () => selection.removeFile(f.path),
                           onOpen: () => context.pushNamed(
                             AppRouteName.showPdf,

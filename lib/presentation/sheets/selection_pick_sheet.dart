@@ -67,7 +67,8 @@ class _SelectionPickSheetState extends State<_SelectionPickSheet> {
         child: ClipRRect(
           borderRadius: BorderRadius.circular(28),
           child: Container(
-            color: theme.dialogBackgroundColor,
+            color:
+                theme.dialogTheme.backgroundColor ?? theme.colorScheme.surface,
             child: Padding(
               padding: const EdgeInsets.only(
                 left: 20,
@@ -83,7 +84,9 @@ class _SelectionPickSheetState extends State<_SelectionPickSheet> {
                     height: 4,
                     margin: const EdgeInsets.only(top: 0, bottom: 16),
                     decoration: BoxDecoration(
-                      color: theme.colorScheme.onSurface.withOpacity(0.18),
+                      color: theme.colorScheme.onSurface.withValues(
+                        alpha: 0.18,
+                      ),
                       borderRadius: BorderRadius.circular(4),
                     ),
                   ),
@@ -113,15 +116,15 @@ class _SelectionPickSheetState extends State<_SelectionPickSheet> {
                       ),
                       decoration: BoxDecoration(
                         color: widget.isError
-                            ? theme.colorScheme.error.withOpacity(0.10)
-                            : theme.colorScheme.primary.withOpacity(0.08),
+                            ? theme.colorScheme.error.withValues(alpha: 0.10)
+                            : theme.colorScheme.primary.withValues(alpha: 0.08),
                         borderRadius: BorderRadius.circular(14),
                         border: Border.all(
                           color:
                               (widget.isError
                                       ? theme.colorScheme.error
                                       : theme.colorScheme.primary)
-                                  .withOpacity(0.35),
+                                  .withValues(alpha: 0.35),
                         ),
                       ),
                       child: Row(
@@ -221,9 +224,11 @@ class _FolderGroupState extends State<_FolderGroup> {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceVariant.withOpacity(0.25),
+        color: theme.colorScheme.surfaceContainerHighest.withValues(
+          alpha: 0.25,
+        ),
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: theme.dividerColor.withOpacity(0.4)),
+        border: Border.all(color: theme.dividerColor.withValues(alpha: 0.4)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -254,8 +259,8 @@ class _FolderGroupState extends State<_FolderGroup> {
                       Text(
                         itemsLabel,
                         style: theme.textTheme.bodySmall?.copyWith(
-                          color: theme.colorScheme.onSurfaceVariant.withOpacity(
-                            0.7,
+                          color: theme.colorScheme.onSurfaceVariant.withValues(
+                            alpha: 0.7,
                           ),
                         ),
                       ),
@@ -280,6 +285,7 @@ class _FolderGroupState extends State<_FolderGroup> {
                 margin: const EdgeInsets.fromLTRB(4, 0, 4, 4),
                 child: DocEntryCard(
                   info: f,
+                  showViewerOptionsSheet: false,
                   showRemove: true,
                   reorderable: false,
                   selectable: false,

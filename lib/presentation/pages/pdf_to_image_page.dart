@@ -1,6 +1,7 @@
 // lib/presentation/pages/pdf_to_image_page.dart
 
 import 'dart:async';
+import 'package:dartz/dartz.dart' as dartz;
 import 'package:flutter/material.dart';
 import 'package:pdf_kit/models/file_model.dart';
 import 'package:pdf_kit/presentation/component/document_tile.dart';
@@ -155,9 +156,7 @@ class _PdfToImagePageState extends State<PdfToImagePage> {
         final msg = t
             .t('pdf_to_image_destination_snackbar')
             .replaceAll('{folderName}', _selectedDestinationFolder!.name);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(msg), duration: const Duration(seconds: 2)),
-        );
+        AppSnackbar.show(msg, duration: const Duration(seconds: 2));
       }
     }
   }
@@ -227,7 +226,7 @@ class _PdfToImagePageState extends State<PdfToImagePage> {
       progress.dispose();
       stage.dispose();
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        AppSnackbar.showSnackBar(
           SnackBar(
             content: Text(t.t('pdf_to_image_no_file_error')),
             backgroundColor: Theme.of(context).colorScheme.error,
@@ -242,7 +241,7 @@ class _PdfToImagePageState extends State<PdfToImagePage> {
         ? _suggestDefaultName(pdfFile)
         : _nameCtrl.text.trim();
 
-    late final result;
+    late final dartz.Either<PdfRasterizationFailure, List<File>> result;
     try {
       _progressDialog.show(
         context: context,
@@ -299,7 +298,7 @@ class _PdfToImagePageState extends State<PdfToImagePage> {
             },
           );
 
-      if (mounted) {
+      if (context.mounted) {
         progress.value = 1.0;
         stage.value = 'Done';
         _progressDialog.dismiss(context);
@@ -317,7 +316,7 @@ class _PdfToImagePageState extends State<PdfToImagePage> {
         final msg = t
             .t('snackbar_error')
             .replaceAll('{message}', error.message);
-        ScaffoldMessenger.of(context).showSnackBar(
+        AppSnackbar.showSnackBar(
           SnackBar(
             content: Text(msg),
             backgroundColor: Theme.of(context).colorScheme.error,
@@ -353,28 +352,24 @@ class _PdfToImagePageState extends State<PdfToImagePage> {
 
         if (!mounted) return;
 
+        final successMsg = t.t('snackbar_pdf_to_image_done');
+
         // Navigate to home and clear all routes
         selection.disable();
-        context.go('/');
+        if (context.mounted) {
+          context.go('/');
+        }
 
         // Trigger home page reload
         RecentFilesSection.refreshNotifier.value++;
 
         // Show success message after navigation
         Future.delayed(const Duration(milliseconds: 300), () {
-          if (context.mounted) {
-            final msg = t
-                .t('snackbar_success_pdf_to_image')
-                .replaceAll('{count}', imageFiles.length.toString())
-                .replaceAll('{folderName}', outputName);
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(msg),
-                backgroundColor: Colors.green,
-                duration: const Duration(seconds: 3),
-              ),
-            );
-          }
+          if (imageFiles.isEmpty) return;
+          AppSnackbar.showSuccessWithOpen(
+            message: successMsg,
+            path: imageFiles.first.path,
+          );
         });
       },
     );
@@ -549,8 +544,8 @@ class _PdfToImagePageState extends State<PdfToImagePage> {
                               padding: const EdgeInsets.all(16),
                               decoration: BoxDecoration(
                                 border: Border.all(
-                                  color: theme.colorScheme.outline.withOpacity(
-                                    0.3,
+                                  color: theme.colorScheme.outline.withValues(
+                                    alpha: 0.3,
                                   ),
                                 ),
                                 borderRadius: BorderRadius.circular(12),
@@ -579,6 +574,7 @@ class _PdfToImagePageState extends State<PdfToImagePage> {
                           else ...[
                             DocEntryCard(
                               info: files.first,
+                              showViewerOptionsSheet: false,
                               onOpen: null,
                               onMenu: null,
                             ),
@@ -588,7 +584,7 @@ class _PdfToImagePageState extends State<PdfToImagePage> {
                                 padding: const EdgeInsets.all(12),
                                 decoration: BoxDecoration(
                                   color: theme.colorScheme.primaryContainer
-                                      .withOpacity(0.3),
+                                      .withValues(alpha: 0.3),
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: Row(
@@ -621,16 +617,7 @@ class _PdfToImagePageState extends State<PdfToImagePage> {
             ),
             bottomNavigationBar: Container(
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-              decoration: BoxDecoration(
-                color: Colors.transparent,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
-                    offset: const Offset(0, -2),
-                    blurRadius: 8,
-                  ),
-                ],
-              ),
+              decoration: BoxDecoration(color: Colors.transparent),
               child: SafeArea(
                 child: SizedBox(
                   width: double.infinity,

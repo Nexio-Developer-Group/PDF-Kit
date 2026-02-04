@@ -5,6 +5,7 @@ import 'package:pdfx/pdfx.dart' as pdfx;
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:pdf_kit/presentation/component/pdf_page_thumbnail.dart';
+import 'package:pdf_kit/core/app_export.dart';
 
 /// Simplified PDF page selector for selecting pages (used in pdf_to_image)
 /// For reordering functionality, use the custom widgets in reorder_pdf_page.dart
@@ -121,9 +122,10 @@ class _PdfPageSelectorState extends State<PdfPageSelector> {
   }
 
   void _parseSelectionRange(String input) {
+    final t = AppLocalizations.of(context);
     if (input.trim().isEmpty) {
       setState(() {
-        _selectError = 'At least one page must be selected';
+        _selectError = t.t('pdf_page_selector_error_empty');
       });
       return;
     }
@@ -139,22 +141,24 @@ class _PdfPageSelectorState extends State<PdfPageSelector> {
         if (range.contains('-')) {
           final parts = range.split('-');
           if (parts.length != 2) {
-            throw 'Invalid range format. Use format like 1-5';
+            throw t.t('pdf_page_selector_error_invalid_range');
           }
 
           final start = int.tryParse(parts[0].trim());
           final end = int.tryParse(parts[1].trim());
 
           if (start == null || end == null) {
-            throw 'Please enter valid page numbers';
+            throw t.t('pdf_page_selector_error_invalid_number');
           }
 
           if (start < 1 || end > _totalPages) {
-            throw 'Pages must be between 1 and $_totalPages';
+            throw t
+                .t('pdf_page_selector_error_out_of_range')
+                .replaceAll('{total}', _totalPages.toString());
           }
 
           if (start > end) {
-            throw 'Start page must be less than or equal to end page';
+            throw t.t('pdf_page_selector_error_start_greater');
           }
 
           for (int i = start; i <= end; i++) {
@@ -163,18 +167,20 @@ class _PdfPageSelectorState extends State<PdfPageSelector> {
         } else {
           final page = int.tryParse(range);
           if (page == null) {
-            throw 'Please enter valid page numbers';
+            throw t.t('pdf_page_selector_error_invalid_number');
           }
 
           if (page < 1 || page > _totalPages) {
-            throw 'Page must be between 1 and $_totalPages';
+            throw t
+                .t('pdf_page_selector_error_page_out_of_range')
+                .replaceAll('{total}', _totalPages.toString());
           }
           selected.add(page);
         }
       }
 
       if (selected.isEmpty) {
-        throw 'At least one page must be selected';
+        throw t.t('pdf_page_selector_error_empty');
       }
 
       setState(() {
@@ -253,6 +259,7 @@ class _PdfPageSelectorState extends State<PdfPageSelector> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final t = AppLocalizations.of(context);
 
     if (_isLoading) {
       return const Center(
@@ -270,9 +277,9 @@ class _PdfPageSelectorState extends State<PdfPageSelector> {
         TextField(
           controller: _selectCtrl,
           decoration: InputDecoration(
-            hintText: 'e.g., 1-5, 8, 10-15',
-            labelText: 'Select Pages',
-            helperText: 'Enter page ranges to select, separated by commas',
+            hintText: t.t('pdf_page_selector_hint'),
+            labelText: t.t('pdf_page_selector_title'),
+            helperText: t.t('pdf_page_selector_helper'),
             helperMaxLines: 2,
             errorText: _selectError,
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
@@ -304,7 +311,7 @@ class _PdfPageSelectorState extends State<PdfPageSelector> {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           decoration: BoxDecoration(
-            color: theme.colorScheme.primaryContainer.withOpacity(0.3),
+            color: theme.colorScheme.primaryContainer.withValues(alpha: 0.3),
             borderRadius: BorderRadius.circular(8),
           ),
           child: Row(
@@ -317,7 +324,14 @@ class _PdfPageSelectorState extends State<PdfPageSelector> {
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  '${_selectedPages.length} of $_totalPages page${_selectedPages.length != 1 ? 's' : ''} selected',
+                  t
+                      .t('pdf_page_selector_selected_count')
+                      .replaceAll('{count}', _selectedPages.length.toString())
+                      .replaceAll('{total}', _totalPages.toString())
+                      .replaceAll(
+                        '{plural}',
+                        _selectedPages.length != 1 ? 's' : '',
+                      ),
                   style: theme.textTheme.bodyMedium?.copyWith(
                     fontWeight: FontWeight.w600,
                     color: theme.colorScheme.primary,
@@ -343,16 +357,20 @@ class _PdfPageSelectorState extends State<PdfPageSelector> {
               final pageNum = index + 1;
               final isSelected = _selectedPages.contains(pageNum);
 
-              return PdfPageThumbnail(
-                key: ValueKey(pageNum),
-                pageNum: pageNum,
-                isSelected: isSelected,
-                thumbnailBytes: _pageCache[pageNum],
-                rotation: 0.0,
-                onToggle: () => _togglePage(pageNum),
-                showRotateButton: false,
-                showRemoveButton: false,
-                showSelectButton: true,
+              return InkWell(
+                onTap: () => _togglePage(pageNum),
+                borderRadius: BorderRadius.circular(12),
+                child: PdfPageThumbnail(
+                  key: ValueKey(pageNum),
+                  pageNum: pageNum,
+                  isSelected: isSelected,
+                  thumbnailBytes: _pageCache[pageNum],
+                  rotation: 0.0,
+                  onToggle: () => _togglePage(pageNum),
+                  showRotateButton: false,
+                  showRemoveButton: false,
+                  showSelectButton: true,
+                ),
               );
             },
           ),

@@ -143,7 +143,7 @@ class _FolderPickerPageContentState extends State<_FolderPickerPageContent> {
                       color: provider.hasSelection
                           ? Theme.of(
                               context,
-                            ).colorScheme.primaryContainer.withOpacity(0.3)
+                            ).colorScheme.primaryContainer.withValues(alpha: 0.3)
                           : Theme.of(
                               context,
                             ).colorScheme.surfaceContainerHighest,
@@ -152,7 +152,7 @@ class _FolderPickerPageContentState extends State<_FolderPickerPageContent> {
                         color: provider.hasSelection
                             ? Theme.of(
                                 context,
-                              ).colorScheme.primary.withOpacity(0.5)
+                              ).colorScheme.primary.withValues(alpha: 0.5)
                             : Theme.of(context).colorScheme.outline,
                         width: 1,
                       ),

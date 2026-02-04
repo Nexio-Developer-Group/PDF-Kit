@@ -25,6 +25,19 @@ class PermissionService {
     return unit;
   }
 
+  /// Opens the app-level permissions screen in Android settings (best-effort).
+  static Future<Unit> openAppPermissionsPage() async {
+    if (Platform.isAndroid) {
+      try {
+        await _ch.invokeMethod('openAppPermissions');
+      } catch (_) {
+        // Fallback to app details.
+        await openAppSettings();
+      }
+    }
+    return unit;
+  }
+
   // Request All files access (Android), otherwise open settings if permanently denied
   static Future<Either<Exception, bool>> requestStoragePermission() async {
     try {

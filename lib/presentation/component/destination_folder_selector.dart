@@ -32,8 +32,8 @@ class DestinationFolderSelector extends StatelessWidget {
         decoration: BoxDecoration(
           border: Border.all(
             color: disabled
-                ? theme.colorScheme.onSurfaceVariant.withOpacity(0.15)
-                : theme.colorScheme.primary.withOpacity(0.3),
+                ? theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.15)
+                : theme.colorScheme.primary.withValues(alpha: 0.3),
             width: 1,
           ),
           borderRadius: BorderRadius.circular(12),
@@ -65,7 +65,9 @@ class DestinationFolderSelector extends StatelessWidget {
                   Icon(
                     Icons.folder,
                     color: disabled
-                        ? theme.colorScheme.onSurfaceVariant.withOpacity(0.4)
+                        ? theme.colorScheme.onSurfaceVariant.withValues(
+                            alpha: 0.4,
+                          )
                         : theme.colorScheme.primary,
                     size: 20,
                   ),
@@ -80,8 +82,9 @@ class DestinationFolderSelector extends StatelessWidget {
                           style: theme.textTheme.bodyLarge?.copyWith(
                             fontWeight: FontWeight.w500,
                             color: disabled
-                                ? theme.colorScheme.onSurfaceVariant
-                                      .withOpacity(0.5)
+                                ? theme.colorScheme.onSurfaceVariant.withValues(
+                                    alpha: 0.5,
+                                  )
                                 : null,
                           ),
                           maxLines: 1,
@@ -93,7 +96,7 @@ class DestinationFolderSelector extends StatelessWidget {
                             selectedFolder!.path,
                             style: theme.textTheme.bodySmall?.copyWith(
                               color: theme.colorScheme.onSurfaceVariant
-                                  .withOpacity(disabled ? 0.4 : 1.0),
+                                  .withValues(alpha: disabled ? 0.4 : 1.0),
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -105,8 +108,8 @@ class DestinationFolderSelector extends StatelessWidget {
                   const SizedBox(width: 8),
                   Icon(
                     Icons.chevron_right,
-                    color: theme.colorScheme.onSurfaceVariant.withOpacity(
-                      disabled ? 0.3 : 1.0,
+                    color: theme.colorScheme.onSurfaceVariant.withValues(
+                      alpha: disabled ? 0.3 : 1.0,
                     ),
                   ),
                 ],

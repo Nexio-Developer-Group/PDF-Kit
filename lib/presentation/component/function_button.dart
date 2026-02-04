@@ -5,7 +5,7 @@ import 'package:pdf_kit/models/functionality_model.dart';
 class FunctionButton extends StatelessWidget {
   final Functionality data;
 
-  const FunctionButton({Key? key, required this.data}) : super(key: key);
+  const FunctionButton({super.key, required this.data});
 
   @override
   Widget build(BuildContext context) {
@@ -25,8 +25,14 @@ class FunctionButton extends StatelessWidget {
                 width: 58,
                 height: 58,
                 decoration: BoxDecoration(
-                  color: tint.withAlpha((0.12 * 255).toInt()),
+                  color: tint.withValues(alpha: 0.12),
                   shape: BoxShape.circle,
+                  border: Theme.of(context).brightness == Brightness.dark
+                      ? Border.all(
+                          color: tint.withValues(alpha: 0.3),
+                          width: 1.5,
+                        )
+                      : null,
                 ),
                 child: Icon(data.icon, color: tint, size: 26),
               ),

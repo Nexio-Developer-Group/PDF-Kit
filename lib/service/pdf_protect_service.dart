@@ -1,7 +1,10 @@
 import 'dart:io';
 import 'package:dartz/dartz.dart';
 import 'package:ares_defence_labs_lock_smith_pdf/ares_defence_labs_lock_smith_pdf.dart';
+import 'package:pdfx/pdfx.dart' as pdfx;
 import 'package:pdf_kit/core/exception/failures.dart';
+import 'package:pdf_kit/service/analytics_service.dart';
+import 'package:flutter/foundation.dart';
 
 class PdfProtectionService {
   PdfProtectionService._();
@@ -22,8 +25,9 @@ class PdfProtectionService {
     required String password,
     void Function(double progress01, String stage)? onProgress,
   }) async {
+    final stopwatch = Stopwatch()..start();
     try {
-      _report(onProgress, 0.03, 'Validating inputs');
+      _report(onProgress, 0.03, 'progress_stage_validating_inputs');
       // Validate password
       if (password.isEmpty) {
         return const Left(InvalidPasswordFailure());
@@ -35,7 +39,7 @@ class PdfProtectionService {
         return const Left(FileNotFoundFailure());
       }
 
-      _report(onProgress, 0.18, 'Encrypting PDF');
+      _report(onProgress, 0.18, 'progress_stage_encrypting_pdf');
       // Use ares_defence_labs_lock_smith_pdf to protect the PDF.
       final String outputPath = _outputPathFor(pdfPath, '_protected');
 
@@ -45,35 +49,48 @@ class PdfProtectionService {
         password: password,
       );
 
-      _report(onProgress, 0.78, 'Writing output');
+      _report(onProgress, 0.78, 'progress_stage_writing_output');
 
       // Replace original with protected output
       final File outFile = File(outputPath);
       if (!await outFile.exists()) {
         return const Left(
-          PdfProtectionFailure('Failed to create protected PDF'),
+          PdfProtectionFailure('error_failed_create_protected_pdf'),
         );
       }
 
       final List<int> bytes = await outFile.readAsBytes();
       await pdfFile.writeAsBytes(bytes);
 
-      _report(onProgress, 0.92, 'Cleaning up');
+      _report(onProgress, 0.92, 'progress_stage_cleaning_up');
 
       // Clean up temporary file
       try {
         await outFile.delete();
       } catch (_) {}
 
-      _report(onProgress, 1.0, 'Done');
+      _report(onProgress, 1.0, 'progress_stage_done');
+
+      stopwatch.stop();
+      int pageCount = 0;
+      try {
+        var doc = await pdfx.PdfDocument.openFile(pdfPath);
+        pageCount = doc.pagesCount;
+        await doc.close();
+      } catch (_) {}
+
+      AnalyticsService.logProtectPdf(
+        totalPageNumber: pageCount,
+        timeTaken: stopwatch.elapsed.inMilliseconds / 1000.0,
+      );
+
       return Right(pdfPath);
     } on FileSystemException catch (e) {
-      return Left(FileReadWriteFailure('File error: ${e.message}'));
+      debugPrint('❌ [PdfProtectionService] FileSystemException: $e');
+      return Left(FileReadWriteFailure('error_file_read_write'));
     } catch (e) {
-      print('Error protecting PDF: $e');
-      return Left(
-        PdfProtectionFailure('Failed to protect PDF: ${e.toString()}'),
-      );
+      debugPrint('❌ [PdfProtectionService] Error protecting PDF: $e');
+      return const Left(PdfProtectionFailure('error_failed_protect_pdf'));
     }
   }
 
@@ -142,9 +159,7 @@ class PdfProtectionService {
             );
         return Right(isEncrypted);
       } catch (pluginError) {
-        return Left(
-          PdfProtectionFailure('Failed to check PDF: ${e.toString()}'),
-        );
+        return const Left(PdfProtectionFailure('error_failed_check_pdf'));
       }
     }
   }
@@ -155,8 +170,9 @@ class PdfProtectionService {
     required String password,
     void Function(double progress01, String stage)? onProgress,
   }) async {
+    final stopwatch = Stopwatch()..start();
     try {
-      _report(onProgress, 0.03, 'Validating inputs');
+      _report(onProgress, 0.03, 'progress_stage_validating_inputs');
       // Validate password
       if (password.isEmpty) {
         return const Left(InvalidPasswordFailure());
@@ -170,7 +186,7 @@ class PdfProtectionService {
 
       // Try to load the PDF with password
       try {
-        _report(onProgress, 0.18, 'Decrypting PDF');
+        _report(onProgress, 0.18, 'progress_stage_decrypting_pdf');
         final String outputPath = _outputPathFor(pdfPath, '_unlocked');
 
         await AresDefenceLabsLocksmithPdf.decryptPdf(
@@ -179,51 +195,67 @@ class PdfProtectionService {
           password: password,
         );
 
-        _report(onProgress, 0.78, 'Writing output');
+        _report(onProgress, 0.78, 'progress_stage_writing_output');
 
         final File outFile = File(outputPath);
         if (!await outFile.exists()) {
           return const Left(
-            PdfProtectionFailure('Failed to create unlocked PDF'),
+            PdfProtectionFailure('error_failed_create_unlocked_pdf'),
           );
         }
 
         final List<int> bytes = await outFile.readAsBytes();
         await pdfFile.writeAsBytes(bytes);
 
-        _report(onProgress, 0.92, 'Cleaning up');
+        _report(onProgress, 0.92, 'progress_stage_cleaning_up');
 
         try {
           await outFile.delete();
         } catch (_) {}
 
-        _report(onProgress, 1.0, 'Done');
+        _report(onProgress, 1.0, 'progress_stage_done');
+
+        stopwatch.stop();
+        // Get page count
+        int pageCount = 0;
+        try {
+          final doc = await pdfx.PdfDocument.openFile(
+            pdfPath,
+          ); // Using original usually works after unlock?
+          // Wait, we just overwrote pdfPath with UNLOCKED bytes in lines 191-192.
+          // So pdfPath is now unlocked.
+          pageCount = doc.pagesCount;
+          await doc.close();
+        } catch (_) {}
+
+        AnalyticsService.logUnlockPdf(
+          totalPageNumber: pageCount,
+          timeTaken: stopwatch.elapsed.inMilliseconds / 1000.0,
+        );
+
         return Right(pdfPath);
       } catch (e) {
         // Handle incorrect password or loading errors
         if (e.toString().toLowerCase().contains('password') ||
             e.toString().toLowerCase().contains('invalid') ||
             e.toString().toLowerCase().contains('encrypted')) {
-          return const Left(
-            PdfProtectionFailure('Incorrect password. Please try again.'),
-          );
+          return const Left(PdfProtectionFailure('error_incorrect_password'));
         }
         rethrow;
       }
     } on FileSystemException catch (e) {
-      return Left(FileReadWriteFailure('File error: ${e.message}'));
+      debugPrint('❌ [PdfProtectionService] FileSystemException: $e');
+      return const Left(FileReadWriteFailure('error_file_read_write'));
     } catch (e) {
-      return Left(
-        PdfProtectionFailure('Failed to unlock PDF: ${e.toString()}'),
-      );
+      return const Left(PdfProtectionFailure('error_failed_unlock_pdf'));
     }
   }
 
   static String _outputPathFor(String inputPath, String suffix) {
     final lower = inputPath.toLowerCase();
     if (lower.endsWith('.pdf')) {
-      return inputPath.substring(0, inputPath.length - 4) + suffix + '.pdf';
+      return '${inputPath.substring(0, inputPath.length - 4)}$suffix.pdf';
     }
-    return inputPath + suffix + '.pdf';
+    return '$inputPath$suffix.pdf';
   }
 }

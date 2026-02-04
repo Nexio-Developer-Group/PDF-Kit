@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import 'package:pdf_kit/core/app_export.dart';
 import 'package:pdf_kit/models/file_model.dart';
 import 'package:pdf_kit/presentation/component/document_tile.dart';
@@ -97,7 +96,7 @@ class _CompressPdfPageState extends State<CompressPdfPage> {
   ) async {
     final t = AppLocalizations.of(context);
     if (sel.files.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
+      AppSnackbar.showSnackBar(
         SnackBar(
           content: Text(t.t('compress_pdf_select_first_error')),
           backgroundColor: Theme.of(context).colorScheme.error,
@@ -119,7 +118,7 @@ class _CompressPdfPageState extends State<CompressPdfPage> {
 
     _progressDialog.show(
       context: context,
-      title: 'Compress PDF',
+      title: t.t('compress_pdf_title'),
       progress: progress,
       stage: stage,
     );
@@ -150,7 +149,7 @@ class _CompressPdfPageState extends State<CompressPdfPage> {
       if (!mounted) return;
       result.fold(
         (err) {
-          ScaffoldMessenger.of(context).showSnackBar(
+          AppSnackbar.showSnackBar(
             SnackBar(
               content: Text(err.message),
               backgroundColor: Theme.of(context).colorScheme.error,
@@ -158,6 +157,9 @@ class _CompressPdfPageState extends State<CompressPdfPage> {
           );
         },
         (compressed) async {
+          final t = AppLocalizations.of(context);
+          final successMsg = t.t('snackbar_compress_done');
+
           // Store resulting compressed file to recent files
           debugPrint(
             '📝 [CompressPDF] Storing compressed file: ${compressed.name}',
@@ -176,31 +178,19 @@ class _CompressPdfPageState extends State<CompressPdfPage> {
 
           // Navigate to home and clear all routes
           sel.disable();
-          context.go('/');
+          if (context.mounted) {
+            context.go('/');
+          }
 
           // Trigger home page reload
           RecentFilesSection.refreshNotifier.value++;
 
           // Show success message after navigation
           Future.delayed(const Duration(milliseconds: 300), () {
-            if (context.mounted) {
-              final originalName = p.basename(file.path);
-              final resultName = p.basename(compressed.path);
-              final pattern = t
-                  .t('compress_pdf_result_pattern')
-                  .replaceFirst('{original}', originalName)
-                  .replaceFirst('{level}', 'optimized')
-                  .replaceFirst('{result}', resultName);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(pattern),
-                  action: SnackBarAction(
-                    label: t.t('common_open_snackbar'),
-                    onPressed: () {},
-                  ),
-                ),
-              );
-            }
+            AppSnackbar.showSuccessWithOpen(
+              message: successMsg,
+              path: compressed.path,
+            );
           });
         },
       );
@@ -211,7 +201,7 @@ class _CompressPdfPageState extends State<CompressPdfPage> {
       } catch (_) {}
 
       smoothTimer.cancel();
-      if (mounted) {
+      if (context.mounted) {
         _progressDialog.dismiss(context);
       }
       progress.dispose();
@@ -244,8 +234,6 @@ class _CompressPdfPageState extends State<CompressPdfPage> {
 
   @override
   Widget build(BuildContext context) {
-    print(AppLocalizations.of(context).t('compress_pdf_title'));
-
     final theme = Theme.of(context);
     return Consumer<SelectionProvider>(
       builder: (context, selection, _) {
@@ -296,6 +284,7 @@ class _CompressPdfPageState extends State<CompressPdfPage> {
                               }
                               return DocEntryCard(
                                 info: file,
+                                showViewerOptionsSheet: false,
                                 showEdit: false,
                                 showRemove: true,
                                 selectable: false,
@@ -334,10 +323,12 @@ class _CompressPdfPageState extends State<CompressPdfPage> {
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
                           color: theme.colorScheme.surfaceContainerHighest
-                              .withOpacity(0.3),
+                              .withValues(alpha: 0.3),
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
-                            color: theme.colorScheme.outline.withOpacity(0.2),
+                            color: theme.colorScheme.outline.withValues(
+                              alpha: 0.2,
+                            ),
                           ),
                         ),
                         child: Column(
@@ -369,12 +360,6 @@ class _CompressPdfPageState extends State<CompressPdfPage> {
                                   children: [
                                     _buildInfoRow(
                                       context,
-                                      'Pipeline',
-                                      'Rasterize → JPEG → PDF',
-                                    ),
-                                    const SizedBox(height: 4),
-                                    _buildInfoRow(
-                                      context,
                                       'Default preset',
                                       'DPI ${preset.dpi}, Q ${preset.jpegQuality}%, Max ${preset.maxLongSidePx}px',
                                     ),
@@ -404,14 +389,16 @@ class _CompressPdfPageState extends State<CompressPdfPage> {
                             Row(
                               children: [
                                 Icon(
-                                  Icons.info_outline,
+                                  Icons.warning_amber_outlined,
                                   size: 18,
                                   color: theme.colorScheme.primary,
                                 ),
                                 const SizedBox(width: 8),
                                 Expanded(
                                   child: Text(
-                                    'These values come from the compression/rasterization services. If the output is not smaller than the original, the compressor may retry once with a stronger preset.',
+                                    AppLocalizations.of(
+                                      context,
+                                    ).t('compress_pdf_service_warning'),
                                     style: theme.textTheme.bodySmall?.copyWith(
                                       color: theme.colorScheme.onSurfaceVariant,
                                     ),

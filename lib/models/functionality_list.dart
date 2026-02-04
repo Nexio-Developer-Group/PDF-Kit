@@ -16,6 +16,9 @@ List<Functionality> getActions(BuildContext context) {
       color: Colors.indigo,
       onPressed: (context) async {
         final selectionId = 'merge_${DateTime.now().microsecondsSinceEpoch}';
+        debugPrint(
+          '🔵 [Functionality] MERGE clicked - selectionId: $selectionId',
+        );
         try {
           final mgr = Get.find<SelectionManager>();
           final provider = mgr.of(selectionId);
@@ -26,12 +29,14 @@ List<Functionality> getActions(BuildContext context) {
 
         if (!context.mounted) return;
 
+        debugPrint('🔵 [Functionality] MERGE navigating with op="merge"');
         final result = await context.pushNamed(
           AppRouteName.filesRootFullscreen,
           queryParameters: {
             'selectionId': selectionId,
             'actionText': t('merge_pdf_title'),
             'min': '2', // Merge requires at least 2 files
+            'op': 'merge',
             'allowed': 'unprotected',
             'fileType': 'all',
           },
@@ -64,6 +69,7 @@ List<Functionality> getActions(BuildContext context) {
             'selectionId': selectionId,
             'actionText': t('images_to_pdf_title'),
             'min': '2', // Require at least 2 images
+            'op': 'images_to_pdf',
             'allowed': 'images', // Only allow image files
             'fileType': 'images',
           },
@@ -83,25 +89,30 @@ List<Functionality> getActions(BuildContext context) {
       color: Colors.deepPurple,
       onPressed: (context) async {
         final selectionId = 'split_${DateTime.now().microsecondsSinceEpoch}';
+        debugPrint(
+          '✂️ [Functionality] SPLIT clicked - selectionId: $selectionId',
+        );
         try {
           final mgr = Get.find<SelectionManager>();
           final provider = mgr.of(selectionId);
           provider.setFileType('pdf');
         } catch (_) {}
 
+        debugPrint('✂️ [Functionality] SPLIT navigating with op="split"');
         final result = await context.pushNamed(
           AppRouteName.filesRootFullscreen,
           queryParameters: {
             'selectionId': selectionId,
             'actionText': t('split_pdf_title'),
             'max': '1', // Only one PDF at a time
+            'op': 'split',
             'min': '1',
             'allowed': 'unprotected',
             'fileType': 'pdf',
           },
         );
 
-        if (result == true) {
+        if (result == true && context.mounted) {
           // Navigate to split PDF page
           await context.pushNamed(
             AppRouteName.splitPdf,
@@ -120,18 +131,23 @@ List<Functionality> getActions(BuildContext context) {
       color: Colors.green,
       onPressed: (context) async {
         final selectionId = 'protect_${DateTime.now().microsecondsSinceEpoch}';
+        debugPrint(
+          '🔒 [Functionality] PROTECT clicked - selectionId: $selectionId',
+        );
         try {
           final mgr = Get.find<SelectionManager>();
           final provider = mgr.of(selectionId);
           provider.setFileType('pdf');
         } catch (_) {}
 
+        debugPrint('🔒 [Functionality] PROTECT navigating with op="protect"');
         final result = await context.pushNamed(
           AppRouteName.filesRootFullscreen,
           queryParameters: {
             'selectionId': selectionId,
             'actionText': t('protect_pdf_title'),
             'max': '1',
+            'op': 'protect',
             'min': '1',
             'allowed': 'unprotected',
             'fileType': 'pdf',
@@ -164,6 +180,7 @@ List<Functionality> getActions(BuildContext context) {
             'selectionId': selectionId,
             'actionText': t('unlock_pdf_title'),
             'max': '1',
+            'op': 'unlock',
             'min': '1',
             'allowed': 'protected',
             'fileType': 'pdf',
@@ -196,6 +213,7 @@ List<Functionality> getActions(BuildContext context) {
             'selectionId': selectionId,
             'actionText': t('compress_pdf_button'),
             'max': '1',
+            'op': 'compress',
             'min': '1',
             'allowed': 'unprotected',
             'fileType': 'pdf',
@@ -229,6 +247,7 @@ List<Functionality> getActions(BuildContext context) {
             'selectionId': selectionId,
             'actionText': t('pdf_to_image_title'),
             'max': '1',
+            'op': 'pdf_to_image',
             'min': '1',
             'allowed': 'unprotected',
             'fileType': 'pdf',
@@ -249,18 +268,23 @@ List<Functionality> getActions(BuildContext context) {
       color: Colors.brown,
       onPressed: (context) async {
         final selectionId = 'reorder_${DateTime.now().microsecondsSinceEpoch}';
+        debugPrint(
+          '🔄 [Functionality] REORDER clicked - selectionId: $selectionId',
+        );
         try {
           final mgr = Get.find<SelectionManager>();
           final provider = mgr.of(selectionId);
           provider.setFileType('pdf');
         } catch (_) {}
 
+        debugPrint('🔄 [Functionality] REORDER navigating with op="reorder"');
         final result = await context.pushNamed(
           AppRouteName.filesRootFullscreen,
           queryParameters: {
             'selectionId': selectionId,
             'actionText': t('reorder_pdf_title'),
             'max': '1',
+            'op': 'reorder',
             'min': '1',
             'allowed': 'unprotected',
             'fileType': 'pdf',

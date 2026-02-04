@@ -9,6 +9,8 @@ class AppRouteName {
   static const filesFolder = 'files.folder';
   static const filesSearch = 'files.search';
   static const settings = 'settings';
+  static const aboutUs = 'settings.aboutUs';
+  static const filterOptions = 'settings.filterOptions';
   static const showPdf = 'pdf.view';
   static const mergePdf = 'pdf.merge';
   static const protectPdf = 'pdf.protect';

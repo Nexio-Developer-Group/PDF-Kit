@@ -7,6 +7,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:pdfx/pdfx.dart' as pdfx;
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
+import 'package:pdf_kit/service/analytics_service.dart';
 import 'package:pdf_kit/service/open_service.dart';
 
 /// Model for a single page range to extract
@@ -140,6 +141,7 @@ class PdfSplitService {
     String? namingPattern, // e.g., "document_____" where _____ will be replaced
     void Function(double progress01, String stage)? onProgress,
   }) async {
+    final stopwatch = Stopwatch()..start();
     try {
       _report(onProgress, 0.03, 'Validating inputs');
       debugPrint('📊 [PdfSplitService] Splitting PDF: $sourcePdfPath');
@@ -204,9 +206,15 @@ class PdfSplitService {
         );
 
         // Generate output file name
-        final String outputFileName =
+        String outputFileName =
             range.customName ??
             '${baseFileName}_pages_${range.startPage}_to_${range.endPage}.pdf';
+
+        // Handle duplicate filenames
+        outputFileName = _uniqueFileName(
+          baseDir: targetDir.path,
+          baseName: p.basenameWithoutExtension(outputFileName),
+        );
 
         final String outputPath = p.join(targetDir.path, outputFileName);
 
@@ -256,6 +264,18 @@ class PdfSplitService {
       );
 
       _report(onProgress, 1.0, 'Done');
+
+      stopwatch.stop();
+
+      // Calculate output page counts
+      final outputPageCounts = ranges
+          .map((r) => r.endPage - r.startPage + 1)
+          .toList();
+      AnalyticsService.logSplitPdf(
+        outputPdfPageNumberList: outputPageCounts,
+        timeTaken: stopwatch.elapsed.inMilliseconds / 1000.0,
+      );
+
       return SplitResult.success(
         outputPaths: outputPaths,
         outputFileNames: outputFileNames,
@@ -426,5 +446,18 @@ class PdfSplitService {
     } catch (e) {
       return Left('Failed to open file: ${e.toString()}');
     }
+  }
+
+  static String _uniqueFileName({
+    required String baseDir,
+    required String baseName,
+  }) {
+    var candidate = '$baseName.pdf';
+    var idx = 1;
+    while (File(p.join(baseDir, candidate)).existsSync()) {
+      candidate = '$baseName ($idx).pdf';
+      idx++;
+    }
+    return candidate;
   }
 }

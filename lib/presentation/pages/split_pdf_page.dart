@@ -225,7 +225,7 @@ class _SplitPdfPageState extends State<SplitPdfPage> {
       await pageCountResult.fold(
         (error) async {
           if (!mounted) return;
-          ScaffoldMessenger.of(context).showSnackBar(
+          AppSnackbar.showSnackBar(
             SnackBar(
               content: Text('Error: $error'),
               backgroundColor: Theme.of(context).colorScheme.error,
@@ -250,7 +250,7 @@ class _SplitPdfPageState extends State<SplitPdfPage> {
       );
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        AppSnackbar.showSnackBar(
           SnackBar(
             content: Text('Error: $e'),
             backgroundColor: Theme.of(context).colorScheme.error,
@@ -368,11 +368,8 @@ class _SplitPdfPageState extends State<SplitPdfPage> {
     final ranges = _getValidRanges();
 
     if (ranges.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please add at least one valid page range'),
-        ),
-      );
+      final t = AppLocalizations.of(context);
+      AppSnackbar.show(t.t('split_pdf_validation_error'));
       return;
     }
 
@@ -385,7 +382,7 @@ class _SplitPdfPageState extends State<SplitPdfPage> {
 
       final error = validationResult.fold((err) => err, (_) => null);
       if (error != null) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        AppSnackbar.showSnackBar(
           SnackBar(
             content: Text(error),
             backgroundColor: Theme.of(context).colorScheme.error,
@@ -408,7 +405,7 @@ class _SplitPdfPageState extends State<SplitPdfPage> {
     try {
       _progressDialog.show(
         context: context,
-        title: 'Split PDF',
+        title: AppLocalizations.of(context).t('split_pdf_title'),
         progress: progress,
         stage: stage,
       );
@@ -432,9 +429,9 @@ class _SplitPdfPageState extends State<SplitPdfPage> {
         },
       );
 
-      if (mounted) {
-        progress.value = 1.0;
-        stage.value = 'Done';
+      progress.value = 1.0;
+      stage.value = 'Done';
+      if (context.mounted) {
         _progressDialog.dismiss(context);
       }
     } finally {
@@ -472,7 +469,7 @@ class _SplitPdfPageState extends State<SplitPdfPage> {
       }
 
       // Update FileSystemProvider to show files in Downloads folder
-      if (downloadsPath != null && createdFiles.isNotEmpty) {
+      if (context.mounted && downloadsPath != null && createdFiles.isNotEmpty) {
         try {
           final fileSystemProvider = context.read<FileSystemProvider>();
           await fileSystemProvider.addFiles(downloadsPath, createdFiles);
@@ -481,26 +478,26 @@ class _SplitPdfPageState extends State<SplitPdfPage> {
         }
       }
 
+      if (!context.mounted) return;
+      final successMsg = AppLocalizations.of(context).t('snackbar_split_done');
+
       selection.disable();
       context.go('/');
       RecentFilesSection.refreshNotifier.value++;
 
       // Show simple success snackbar instead of dialog
       Future.delayed(const Duration(milliseconds: 300), () {
+        if (result.outputPaths.isEmpty) return;
         if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                'Successfully split PDF into ${result.outputPaths.length} files',
-              ),
-              backgroundColor: Colors.green,
-              duration: const Duration(seconds: 3),
-            ),
+          AppSnackbar.showSuccessWithOpen(
+            message: successMsg,
+            path: result.outputPaths.first,
           );
         }
       });
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
+      if (!context.mounted) return;
+      AppSnackbar.showSnackBar(
         SnackBar(
           content: Text(result.errorMessage ?? 'Failed to split PDF'),
           backgroundColor: Theme.of(context).colorScheme.error,
@@ -512,6 +509,7 @@ class _SplitPdfPageState extends State<SplitPdfPage> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final t = AppLocalizations.of(context);
 
     return Consumer<SelectionProvider>(
       builder: (context, selection, _) {
@@ -521,7 +519,7 @@ class _SplitPdfPageState extends State<SplitPdfPage> {
         return Scaffold(
           appBar: AppBar(
             leading: IconButton(
-              icon: const Icon(Icons.arrow_back, color: Colors.black),
+              icon: const Icon(Icons.arrow_back),
               onPressed: () => context.pop(),
             ),
           ),
@@ -532,14 +530,14 @@ class _SplitPdfPageState extends State<SplitPdfPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Split PDF',
+                    t.t('split_pdf_title'),
                     style: theme.textTheme.headlineSmall?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    'Select page ranges to extract from your PDF',
+                    t.t('split_pdf_description'),
                     style: theme.textTheme.bodyMedium,
                   ),
                   const SizedBox(height: 24),
@@ -564,7 +562,10 @@ class _SplitPdfPageState extends State<SplitPdfPage> {
 
                     // Page Previews Section
                     if (_totalPages != null && _totalPages! > 0) ...[
-                      Text('Page Preview', style: theme.textTheme.titleSmall),
+                      Text(
+                        t.t('split_pdf_page_preview_label'),
+                        style: theme.textTheme.titleSmall,
+                      ),
                       const SizedBox(height: 12),
                       SizedBox(
                         height: 100,
@@ -599,14 +600,16 @@ class _SplitPdfPageState extends State<SplitPdfPage> {
                                           : Container(
                                               color: theme
                                                   .colorScheme
-                                                  .surfaceVariant,
+                                                  .surfaceContainerHighest,
                                             ),
                                     ),
                                   ),
                                   Container(
                                     padding: const EdgeInsets.all(4),
                                     decoration: BoxDecoration(
-                                      color: theme.colorScheme.surfaceVariant,
+                                      color: theme
+                                          .colorScheme
+                                          .surfaceContainerHighest,
                                       borderRadius: const BorderRadius.vertical(
                                         bottom: Radius.circular(7),
                                       ),
@@ -628,7 +631,7 @@ class _SplitPdfPageState extends State<SplitPdfPage> {
                     ],
 
                     Text(
-                      'Destination Folder',
+                      t.t('split_pdf_destination_folder_label'),
                       style: theme.textTheme.titleSmall,
                     ),
                     const SizedBox(height: 8),
@@ -641,7 +644,7 @@ class _SplitPdfPageState extends State<SplitPdfPage> {
                     const SizedBox(height: 24),
 
                     Text(
-                      'Output naming pattern',
+                      t.t('split_pdf_naming_pattern_label'),
                       style: theme.textTheme.titleSmall,
                     ),
                     const SizedBox(height: 8),
@@ -649,9 +652,11 @@ class _SplitPdfPageState extends State<SplitPdfPage> {
                       controller: _namingPatternController,
                       readOnly: _isSplitting,
                       decoration: InputDecoration(
-                        hintText: 'filename_____',
+                        hintText: t.t('split_pdf_naming_pattern_hint'),
                         helperText: _totalPages != null
-                            ? 'Total pages: $_totalPages'
+                            ? t
+                                  .t('split_pdf_total_pages_helper')
+                                  .replaceAll('{count}', _totalPages.toString())
                             : null,
                         border: const OutlineInputBorder(),
                       ),
@@ -660,7 +665,7 @@ class _SplitPdfPageState extends State<SplitPdfPage> {
 
                     // Range Widgets Section
                     Text(
-                      'Page Ranges',
+                      t.t('split_pdf_page_ranges_label'),
                       style: theme.textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.w600,
                       ),
@@ -686,7 +691,7 @@ class _SplitPdfPageState extends State<SplitPdfPage> {
                         const SizedBox(width: 12),
                         Expanded(
                           child: Text(
-                            'No PDF selected',
+                            t.t('split_pdf_no_pdf_selected'),
                             style: theme.textTheme.bodyMedium,
                           ),
                         ),
@@ -722,9 +727,9 @@ class _SplitPdfPageState extends State<SplitPdfPage> {
                                   ),
                                 ),
                               )
-                            : const Text(
-                                'Split PDF',
-                                style: TextStyle(
+                            : Text(
+                                t.t('split_pdf_button'),
+                                style: const TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w600,
                                   color: Colors.white,
@@ -772,8 +777,16 @@ class _RangeInputWidget extends StatelessWidget {
         margin: const EdgeInsets.only(bottom: 8),
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
         decoration: BoxDecoration(
-          color: isActive ? Colors.grey.shade200 : Colors.grey.shade300,
+          color: isActive
+              ? theme.cardColor
+              : theme.cardColor.withValues(alpha: 0.5),
           borderRadius: BorderRadius.circular(8),
+          border: theme.brightness == Brightness.light
+              ? Border.all(
+                  color: theme.colorScheme.outline.withValues(alpha: 0.2),
+                  width: 1,
+                )
+              : null,
         ),
         child: Opacity(
           opacity: opacity,
@@ -786,14 +799,16 @@ class _RangeInputWidget extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: isActive
                       ? theme.colorScheme.primary
-                      : Colors.grey.shade400,
+                      : theme.colorScheme.outline.withValues(alpha: 0.5),
                   shape: BoxShape.circle,
                 ),
                 child: Center(
                   child: Text(
                     '${index + 1}',
-                    style: const TextStyle(
-                      color: Colors.white,
+                    style: TextStyle(
+                      color: isActive
+                          ? theme.colorScheme.onPrimary
+                          : theme.colorScheme.onSurface.withValues(alpha: 0.6),
                       fontWeight: FontWeight.bold,
                       fontSize: 12,
                     ),
@@ -804,8 +819,9 @@ class _RangeInputWidget extends StatelessWidget {
 
               // Start page input
               _CommonTextField(
-                labelText: 'Start',
-                hintText: '1',
+                context: context,
+                labelText: 'split_pdf_range_start_label',
+                hintText: 'split_pdf_range_start_hint',
                 controller: rangeWidget.startController,
                 enabled: isActive && !isSplitting,
                 totalPages: totalPages,
@@ -814,7 +830,8 @@ class _RangeInputWidget extends StatelessWidget {
 
               // End page input
               _CommonTextField(
-                labelText: 'End',
+                context: context,
+                labelText: 'split_pdf_range_end_label',
                 hintText: totalPages?.toString() ?? '',
                 controller: rangeWidget.endController,
                 enabled: isActive && !isSplitting,
@@ -846,6 +863,7 @@ class _RangeInputWidget extends StatelessWidget {
 
 // Common Text Field Widget
 class _CommonTextField extends StatelessWidget {
+  final BuildContext context;
   final String labelText;
   final String hintText;
   final TextEditingController controller;
@@ -854,6 +872,7 @@ class _CommonTextField extends StatelessWidget {
   final TextEditingController? minController;
 
   const _CommonTextField({
+    required this.context,
     required this.labelText,
     required this.hintText,
     required this.controller,
@@ -864,6 +883,7 @@ class _CommonTextField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
     return Expanded(
       child: TextField(
         controller: controller,
@@ -873,8 +893,10 @@ class _CommonTextField extends StatelessWidget {
         inputFormatters: [FilteringTextInputFormatter.digitsOnly],
         decoration: InputDecoration(
           labelStyle: Theme.of(context).textTheme.bodyMedium,
-          labelText: labelText,
-          hintText: hintText,
+          labelText: t.t(labelText),
+          hintText: labelText == 'split_pdf_range_start_hint'
+              ? t.t(hintText)
+              : hintText,
           border: const OutlineInputBorder(),
           contentPadding: const EdgeInsets.symmetric(
             horizontal: 8,

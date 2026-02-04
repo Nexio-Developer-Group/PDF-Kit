@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:pdf_kit/core/app_export.dart';
 import 'package:pdf_kit/presentation/component/setting_tile.dart';
 import 'package:pdf_kit/presentation/models/setting_info_type.dart';
 import 'package:pdf_kit/providers/locale_provider.dart';
-import 'package:pdf_kit/core/app_export.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -12,16 +12,54 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
+  Future<String?> _resolveDefaultPdfInitialPath() async {
+    final stored = Prefs.getString(Constants.pdfOutputFolderPathKey);
+    if (stored != null && stored.trim().isNotEmpty) {
+      return stored;
+    }
+    return null;
+  }
+
+  Future<String?> _resolveDefaultCameraInitialPath() async {
+    final stored = Prefs.getString(Constants.imagesFolderPathKey);
+    if (stored != null && stored.trim().isNotEmpty) {
+      return stored;
+    }
+    return null;
+  }
+
+  Future<String?> _resolveDefaultScreenshotInitialPath() async {
+    final stored = Prefs.getString(Constants.screenshotsFolderPathKey);
+    if (stored != null && stored.trim().isNotEmpty) {
+      return stored;
+    }
+    return null;
+  }
+
   @override
   Widget build(BuildContext context) {
     final t = AppLocalizations.of(context);
     final localeCode =
         context.watch<LocaleProvider>().locale?.languageCode ?? 'en';
-    final languageDisplay = localeCode == 'hi'
-        ? t.t('language_option_hindi')
-        : t.t('language_option_english');
+
+    const languageKeyByCode = <String, String>{
+      'en': 'language_option_english',
+      'hi': 'language_option_hindi',
+      'es': 'language_option_spanish',
+      'ar': 'language_option_arabic',
+      'bn': 'language_option_bengali',
+      'de': 'language_option_german',
+      'fr': 'language_option_french',
+      'ja': 'language_option_japanese',
+      'pt': 'language_option_portuguese',
+      'zh': 'language_option_chinese',
+    };
+    final languageDisplay = t.t(
+      languageKeyByCode[localeCode] ?? 'language_option_english',
+    );
 
     final items = <SettingsItem>[
+      // langauge
       SettingsItem(
         id: 'language',
         title: t.t('settings_language_item_title'),
@@ -33,14 +71,91 @@ class _SettingsScreenState extends State<SettingsScreen> {
           context.push('/settings/language');
         },
       ),
+
+      // default save locations
       SettingsItem(
         id: 'default_save',
         title: t.t('settings_default_save_location_title'),
         subtitle: t.t('settings_default_save_location_subtitle'),
         type: SettingsItemType.navigation,
-        leadingIcon: Icons.folder,
-        onTap: () {
-          // open choose folder screen
+        leadingIcon: Icons.folder_outlined,
+        onTap: () async {
+          final initialPath = await _resolveDefaultPdfInitialPath();
+          if (!context.mounted) return;
+
+          final extra = <String, dynamic>{
+            'title': t.t('settings_default_save_location_title'),
+            'description': t.t('folder_picker_description_pdfs'),
+            if (initialPath != null) 'path': initialPath,
+          };
+
+          final res = await context.pushNamed(
+            AppRouteName.folderPickScreen,
+            extra: extra,
+          );
+
+          final selectedPath = res is String ? res : null;
+          if (selectedPath == null || selectedPath.trim().isEmpty) return;
+          await Prefs.setString(Constants.pdfOutputFolderPathKey, selectedPath);
+        },
+      ),
+      
+      // camera location
+      SettingsItem(
+        id: 'default_camera_save',
+        title: t.t('settings_default_camera_location_title'),
+        subtitle: t.t('settings_default_camera_location_subtitle'),
+        type: SettingsItemType.navigation,
+        leadingIcon: Icons.camera_alt_outlined,
+        onTap: () async {
+          final initialPath = await _resolveDefaultCameraInitialPath();
+          if (!context.mounted) return;
+
+          final extra = <String, dynamic>{
+            'title': t.t('settings_default_camera_location_title'),
+            'description': t.t('folder_picker_description_images'),
+            if (initialPath != null) 'path': initialPath,
+          };
+
+          final res = await context.pushNamed(
+            AppRouteName.folderPickScreen,
+            extra: extra,
+          );
+
+          final selectedPath = res is String ? res : null;
+          if (selectedPath == null || selectedPath.trim().isEmpty) return;
+          await Prefs.setString(Constants.imagesFolderPathKey, selectedPath);
+        },
+      ),
+      
+      // screenshot location
+      SettingsItem(
+        id: 'default_screenshot_save',
+        title: t.t('settings_default_screenshot_location_title'),
+        subtitle: t.t('settings_default_screenshot_location_subtitle'),
+        type: SettingsItemType.navigation,
+        leadingIcon: Icons.screenshot,
+        onTap: () async {
+          final initialPath = await _resolveDefaultScreenshotInitialPath();
+          if (!context.mounted) return;
+
+          final extra = <String, dynamic>{
+            'title': t.t('settings_default_screenshot_location_title'),
+            'description': t.t('folder_picker_description_screenshots'),
+            if (initialPath != null) 'path': initialPath,
+          };
+
+          final res = await context.pushNamed(
+            AppRouteName.folderPickScreen,
+            extra: extra,
+          );
+
+          final selectedPath = res is String ? res : null;
+          if (selectedPath == null || selectedPath.trim().isEmpty) return;
+          await Prefs.setString(
+            Constants.screenshotsFolderPathKey,
+            selectedPath,
+          );
         },
       ),
       SettingsItem(
@@ -54,36 +169,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
         },
       ),
       SettingsItem(
-        id: 'file_naming',
-        title: t.t('settings_file_naming_title'),
-        subtitle: t.t('settings_file_naming_subtitle'),
-        type: SettingsItemType.navigation,
-        leadingIcon: Icons.text_fields,
-        onTap: () {},
-      ),
-      SettingsItem(
-        id: 'pdf_compression',
-        title: t.t('settings_pdf_compression_title'),
-        subtitle: t.t('settings_pdf_compression_subtitle'),
-        type: SettingsItemType.navigation,
-        leadingIcon: Icons.compress,
-        onTap: () {},
-      ),
-      SettingsItem(
         id: 'filter_options',
         title: t.t('settings_filter_options_title'),
         subtitle: t.t('settings_filter_options_subtitle'),
         type: SettingsItemType.navigation,
         leadingIcon: Icons.filter_list,
-        onTap: () {},
-      ),
-      SettingsItem(
-        id: 'grid_view_layout',
-        title: t.t('settings_grid_view_layout_title'),
-        subtitle: t.t('settings_grid_view_layout_subtitle'),
-        type: SettingsItemType.navigation,
-        leadingIcon: Icons.grid_view,
-        onTap: () {},
+        onTap: () {
+          context.push('/settings/filter-options');
+        },
       ),
       SettingsItem(
         id: 'pdf_content_fit',
@@ -101,7 +194,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
         subtitle: t.t('settings_help_center_subtitle'),
         type: SettingsItemType.navigation,
         leadingIcon: Icons.help_outline,
-        onTap: () {},
+        onTap: () {
+          context.push('/settings/help-support');
+        },
       ),
       SettingsItem(
         id: 'about_pdfkit',
@@ -109,7 +204,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
         subtitle: t.t('settings_about_pdf_kit_subtitle'),
         type: SettingsItemType.navigation,
         leadingIcon: Icons.info_outline,
-        onTap: () {},
+        onTap: () {
+          context.push('/settings/about-pdf-kit');
+        },
       ),
       SettingsItem(
         id: 'about_us',
@@ -117,82 +214,23 @@ class _SettingsScreenState extends State<SettingsScreen> {
         subtitle: t.t('settings_about_us_subtitle'),
         type: SettingsItemType.navigation,
         leadingIcon: Icons.group_outlined,
-        onTap: () {},
+        onTap: () {
+          context.push('/settings/about-us');
+        },
       ),
     ];
 
     return Scaffold(
+      appBar: AppBar(title: Text(t.t('settings_title'))),
       body: SafeArea(
-        child: Padding(
+        child: ListView.separated(
           padding: screenPadding,
-          child: Column(
-            children: [
-              _buildHeader(context),
-              Expanded(
-                child: ListView.separated(
-                  itemCount: items.length,
-                  separatorBuilder: (_, __) => SizedBox.shrink(),
-                  itemBuilder: (context, index) {
-                    return SettingsTile(item: items[index]);
-                  },
-                ),
-              ),
-            ],
-          ),
+          itemCount: items.length,
+          separatorBuilder: (_, __) => const SizedBox(height: 8),
+          itemBuilder: (context, index) {
+            return SettingsTile(item: items[index]);
+          },
         ),
-      ),
-    );
-  }
-
-  Widget _buildHeader(BuildContext context) {
-    return Container(
-      height: 56,
-      padding: const EdgeInsets.symmetric(horizontal: 12),
-      alignment: Alignment.center,
-      child: Row(
-        children: [
-          // Left: app glyph
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.primary.withOpacity(0.15),
-              shape: BoxShape.circle,
-            ),
-            child: ClipOval(
-              child: SizedBox(
-                width: 40,
-                height: 40,
-                child: Image.asset(
-                  'assets/app_icon.png',
-                  width: 40,
-                  height: 40,
-                  fit: BoxFit.cover,
-                  errorBuilder: (c, e, s) => Icon(
-                    Icons.widgets_rounded,
-                    size: 40,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(width: 12),
-          Text(
-            AppLocalizations.of(context).t('home_brand_title'),
-            style: Theme.of(
-              context,
-            ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600),
-          ),
-          // const Spacer(),
-          // IconButton(
-          //   icon: const Icon(Icons.settings),
-          //   onPressed: () {
-          //     context.push('/settings');
-          //   },
-          //   tooltip: 'Settings',
-          // ),
-        ],
       ),
     );
   }

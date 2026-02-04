@@ -1,13 +1,17 @@
 import 'dart:io';
+import 'package:dartz/dartz.dart' as dartz;
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'dart:async';
+import 'package:pdf_kit/core/app_export.dart';
+import 'package:pdf_kit/core/exception/failures.dart';
 import 'package:pdf_kit/models/file_model.dart';
 import 'package:pdf_kit/presentation/component/document_tile.dart';
 import 'package:pdf_kit/presentation/provider/selection_provider.dart';
 import 'package:pdf_kit/presentation/layouts/selection_layout.dart';
 import 'package:pdf_kit/service/pdf_protect_service.dart';
 import 'package:pdf_kit/service/recent_file_service.dart';
-import 'package:pdf_kit/core/app_export.dart';
 import 'package:path/path.dart' as p;
 import 'package:pdf_kit/presentation/pages/home_page.dart';
 import 'package:pdf_kit/presentation/widgets/non_dismissible_progress_dialog.dart';
@@ -49,9 +53,12 @@ class _UnlockPdfPageState extends State<UnlockPdfPage> {
     BuildContext context,
     SelectionProvider selection,
   ) async {
+    // Remove focus from text fields
+    FocusScope.of(context).unfocus();
+
     final t = AppLocalizations.of(context);
     if (_passwordController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
+      AppSnackbar.showSnackBar(
         SnackBar(
           content: Text(t.t('unlock_pdf_error_enter_password')),
           backgroundColor: Theme.of(context).colorScheme.error,
@@ -64,7 +71,7 @@ class _UnlockPdfPageState extends State<UnlockPdfPage> {
     setState(() => _isUnlocking = true);
 
     final progress = ValueNotifier<double>(0.02);
-    final stage = ValueNotifier<String>('Preparing…');
+    final stage = ValueNotifier<String>(t.t('progress_stage_preparing'));
     late final Timer smoothTimer;
 
     void bumpProgress(double value01) {
@@ -74,7 +81,7 @@ class _UnlockPdfPageState extends State<UnlockPdfPage> {
 
     _progressDialog.show(
       context: context,
-      title: 'Unlock PDF',
+      title: t.t('progress_dialog_unlocking_title'),
       progress: progress,
       stage: stage,
     );
@@ -87,29 +94,43 @@ class _UnlockPdfPageState extends State<UnlockPdfPage> {
 
     final file = selection.files.first;
 
-    late final result;
+    late final dartz.Either<Failure, String> result;
     try {
-      result = await PdfProtectionService.unlockPdf(
-        pdfPath: file.path,
-        password: _passwordController.text,
-        onProgress: (p01, s) {
-          stage.value = s;
-          bumpProgress(p01);
-        },
-      );
+      // Get root isolate token for platform channel communication
+      final rootIsolateToken = RootIsolateToken.instance!;
+
+      // Run in isolate to prevent UI blocking
+      result =
+          await compute(
+            _unlockPdfInIsolate,
+            _UnlockParams(
+              pdfPath: file.path,
+              password: _passwordController.text,
+              rootIsolateToken: rootIsolateToken,
+            ),
+          ).timeout(
+            const Duration(minutes: 5),
+            onTimeout: () => const dartz.Left(
+              PdfProtectionFailure('error_failed_unlock_pdf'),
+            ),
+          );
+
+      // Update progress manually since isolate can't call callbacks
+      bumpProgress(0.9);
+      stage.value = t.t('progress_stage_finalizing');
     } finally {
       try {
         bumpProgress(1.0);
-        stage.value = 'Done';
+        stage.value = t.t('progress_stage_done');
       } catch (_) {}
 
       smoothTimer.cancel();
-      if (mounted) {
-        _progressDialog.dismiss(context);
-      }
       progress.dispose();
       stage.dispose();
 
+      if (context.mounted) {
+        _progressDialog.dismiss(context);
+      }
       if (mounted) {
         setState(() => _isUnlocking = false);
       } else {
@@ -117,13 +138,14 @@ class _UnlockPdfPageState extends State<UnlockPdfPage> {
       }
     }
 
+    if (!mounted) return;
     result.fold(
       (failure) {
         if (!mounted) return;
         final msg = t
             .t('snackbar_error')
-            .replaceAll('{message}', failure.message);
-        ScaffoldMessenger.of(context).showSnackBar(
+            .replaceAll('{message}', t.t(failure.message));
+        AppSnackbar.showSnackBar(
           SnackBar(
             content: Text(msg),
             backgroundColor: Theme.of(context).colorScheme.error,
@@ -131,6 +153,8 @@ class _UnlockPdfPageState extends State<UnlockPdfPage> {
         );
       },
       (unlockedPath) async {
+        final successMsg = t.t('snackbar_unlock_done');
+
         // Get updated file stats after unlocking
         final unlockedFileOnDisk = File(unlockedPath);
         final stats = await unlockedFileOnDisk.stat();
@@ -150,26 +174,17 @@ class _UnlockPdfPageState extends State<UnlockPdfPage> {
         await RecentFilesService.addRecentFile(updatedFile);
 
         if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Successfully unlocked ${p.basename(unlockedPath)}'),
-            backgroundColor: Colors.green,
-            action: SnackBarAction(
-              label: 'Open',
-              onPressed: () {
-                context.pushNamed(
-                  AppRouteName.showPdf,
-                  queryParameters: {'path': unlockedPath},
-                );
-              },
-            ),
-          ),
+        AppSnackbar.showSuccessWithOpen(
+          message: successMsg,
+          path: unlockedPath,
         );
         selection.disable();
 
         // ✅ Navigate to home and trigger refresh
-        context.go('/');
-        RecentFilesSection.refreshNotifier.value++;
+        if (context.mounted) {
+          context.go('/');
+          RecentFilesSection.refreshNotifier.value++;
+        }
       },
     );
   }
@@ -185,12 +200,12 @@ class _UnlockPdfPageState extends State<UnlockPdfPage> {
         final t = AppLocalizations.of(context);
 
         return Scaffold(
-          backgroundColor: Colors.white,
+          backgroundColor: theme.scaffoldBackgroundColor,
           appBar: AppBar(
-            backgroundColor: Colors.white,
+            backgroundColor: theme.scaffoldBackgroundColor,
             elevation: 0,
             leading: IconButton(
-              icon: const Icon(Icons.arrow_back, color: Colors.black),
+              icon: Icon(Icons.arrow_back, color: theme.colorScheme.onSurface),
               onPressed: () => context.pop(),
             ),
             centerTitle: false,
@@ -205,16 +220,12 @@ class _UnlockPdfPageState extends State<UnlockPdfPage> {
                     t.t('unlock_pdf_title'),
                     style: theme.textTheme.headlineSmall?.copyWith(
                       fontWeight: FontWeight.bold,
-                      color: Colors.black,
                     ),
                   ),
                   const SizedBox(height: 12),
                   Text(
                     t.t('unlock_pdf_description'),
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: Colors.black87,
-                      height: 1.4,
-                    ),
+                    style: theme.textTheme.bodyMedium?.copyWith(height: 1.4),
                   ),
                   const SizedBox(height: 24),
 
@@ -229,6 +240,7 @@ class _UnlockPdfPageState extends State<UnlockPdfPage> {
                     const SizedBox(height: 12),
                     DocEntryCard(
                       info: files.first,
+                      showViewerOptionsSheet: false,
                       showRemove: true,
                       selectable: false,
                       reorderable: false,
@@ -259,7 +271,6 @@ class _UnlockPdfPageState extends State<UnlockPdfPage> {
                       style: theme.textTheme.titleSmall?.copyWith(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
-                        color: Colors.black,
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -274,7 +285,7 @@ class _UnlockPdfPageState extends State<UnlockPdfPage> {
                             _isPasswordVisible
                                 ? Icons.visibility
                                 : Icons.visibility_off,
-                            color: const Color(0xFF5B7FFF),
+                            color: theme.colorScheme.primary,
                           ),
                           onPressed: () {
                             setState(
@@ -282,15 +293,19 @@ class _UnlockPdfPageState extends State<UnlockPdfPage> {
                             );
                           },
                         ),
-                        border: const OutlineInputBorder(
-                          borderSide: BorderSide(color: Colors.grey),
-                        ),
-                        enabledBorder: const OutlineInputBorder(
-                          borderSide: BorderSide(color: Colors.grey),
-                        ),
-                        focusedBorder: const OutlineInputBorder(
+                        border: OutlineInputBorder(
                           borderSide: BorderSide(
-                            color: Color(0xFF5B7FFF),
+                            color: theme.colorScheme.outline,
+                          ),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderSide: BorderSide(
+                            color: theme.colorScheme.outline,
+                          ),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: BorderSide(
+                            color: theme.colorScheme.primary,
                             width: 2,
                           ),
                         ),
@@ -304,7 +319,7 @@ class _UnlockPdfPageState extends State<UnlockPdfPage> {
           bottomNavigationBar: hasFile
               ? Container(
                   padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-                  decoration: BoxDecoration(color: Colors.transparent),
+                  decoration: const BoxDecoration(color: Colors.transparent),
                   child: SafeArea(
                     minimum: const EdgeInsets.fromLTRB(16, 0, 16, 16),
                     child: SizedBox(
@@ -316,22 +331,22 @@ class _UnlockPdfPageState extends State<UnlockPdfPage> {
                             ? () => _handleUnlock(context, selection)
                             : null,
                         child: _isUnlocking
-                            ? const SizedBox(
+                            ? SizedBox(
                                 height: 24,
                                 width: 24,
                                 child: CircularProgressIndicator(
                                   strokeWidth: 2,
                                   valueColor: AlwaysStoppedAnimation<Color>(
-                                    Colors.white,
+                                    theme.colorScheme.onPrimary,
                                   ),
                                 ),
                               )
                             : Text(
                                 t.t('unlock_pdf_button'),
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w600,
-                                  color: Colors.white,
+                                  color: theme.colorScheme.onPrimary,
                                 ),
                               ),
                       ),
@@ -343,4 +358,31 @@ class _UnlockPdfPageState extends State<UnlockPdfPage> {
       },
     );
   }
+}
+
+// Isolate-safe unlock parameters
+class _UnlockParams {
+  final String pdfPath;
+  final String password;
+  final RootIsolateToken rootIsolateToken;
+
+  _UnlockParams({
+    required this.pdfPath,
+    required this.password,
+    required this.rootIsolateToken,
+  });
+}
+
+// Top-level function for isolate
+Future<dartz.Either<Failure, String>> _unlockPdfInIsolate(
+  _UnlockParams params,
+) async {
+  // Initialize binary messenger for platform channel communication
+  BackgroundIsolateBinaryMessenger.ensureInitialized(params.rootIsolateToken);
+
+  return await PdfProtectionService.unlockPdf(
+    pdfPath: params.pdfPath,
+    password: params.password,
+    onProgress: null, // Can't use callbacks across isolates
+  );
 }

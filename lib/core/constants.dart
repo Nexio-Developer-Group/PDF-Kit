@@ -6,11 +6,31 @@ class Constants {
   static const String prefsThemeKey = 'app_theme_mode';
   static const String prefsOnboardingCompletedKey = 'onboarding_completed';
 
+  /// Device registration payload cache (stringified JSON)
+  static const String deviceRegistrationPayloadKey =
+      'device_registration_payload_json';
+
+  /// Backend domain for device registration / FCM token sync.
+  ///
+  /// Endpoint used: `POST {base}/api/add_device`
+  static const String deviceRegistrationBaseUrl =
+      'https://django.nexiotech.cloud';
+
   /// Recent files storage key (used by RecentFilesService)
   static const String recentFilesKey = 'recent_files';
 
+  /// File search previous terms storage key (used by SearchFilesScreen)
+  static const String fileSearchPreviousTermsKey = 'file_search_previous_terms';
+
+  /// Recent files search previous terms storage key (used by RecentFilesSearchPage)
+  static const String recentFilesSearchPreviousTermsKey =
+      'recent_files_search_previous_terms';
+
   /// PDF content fit mode preference key
   static const String pdfContentFitModeKey = 'pdf_content_fit_mode';
+
+  /// Default sort option for file browser (name/modified)
+  static const String filesSortOptionKey = 'files_sort_option';
 
   /// Default PDF content fit mode (use PdfContentFitMode enum for actual values)
   static const String defaultPdfContentFitMode = 'original';

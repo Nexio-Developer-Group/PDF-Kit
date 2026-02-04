@@ -1,7 +1,7 @@
 // lib/presentation/pages/images_to_pdf_page.dart
 
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
+import 'package:dartz/dartz.dart' as dartz;
 import 'dart:async';
 import 'dart:io';
 import 'package:pdf_kit/models/file_model.dart';
@@ -58,8 +58,6 @@ class _ImagesToPdfPageState extends State<ImagesToPdfPage> {
 
   /// Load default destination folder (User Pref -> Downloads)
   Future<void> _loadDefaultDestination() async {
-
-
     try {
       // 1. Check for saved preference
       final savedPath = Prefs.getString(Constants.pdfOutputFolderPathKey);
@@ -161,7 +159,7 @@ class _ImagesToPdfPageState extends State<ImagesToPdfPage> {
 
     _progressDialog.show(
       context: context,
-      title: 'Images to PDF',
+      title: AppLocalizations.of(context).t('images_to_pdf_title'),
       progress: progress,
       stage: stage,
     );
@@ -182,7 +180,7 @@ class _ImagesToPdfPageState extends State<ImagesToPdfPage> {
 
     final files = selection.files;
 
-    late final result;
+    late final dartz.Either<CustomException, FileInfo> result;
     try {
       // Pass destination folder to merge service
       result = await PdfMergeService.mergePdfs(
@@ -207,7 +205,7 @@ class _ImagesToPdfPageState extends State<ImagesToPdfPage> {
         _isConverting = false;
       }
 
-      if (mounted) {
+      if (context.mounted) {
         _progressDialog.dismiss(context);
       }
 
@@ -223,7 +221,7 @@ class _ImagesToPdfPageState extends State<ImagesToPdfPage> {
         final msg = t
             .t('snackbar_error')
             .replaceAll('{message}', error.message);
-        ScaffoldMessenger.of(context).showSnackBar(
+        AppSnackbar.showSnackBar(
           SnackBar(
             content: Text(msg),
             backgroundColor: Theme.of(context).colorScheme.error,
@@ -231,6 +229,10 @@ class _ImagesToPdfPageState extends State<ImagesToPdfPage> {
         );
       },
       (convertedFile) async {
+        final successMsg = AppLocalizations.of(
+          context,
+        ).t('snackbar_images_to_pdf_done');
+
         // Store the converted PDF in recent files
         debugPrint(
           '📝 [ImagesToPDF] Storing converted file: ${convertedFile.name}',
@@ -248,34 +250,19 @@ class _ImagesToPdfPageState extends State<ImagesToPdfPage> {
 
         // Navigate to home and clear all routes, then reload home page
         selection.disable();
-        context.go('/');
+        if (context.mounted) {
+          context.go('/');
+        }
 
         // Trigger home page reload
         RecentFilesSection.refreshNotifier.value++;
 
         // Show success message after navigation
         Future.delayed(const Duration(milliseconds: 300), () {
-          if (context.mounted) {
-            final t = AppLocalizations.of(context);
-            final msg = t
-                .t('snackbar_success_images_to_pdf')
-                .replaceAll('{fileName}', convertedFile.name);
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(msg),
-                backgroundColor: Colors.green,
-                action: SnackBarAction(
-                  label: t.t('common_open_snackbar'),
-                  onPressed: () {
-                    context.pushNamed(
-                      AppRouteName.showPdf,
-                      queryParameters: {'path': convertedFile.path},
-                    );
-                  },
-                ),
-              ),
-            );
-          }
+          AppSnackbar.showSuccessWithOpen(
+            message: successMsg,
+            path: convertedFile.path,
+          );
         });
       },
     );
@@ -347,8 +334,8 @@ class _ImagesToPdfPageState extends State<ImagesToPdfPage> {
                             border: const UnderlineInputBorder(),
                             enabledBorder: UnderlineInputBorder(
                               borderSide: BorderSide(
-                                color: theme.colorScheme.primary.withOpacity(
-                                  0.3,
+                                color: theme.colorScheme.primary.withValues(
+                                  alpha: 0.3,
                                 ),
                               ),
                             ),
@@ -415,11 +402,12 @@ class _ImagesToPdfPageState extends State<ImagesToPdfPage> {
                         padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
                         child: DocEntryCard(
                           info: f,
-                          showEdit: true,
-                          showRemove: true,
+                          showViewerOptionsSheet: false,
+                          // showEdit: true,
+                          // showRemove: true,
                           reorderable: _reorderMode,
                           disabled: _isConverting,
-                          onEdit: () => null,
+                          onEdit: () {},
                           onRemove: () => selection.removeFile(f.path),
                           onOpen: () => context.pushNamed(
                             AppRouteName.showPdf,

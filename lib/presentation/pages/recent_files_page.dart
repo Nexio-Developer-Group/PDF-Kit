@@ -18,19 +18,19 @@ class RecentFilesPage extends StatefulWidget {
   final void Function(List<FileInfo> files)? onSelectionAction;
 
   const RecentFilesPage({
-    Key? key,
+    super.key,
     this.selectable = false,
     this.selectionActionText,
     this.selectionId,
     this.isFullscreenRoute = false,
     this.onSelectionAction,
-  }) : super(key: key);
+  });
 
   @override
   State<RecentFilesPage> createState() => _RecentFilesPageState();
 }
 
-class _RecentFilesPageState extends State<RecentFilesPage> {
+class _RecentFilesPageState extends State<RecentFilesPage> with RouteAware {
   List<FileInfo> _files = [];
   bool _isLoading = true;
   final GlobalKey<AnimatedListState> _listKey = GlobalKey<AnimatedListState>();
@@ -39,6 +39,29 @@ class _RecentFilesPageState extends State<RecentFilesPage> {
   void initState() {
     super.initState();
     debugPrint('📱 [RecentFilesPage] initState called');
+    _loadRecentFiles();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Subscribe to RouteObserver
+    final route = ModalRoute.of(context);
+    if (route is PageRoute) {
+      routeObserver.subscribe(this, route);
+    }
+  }
+
+  @override
+  void dispose() {
+    routeObserver.unsubscribe(this);
+    super.dispose();
+  }
+
+  @override
+  void didPopNext() {
+    // Called when returning to this page
+    debugPrint('🔄 [RecentFilesPage] Returning to page, refreshing...');
     _loadRecentFiles();
   }
 
@@ -133,9 +156,7 @@ class _RecentFilesPageState extends State<RecentFilesPage> {
         // Notify home page to refresh
         RecentFilesSection.refreshNotifier.value++;
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(t.t('snackbar_removed_recent'))),
-          );
+          AppSnackbar.show(t.t('snackbar_removed_recent'));
         }
       },
     );
@@ -154,7 +175,7 @@ class _RecentFilesPageState extends State<RecentFilesPage> {
               '❌ [RecentFilesPage] Rename failed: ${exception.message}',
             );
             if (mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
+              AppSnackbar.showSnackBar(
                 SnackBar(
                   content: Text(exception.message),
                   backgroundColor: Theme.of(context).colorScheme.error,
@@ -171,9 +192,7 @@ class _RecentFilesPageState extends State<RecentFilesPage> {
               _loadRecentFiles();
               // Trigger home page refresh
               RecentFilesSection.refreshNotifier.value++;
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('File renamed successfully')),
-              );
+              AppSnackbar.show('File renamed successfully');
             }
           },
         );
@@ -200,12 +219,12 @@ class _RecentFilesPageState extends State<RecentFilesPage> {
   }
 
   Future<void> _openClearRecentFilesSheet() async {
+    final t = AppLocalizations.of(context);
     await showClearRecentFilesSheet(
       context: context,
       onClear: () async {
         debugPrint('🧹 [RecentFilesPage] Clear All pressed');
         final result = await RecentFilesService.clearRecentFiles();
-        final t = AppLocalizations.of(context);
 
         result.fold(
           (error) {
@@ -214,9 +233,12 @@ class _RecentFilesPageState extends State<RecentFilesPage> {
               final msg = t
                   .t('snackbar_error')
                   .replaceAll('{message}', error.toString());
-              ScaffoldMessenger.of(
-                context,
-              ).showSnackBar(SnackBar(content: Text(msg)));
+              AppSnackbar.showSnackBar(
+                SnackBar(
+                  content: Text(msg),
+                  backgroundColor: Theme.of(context).colorScheme.error,
+                ),
+              );
             }
           },
           (_) {
@@ -243,7 +265,7 @@ class _RecentFilesPageState extends State<RecentFilesPage> {
           Icon(
             Icons.history,
             size: 64,
-            color: theme.colorScheme.onSurface.withOpacity(0.3),
+            color: theme.colorScheme.onSurface.withValues(alpha: 0.3),
           ),
           const SizedBox(height: 16),
           Text(
@@ -278,14 +300,26 @@ class _RecentFilesPageState extends State<RecentFilesPage> {
                 child: _isLoading
                     ? const Center(child: CircularProgressIndicator())
                     : _files.isEmpty
-                    ? _buildEmptyState(context, theme)
-                    : AnimatedList(
-                        key: _listKey,
-                        padding: const EdgeInsets.only(bottom: 16),
-                        initialItemCount: _files.length,
-                        itemBuilder: (context, i, animation) {
-                          if (i >= _files.length)
-                            return const SizedBox.shrink();
+                    ? RefreshIndicator(
+                        onRefresh: _loadRecentFiles,
+                        child: SingleChildScrollView(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          child: SizedBox(
+                            height: MediaQuery.of(context).size.height - 200,
+                            child: _buildEmptyState(context, theme),
+                          ),
+                        ),
+                      )
+                    : RefreshIndicator(
+                        onRefresh: _loadRecentFiles,
+                        child: AnimatedList(
+                          key: _listKey,
+                          padding: const EdgeInsets.only(bottom: 16),
+                          initialItemCount: _files.length,
+                          itemBuilder: (context, i, animation) {
+                            if (i >= _files.length) {
+                              return const SizedBox.shrink();
+                            }
 
                           return SlideTransition(
                             position: animation.drive(
@@ -304,6 +338,9 @@ class _RecentFilesPageState extends State<RecentFilesPage> {
                                 ),
                                 child: DocEntryCard(
                                   info: _files[i],
+                                  showViewerOptionsSheet:
+                                      !(widget.selectable ||
+                                          widget.isFullscreenRoute == true),
                                   selectable: _selectionEnabled,
                                   selected:
                                       (_maybeProvider()?.isSelected(
@@ -333,6 +370,7 @@ class _RecentFilesPageState extends State<RecentFilesPage> {
                         },
                       ),
               ),
+              ),
             ],
           ),
         ),
@@ -353,7 +391,7 @@ class _RecentFilesPageState extends State<RecentFilesPage> {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.primary.withOpacity(0.15),
+              color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.15),
               shape: BoxShape.circle,
             ),
             child: ClipOval(

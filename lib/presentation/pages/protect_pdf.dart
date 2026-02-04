@@ -1,6 +1,10 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'dart:async';
+import 'package:dartz/dartz.dart' as dartz;
+import 'package:flutter/services.dart';
+import 'package:pdf_kit/core/exception/failures.dart';
 import 'package:pdf_kit/models/file_model.dart';
 import 'package:pdf_kit/presentation/component/document_tile.dart';
 import 'package:pdf_kit/presentation/provider/selection_provider.dart';
@@ -49,9 +53,12 @@ class _ProtectPdfPageState extends State<ProtectPdfPage> {
     BuildContext context,
     SelectionProvider selection,
   ) async {
+    // Remove focus from text fields
+    FocusScope.of(context).unfocus();
+
     final t = AppLocalizations.of(context);
     if (_passwordController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
+      AppSnackbar.showSnackBar(
         SnackBar(
           content: Text(t.t('protect_pdf_error_enter_password')),
           backgroundColor: Theme.of(context).colorScheme.error,
@@ -64,7 +71,7 @@ class _ProtectPdfPageState extends State<ProtectPdfPage> {
     setState(() => _isProtecting = true);
 
     final progress = ValueNotifier<double>(0.02);
-    final stage = ValueNotifier<String>('Preparing…');
+    final stage = ValueNotifier<String>(t.t('progress_stage_preparing'));
     late final Timer smoothTimer;
 
     void bumpProgress(double value01) {
@@ -74,7 +81,7 @@ class _ProtectPdfPageState extends State<ProtectPdfPage> {
 
     _progressDialog.show(
       context: context,
-      title: 'Protect PDF',
+      title: t.t('progress_dialog_protecting_title'),
       progress: progress,
       stage: stage,
     );
@@ -87,24 +94,38 @@ class _ProtectPdfPageState extends State<ProtectPdfPage> {
 
     final file = selection.files.first;
 
-    late final result;
+    late final dartz.Either<Failure, String> result;
     try {
-      result = await PdfProtectionService.protectPdf(
-        pdfPath: file.path,
-        password: _passwordController.text,
-        onProgress: (p01, s) {
-          stage.value = s;
-          bumpProgress(p01);
-        },
-      );
+      // Get root isolate token for platform channel communication
+      final rootIsolateToken = RootIsolateToken.instance!;
+
+      // Run in isolate to prevent UI blocking
+      result =
+          await compute(
+            _protectPdfInIsolate,
+            _ProtectParams(
+              pdfPath: file.path,
+              password: _passwordController.text,
+              rootIsolateToken: rootIsolateToken,
+            ),
+          ).timeout(
+            const Duration(minutes: 5),
+            onTimeout: () => const dartz.Left(
+              PdfProtectionFailure('error_failed_protect_pdf'),
+            ),
+          );
+
+      // Update progress manually since isolate can't call callbacks
+      bumpProgress(0.9);
+      stage.value = t.t('progress_stage_finalizing');
     } finally {
       try {
         bumpProgress(1.0);
-        stage.value = 'Done';
+        stage.value = t.t('progress_stage_done');
       } catch (_) {}
 
       smoothTimer.cancel();
-      if (mounted) {
+      if (context.mounted) {
         _progressDialog.dismiss(context);
       }
       progress.dispose();
@@ -122,8 +143,8 @@ class _ProtectPdfPageState extends State<ProtectPdfPage> {
         if (!mounted) return;
         final msg = t
             .t('snackbar_error')
-            .replaceAll('{message}', failure.message);
-        ScaffoldMessenger.of(context).showSnackBar(
+            .replaceAll('{message}', t.t(failure.message));
+        AppSnackbar.showSnackBar(
           SnackBar(
             content: Text(msg),
             backgroundColor: Theme.of(context).colorScheme.error,
@@ -131,6 +152,8 @@ class _ProtectPdfPageState extends State<ProtectPdfPage> {
         );
       },
       (protectedPath) async {
+        final successMsg = t.t('snackbar_protect_done');
+
         // Get updated file stats after protection
         final protectedFileOnDisk = File(protectedPath);
         final stats = await protectedFileOnDisk.stat();
@@ -150,28 +173,18 @@ class _ProtectPdfPageState extends State<ProtectPdfPage> {
         await RecentFilesService.addRecentFile(updatedFile);
 
         if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'Successfully protected ${p.basename(protectedPath)}',
-            ),
-            backgroundColor: Colors.green,
-            action: SnackBarAction(
-              label: 'Open',
-              onPressed: () {
-                context.pushNamed(
-                  AppRouteName.showPdf,
-                  queryParameters: {'path': protectedPath},
-                );
-              },
-            ),
-          ),
+        AppSnackbar.showSuccessWithOpen(
+          message: successMsg,
+          path: protectedPath,
+          openProtectedInNativeViewer: true,
         );
         selection.disable();
 
         // ✅ Navigate to home and trigger refresh
-        context.go('/');
-        RecentFilesSection.refreshNotifier.value++;
+        if (context.mounted) {
+          context.go('/');
+          RecentFilesSection.refreshNotifier.value++;
+        }
       },
     );
   }
@@ -187,12 +200,12 @@ class _ProtectPdfPageState extends State<ProtectPdfPage> {
         final t = AppLocalizations.of(context);
 
         return Scaffold(
-          backgroundColor: Colors.white,
+          backgroundColor: theme.scaffoldBackgroundColor,
           appBar: AppBar(
-            backgroundColor: Colors.white,
+            backgroundColor: theme.scaffoldBackgroundColor,
             elevation: 0,
             leading: IconButton(
-              icon: const Icon(Icons.arrow_back, color: Colors.black),
+              icon: Icon(Icons.arrow_back, color: theme.colorScheme.onSurface),
               onPressed: () => context.pop(),
             ),
             centerTitle: false,
@@ -227,6 +240,7 @@ class _ProtectPdfPageState extends State<ProtectPdfPage> {
                     const SizedBox(height: 12),
                     DocEntryCard(
                       info: files.first,
+                      showViewerOptionsSheet: false,
                       showEdit: false,
                       showRemove: true,
                       // showVertOption: true,
@@ -259,7 +273,6 @@ class _ProtectPdfPageState extends State<ProtectPdfPage> {
                       style: theme.textTheme.titleSmall?.copyWith(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
-                        color: Colors.black,
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -274,7 +287,7 @@ class _ProtectPdfPageState extends State<ProtectPdfPage> {
                             _isPasswordVisible
                                 ? Icons.visibility
                                 : Icons.visibility_off,
-                            color: const Color(0xFF5B7FFF),
+                            color: theme.colorScheme.primary,
                           ),
                           onPressed: () {
                             setState(
@@ -282,15 +295,19 @@ class _ProtectPdfPageState extends State<ProtectPdfPage> {
                             );
                           },
                         ),
-                        border: const OutlineInputBorder(
-                          borderSide: BorderSide(color: Colors.grey),
-                        ),
-                        enabledBorder: const OutlineInputBorder(
-                          borderSide: BorderSide(color: Colors.grey),
-                        ),
-                        focusedBorder: const OutlineInputBorder(
+                        border: OutlineInputBorder(
                           borderSide: BorderSide(
-                            color: Color(0xFF5B7FFF),
+                            color: theme.colorScheme.outline,
+                          ),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderSide: BorderSide(
+                            color: theme.colorScheme.outline,
+                          ),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: BorderSide(
+                            color: theme.colorScheme.primary,
                             width: 2,
                           ),
                         ),
@@ -304,16 +321,7 @@ class _ProtectPdfPageState extends State<ProtectPdfPage> {
           bottomNavigationBar: hasFile
               ? Container(
                   padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-                  decoration: BoxDecoration(
-                    color: Colors.transparent,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
-                        offset: const Offset(0, -2),
-                        blurRadius: 8,
-                      ),
-                    ],
-                  ),
+                  decoration: const BoxDecoration(color: Colors.transparent),
                   child: SafeArea(
                     bottom: true,
                     minimum: const EdgeInsets.fromLTRB(16, 0, 16, 16),
@@ -327,22 +335,22 @@ class _ProtectPdfPageState extends State<ProtectPdfPage> {
                             ? () => _handleProtect(context, selection)
                             : null,
                         child: _isProtecting
-                            ? const SizedBox(
+                            ? SizedBox(
                                 height: 24,
                                 width: 24,
                                 child: CircularProgressIndicator(
                                   strokeWidth: 2,
                                   valueColor: AlwaysStoppedAnimation<Color>(
-                                    Colors.white,
+                                    theme.colorScheme.onPrimary,
                                   ),
                                 ),
                               )
                             : Text(
                                 t.t('protect_pdf_button'),
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w600,
-                                  color: Colors.white,
+                                  color: theme.colorScheme.onPrimary,
                                 ),
                               ),
                       ),
@@ -354,4 +362,31 @@ class _ProtectPdfPageState extends State<ProtectPdfPage> {
       },
     );
   }
+}
+
+// Isolate-safe protection parameters
+class _ProtectParams {
+  final String pdfPath;
+  final String password;
+  final RootIsolateToken rootIsolateToken;
+
+  _ProtectParams({
+    required this.pdfPath,
+    required this.password,
+    required this.rootIsolateToken,
+  });
+}
+
+// Top-level function for isolate
+Future<dartz.Either<Failure, String>> _protectPdfInIsolate(
+  _ProtectParams params,
+) async {
+  // Initialize binary messenger for platform channel communication
+  BackgroundIsolateBinaryMessenger.ensureInitialized(params.rootIsolateToken);
+
+  return await PdfProtectionService.protectPdf(
+    pdfPath: params.pdfPath,
+    password: params.password,
+    onProgress: null, // Can't use callbacks across isolates
+  );
 }

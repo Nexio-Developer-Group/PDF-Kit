@@ -6,6 +6,10 @@
   "app_nav_settings": "Settings",
   "settings_title": "Settings",
 
+  "settings_language_title": "Language",
+  "settings_language_label": "App language",
+  "settings_language_description": "Choose the language used in the app.",
+
   "common_cancel": "Cancel",
   "common_clear_all": "Clear All",
   "common_clear": "Clear",
@@ -13,6 +17,10 @@
   "common_retry": "Retry",
   "common_open": "Open",
   "common_rename": "Rename",
+  "rename_sheet_title": "Rename",
+  "rename_field_label": "New name",
+  "rename_field_hint": "Enter new name",
+  "rename_button": "Rename",
   "common_delete": "Delete",
   "common_share": "Share",
   "common_search": "Search",
@@ -225,7 +233,7 @@
     "placeholders": {"fileName": {"type": "String"}}
   }
 
-  ,"home_brand_title": "PDF Kit"
+  ,"home_brand_title": "PDF Seva"
   ,"home_get_started_title": "Get started with your PDFs"
   ,"home_get_started_message": "Scan documents or import files to see them here."
   ,"home_get_started_scan": "Scan a document"
@@ -260,8 +268,7 @@
   ,"compress_pdf_medium_sub": "Medium size, medium quality"
   ,"compress_pdf_low_sub": "Largest size, better quality"
   ,"compress_pdf_button": "Compress"
-  ,"compress_pdf_compressing": "Compressing..."
-  ,"compress_pdf_select_first_error": "Select a PDF first"
+  ,"compress_pdf_compressing": "Compressing..."  ,"compress_pdf_service_warning": "Note: This compression feature is currently in development and works best with large PDF files. Smaller files may not compress significantly."  ,"compress_pdf_select_first_error": "Select a PDF first"
   ,"compress_pdf_result_pattern": "Compressed \"{original}\" ({level}) → {result}"
   ,"@compress_pdf_result_pattern": {"description": "Snackbar pattern after compression.", "placeholders": {"original": {"type": "String"}, "level": {"type": "String"}, "result": {"type": "String"}}}
 
@@ -335,15 +342,132 @@
   ,"settings_pdf_compression_subtitle": "Set how new files are compressed automatically"
   ,"settings_filter_options_title": "Filter Options"
   ,"settings_filter_options_subtitle": "Choose which filters the app applies by default"
+  ,"settings_filter_options_description": "Choose which filters are applied by default when viewing files and folders whole over the app."
   ,"settings_grid_view_layout_title": "Grid View Layout"
   ,"settings_grid_view_layout_subtitle": "Control how files and folders appear"
   ,"settings_pdf_content_fit_title": "PDF Content Fit Mode"
   ,"settings_pdf_content_fit_subtitle": "Choose how images and PDFs should fit"
+
+  ,"pdf_content_fit_settings_page_title": "PDF Content Fit"
+  ,"pdf_content_fit_settings_description": "Choose how PDFs and images fit inside the viewer. This affects how content is displayed on screen only."
+  ,"pdf_content_fit_settings_choose_mode_label": "Choose mode"
+  ,"pdf_content_fit_settings_applied_snackbar": "Content fit updated"
+
+  ,"pdf_content_fit_mode_original_title": "Original"
+  ,"pdf_content_fit_mode_original_description": "Show content at its original size."
+  ,"pdf_content_fit_mode_fit_title": "Fit"
+  ,"pdf_content_fit_mode_fit_description": "Fit the entire content within the available space."
+  ,"pdf_content_fit_mode_crop_title": "Crop"
+  ,"pdf_content_fit_mode_crop_description": "Fill the space and crop any overflow."
   ,"settings_help_center_title": "Help Center"
   ,"settings_help_center_subtitle": "Get help, FAQs, and answers"
-  ,"settings_about_pdf_kit_title": "About PDF-Kit"
-  ,"settings_about_pdf_kit_subtitle": "View details about this app"
+  ,"help_section_all": "All"
+  ,"help_section_general": "General"
+  ,"help_section_features": "Features"
+  ,"help_section_files": "Files"
+  ,"help_section_troubleshooting": "Troubleshooting"
+  ,"help_search_hint": "Search"
+  ,"help_clear_tooltip": "Clear"
+  ,"help_no_results": "No FAQs found. Try a different search."
+  
+  ,"help_faq_general_1_question": "What can I do with PDF Seva?"
+  ,"help_faq_general_1_answer": "PDF Seva helps you manage PDFs and files on your device. You can merge, split, compress, reorder pages, convert images to PDF, convert PDF to images, and add/remove password protection."
+  ,"help_faq_general_2_question": "Where are my generated PDFs saved?"
+  ,"help_faq_general_2_answer": "The output is saved to the destination folder selected during the flow. You can also set a default save folder from Settings → Default save location."
+  ,"help_faq_general_3_question": "How do I change the default save location?"
+  ,"help_faq_general_3_answer": "Open Settings → Default save location, pick a folder, and confirm. New outputs will be saved there unless you choose a different folder during an action."
+  
+  ,"help_faq_features_1_question": "How do I merge multiple PDFs into one?"
+  ,"help_faq_features_1_answer": "Tap Merge on the home tools grid, select at least 2 PDFs, then continue to merge. You can reorder files before merging if the merge screen provides the option."
+  ,"help_faq_features_2_question": "How do I convert images to a single PDF?"
+  ,"help_faq_features_2_answer": "Tap Images to PDF, select 2+ images, then continue. Arrange images if prompted, and save the generated PDF."
+  ,"help_faq_features_3_question": "How do I split a PDF into pages/files?"
+  ,"help_faq_features_3_answer": "Tap Split, select a single PDF, then choose the page range or split options on the Split screen and save the result."
+  ,"help_faq_features_4_question": "How do I reorder pages in a PDF?"
+  ,"help_faq_features_4_answer": "Tap Reorder, select a single PDF, then drag pages to rearrange them. Save to export the new PDF with the updated order."
+  ,"help_faq_features_5_question": "How does PDF compression work?"
+  ,"help_faq_features_5_answer": "Tap Compress, select a PDF, then choose a compression level (if available). Higher compression usually reduces file size but may reduce quality."
+  ,"help_faq_features_6_question": "How do I add a password to a PDF?"
+  ,"help_faq_features_6_answer": "Tap Protect, pick a PDF (must be unprotected), enter the password, and save. Keep the password safe—without it the file can't be opened."
+  ,"help_faq_features_7_question": "How do I remove a password from a PDF?"
+  ,"help_faq_features_7_answer": "Tap Unlock/Remove Password, choose a protected PDF, enter the correct password when asked, then save the unlocked copy."
+  
+  ,"help_faq_files_1_question": "Which files are supported?"
+  ,"help_faq_files_1_answer": "The app focuses on PDFs and common image formats. The viewer supports PDFs and images (including GIF previews). If a file can't be opened, check that the extension matches a supported type."
+  ,"help_faq_files_2_question": "How do I find a file quickly?"
+  ,"help_faq_files_2_answer": "Use the search feature in the file explorer screens (Files/Search). You can also open Recent Files from the home screen to quickly re-open recent documents."
+  
+  ,"help_faq_troubleshooting_1_question": "I can't see my files or folders. What should I do?"
+  ,"help_faq_troubleshooting_1_answer": "This is usually a permission issue. On Android, allow storage/files access when prompted (or from system Settings → Apps → PDF Seva → Permissions). On Android 11+, 'All files access' may be required for broad browsing."
+  ,"help_faq_troubleshooting_2_question": "Why did my action fail or produce an empty output?"
+  ,"help_faq_troubleshooting_2_answer": "Common causes are selecting the wrong file type (e.g., protected PDF for actions that require unprotected), selecting too few files, or missing storage permissions. Re-try the action and ensure the selection rules shown on the picker are satisfied."
+  ,"settings_about_pdf_kit_title": "About PDF Seva"
+  ,"settings_about_pdf_kit_subtitle": "Learn what PDF Seva does and how it uses permissions"
   ,"settings_about_us_title": "About Us"
+  ,"settings_about_us_subtitle": "Discover our vision and how we work"
+
+  ,"about_us_org_name": "Nexio Technologies"
+  ,"about_us_description": "We provide the digital backbone for modern organizations. NexioTech Cloud specializes in optimizing your workflow through tailored cloud solutions and forward-thinking IT services. Our mission is to bridge the gap between advanced technology and daily efficiency, creating a seamless digital environment where your business can thrive."
+  ,"about_us_links_section_title": "Links"
+  ,"about_us_link_website_title": "Website"
+  ,"about_us_link_help_title": "Help"
+  ,"about_us_link_connect_title": "Connect"
+  ,"about_us_link_call_title": "Call"
+  ,"about_us_link_github_title": "GitHub Organization"
+
+  ,"about_pdf_kit_section_app_info": "App information"
+  ,"about_pdf_kit_section_what_is": "What is PDF Seva?"
+  ,"about_pdf_kit_section_features": "Features"
+  ,"about_pdf_kit_section_permissions": "Permissions used"
+  ,"about_pdf_kit_section_privacy": "Data & privacy"
+
+  ,"about_pdf_kit_app_name_label": "App name"
+  ,"about_pdf_kit_package_name_label": "Package name"
+  ,"about_pdf_kit_version_label": "Version"
+  ,"about_pdf_kit_api_levels_label": "API levels"
+  ,"about_pdf_kit_target_sdk_label": "Target SDK"
+
+  ,"about_pdf_kit_description_1": "PDF Seva is a lightweight PDF utility app that lets you view, manage, and perform essential operations on PDF files stored on your device."
+  ,"about_pdf_kit_description_2": "Document operations are performed locally to keep things fast, simple, and in your control."
+
+  ,"about_pdf_kit_feature_1": "Access and browse PDF files from device storage"
+  ,"about_pdf_kit_feature_2": "View PDF documents smoothly"
+  ,"about_pdf_kit_feature_3": "Split PDF files into smaller PDFs"
+  ,"about_pdf_kit_feature_4": "Merge multiple PDF files into a single document"
+  ,"about_pdf_kit_feature_5": "Organize and manage PDF documents"
+  ,"about_pdf_kit_feature_6": "Quickly access recent PDF files"
+
+  ,"about_pdf_kit_permission_all_files_title": "All files access"
+  ,"about_pdf_kit_permission_all_files_purpose": "Read and write PDFs in your device storage."
+  ,"about_pdf_kit_permission_photos_title": "Photos / Images"
+  ,"about_pdf_kit_permission_photos_purpose": "Used for Image related operations."
+  ,"about_pdf_kit_permission_videos_title": "Videos"
+  ,"about_pdf_kit_permission_videos_purpose": "Only used when you pick videos (if required)."
+
+  ,"about_pdf_kit_permissions_description": "PDF Seva may request storage/media permissions so it can show your PDFs and save newly created files. Tap any permission below to open this app's permission settings."
+  ,"about_pdf_kit_permissions_android_only": "Permission status is shown on Android only."
+  ,"about_pdf_kit_permissions_read_error": "Could not read permission status on this device."
+
+  ,"about_pdf_kit_privacy_bullet_1": "No account or sign-up is required to use the app"
+  ,"about_pdf_kit_privacy_bullet_2": "Your documents are processed locally on your device and are never uploaded to external servers"
+  ,"about_pdf_kit_privacy_bullet_3": "We do not collect personal documents, file contents, or user-identifiable information"
+  ,"about_pdf_kit_privacy_bullet_4": "Anonymous usage analytics may be collected to improve app performance and features"
+  ,"about_pdf_kit_privacy_bullet_5": "Crash reports are collected anonymously to help identify and fix app issues"
+  ,"about_pdf_kit_privacy_bullet_6": "Cloud messaging tokens may be stored securely to enable optional notifications"
+
+  ,"about_pdf_kit_privacy_policy_title": "Privacy policy"
+  ,"about_pdf_kit_privacy_policy_subtitle": "Privacy policy link is here"
+
+  ,"about_pdf_kit_permission_status_granted": "Granted"
+  ,"about_pdf_kit_permission_status_limited": "Limited"
+  ,"about_pdf_kit_permission_status_denied": "Denied"
+  ,"about_pdf_kit_permission_status_restricted": "Restricted"
+  ,"about_pdf_kit_permission_status_blocked": "Blocked"
+  ,"about_pdf_kit_permission_status_provisional": "Provisional"
+  ,"about_pdf_kit_permission_status_unknown": "Unknown"
+
+  ,"about_pdf_kit_error_invalid_privacy_url": "Invalid privacy policy URL"
+  ,"about_pdf_kit_error_could_not_open_link": "Could not open the link"
 
   ,"action_watermark_label": "Watermark"
   ,"action_esign_label": "eSign PDF"
@@ -361,6 +485,21 @@
   ,"images_to_pdf_title": "Convert Images to PDF"
   ,"pdf_to_image_title": "Convert PDF to Images"
   ,"split_pdf_title": "Split PDF"
+  ,"split_pdf_description": "Select page ranges to extract from your PDF"
+  ,"split_pdf_selected_pdf_label": "Selected PDF"
+  ,"split_pdf_page_preview_label": "Page Preview"
+  ,"split_pdf_destination_folder_label": "Destination Folder"
+  ,"split_pdf_naming_pattern_label": "Output naming pattern"
+  ,"split_pdf_naming_pattern_hint": "filename_____"
+  ,"split_pdf_total_pages_helper": "Total pages: {count}"
+  ,"@split_pdf_total_pages_helper": {"placeholders": {"count": {"type": "String"}}}
+  ,"split_pdf_page_ranges_label": "Page Ranges"
+  ,"split_pdf_no_pdf_selected": "No PDF selected"
+  ,"split_pdf_button": "Split PDF"
+  ,"split_pdf_range_start_label": "Start"
+  ,"split_pdf_range_start_hint": "1"
+  ,"split_pdf_range_end_label": "End"
+  ,"split_pdf_validation_error": "Please add at least one valid page range"
   ,"reorder_pdf_title": "Reorder PDF Pages"
   ,"reorder_pdf_description": "Reorder, rotate, or remove pages from your PDF. Tap a page to preview, drag to reorder, and save your customized document."
   ,"reorder_pdf_button": "Reorder"
@@ -450,6 +589,13 @@
   "placeholders": { "count": { "type": "int" } }
 },
 
+"selection_error_pdf_only": "Only PDF files can be selected for this operation.",
+"selection_error_image_only": "Only image files can be selected for this operation.",
+"selection_error_pdf_not_protected": "This PDF is not protected with a password.",
+"selection_error_pdf_protected": "Action not allowed on protected PDF. Unlock it first to proceed.",
+"snackbar_file_renamed": "File renamed successfully",
+"snackbar_removed_from_recent": "Removed from recent files",
+
 "onboarding_screen1_title": "Your Files, Fully Private",
 "onboarding_screen1_subtitle": "Work offline with complete peace of mind.\nNothing leaves your device — your data stays safe, secure, and personal to you.",
 
@@ -491,7 +637,55 @@
   ,"@pdf_to_image_destination_snackbar": {"placeholders": {"folderName": {"type": "String"}}}
   ,"pdf_to_image_loading_default_folder": "Loading default folder..."
   ,"pdf_to_image_select_folder_placeholder": "Select destination folder"
+  ,"pdf_page_selector_title": "Select Pages"
+  ,"pdf_page_selector_hint": "e.g., 1-5, 8, 10-15"
+  ,"pdf_page_selector_helper": "Enter page ranges to select, separated by commas"
+  ,"pdf_page_selector_selected_count": "{count} of {total} page{plural} selected"
+  ,"@pdf_page_selector_selected_count": {"placeholders": {"count": {"type": "String"}, "total": {"type": "String"}, "plural": {"type": "String"}}}
+  ,"pdf_page_selector_error_empty": "At least one page must be selected"
+  ,"pdf_page_selector_error_invalid_range": "Invalid range format. Use format like 1-5"
+  ,"pdf_page_selector_error_invalid_number": "Please enter valid page numbers"
+  ,"pdf_page_selector_error_out_of_range": "Pages must be between 1 and {total}"
+  ,"@pdf_page_selector_error_out_of_range": {"placeholders": {"total": {"type": "String"}}}
+  ,"pdf_page_selector_error_start_greater": "Start page must be less than or equal to end page"
+  ,"pdf_page_selector_error_page_out_of_range": "Page must be between 1 and {total}"
+  ,"@pdf_page_selector_error_page_out_of_range": {"placeholders": {"total": {"type": "String"}}}
   ,"common_done": "Done"
+
+  ,"progress_dialog_keep_open": "Please keep the app open while we finish."
+  ,"progress_dialog_merging_title": "Merging PDF"
+  ,"progress_dialog_protecting_title": "Protecting PDF"
+  ,"progress_dialog_unlocking_title": "Unlocking PDF"
+
+  ,"progress_stage_preparing": "Preparing…"
+  ,"progress_stage_starting": "Starting…"
+  ,"progress_stage_analyzing_pdf": "Analyzing PDF…"
+  ,"progress_stage_compressing": "Compressing…"
+  ,"progress_stage_finalizing": "Finalizing…"
+  ,"progress_stage_validating_inputs": "Validating inputs"
+  ,"progress_stage_encrypting_pdf": "Encrypting PDF"
+  ,"progress_stage_decrypting_pdf": "Decrypting PDF"
+  ,"progress_stage_writing_output": "Writing output"
+  ,"progress_stage_cleaning_up": "Cleaning up"
+  ,"progress_stage_done": "Done"
+  
+  ,"error_file_not_found": "PDF file not found"
+  ,"error_invalid_password": "Password cannot be empty"
+  ,"error_incorrect_password": "Incorrect password. Please try again."
+  ,"error_failed_create_protected_pdf": "Failed to create protected PDF"
+  ,"error_failed_create_unlocked_pdf": "Failed to create unlocked PDF"
+  ,"error_failed_protect_pdf": "Failed to protect PDF"
+  ,"error_failed_unlock_pdf": "Failed to unlock PDF"
+  ,"error_failed_check_pdf": "Failed to check PDF"
+  ,"error_file_read_write": "File error"
+  ,"snackbar_merge_done": "Merge completed successfully"
+  ,"snackbar_compress_done": "Compression completed successfully"
+  ,"snackbar_images_to_pdf_done": "PDF created successfully"
+  ,"snackbar_pdf_to_image_done": "Images created successfully"
+  ,"snackbar_split_done": "Split completed successfully"
+  ,"snackbar_protect_done": "PDF protected successfully"
+  ,"snackbar_unlock_done": "PDF unlocked successfully"
+  ,"snackbar_reorder_done": "Reorder completed successfully"
   ,"snackbar_success_pdf_to_image": "Successfully converted {count} pages to images in {folderName}"
   ,"@snackbar_success_pdf_to_image": {"placeholders": {"count": {"type": "String"}, "folderName": {"type": "String"}}}
 
@@ -501,5 +695,29 @@
   ,"pdf_options_protect": "Protect / Remove Password"
   ,"pdf_options_compress": "Compress PDF"
   ,"pdf_options_move_to_folder": "Move to Folder"
+
+  ,"files_quick_access_title": "Quick Access"
+  ,"file_quick_access_tile": "Quick Access"
+  ,"files_storage_title": "Storage"
+  ,"files_loading_storage": "Loading storage..."
+  ,"files_internal_storage": "Internal storage"
+  ,"files_sd_card": "SD Card"
+  ,"files_search_type_prompt": "Type to search"
+  ,"files_pdfs_folder": "PDFs"
+  ,"files_downloads_folder": "Downloads"
+  ,"files_images_folder": "Images"
+  ,"files_screenshots_folder": "Screenshots"
+
+  ,"folder_picker_description_pdfs": "All generated and imported files will be stored here unless you choose a different location."
   
+  
+  ,"folder_picker_description_images":"Select the folder where photos taken by your device’s camera are saved. This allows the app to easily access and manage camera images when needed."
+  
+  ,"folder_picker_description_screenshots":"Choose the folder where screenshots are stored on your device. This helps the app correctly detect and organize screenshots separately from camera photos."
+  ,"settings_default_camera_location_title":" Default Camera Location"
+
+  ,"settings_default_screenshot_location_title":"Default Screenshot Location"
+  ,"settings_default_camera_location_subtitle" : "Choose where camera photos are saved"
+  ,"settings_default_save_location_subtitle":"Choose where all PDFs will be saved"
+  ,"settings_default_screenshot_location_subtitle":"Choose where screenshots are saved"
 }

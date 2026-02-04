@@ -26,8 +26,8 @@ class ReorderPdfPage extends StatefulWidget {
 }
 
 class _ReorderPdfPageState extends State<ReorderPdfPage> {
-  Set<int> _removedPages = {};
-  Map<int, double> _rotations = {};
+  final Set<int> _removedPages = {};
+  final Map<int, double> _rotations = {};
   List<int> _pageOrder = [];
   bool _isProcessing = false;
   bool _isLoading = true;
@@ -269,11 +269,12 @@ class _ReorderPdfPageState extends State<ReorderPdfPage> {
           await RecentFilesService.addRecentFile(fileInfo);
 
           if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(t.t('reorder_pdf_success')),
-                duration: const Duration(seconds: 3),
-              ),
+            final successMsg = AppLocalizations.of(
+              context,
+            ).t('snackbar_reorder_done');
+            AppSnackbar.showSuccessWithOpen(
+              message: successMsg,
+              path: outputPath,
             );
 
             // Trigger home page refresh
@@ -300,7 +301,7 @@ class _ReorderPdfPageState extends State<ReorderPdfPage> {
 
   void _showError(String message) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
+    AppSnackbar.showSnackBar(
       SnackBar(
         content: Text(message),
         backgroundColor: Colors.red,
@@ -507,7 +508,7 @@ class _ReorderPdfPageState extends State<ReorderPdfPage> {
                             ),
                             decoration: BoxDecoration(
                               color: theme.colorScheme.primaryContainer
-                                  .withOpacity(0.3),
+                                  .withValues(alpha: 0.3),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Row(
@@ -615,7 +616,7 @@ class _ReorderPdfPageState extends State<ReorderPdfPage> {
                           if (_isProcessing)
                             Positioned.fill(
                               child: Container(
-                                color: Colors.black.withOpacity(0.3),
+                                color: Colors.black.withValues(alpha: 0.3),
                                 child: Center(
                                   child: Card(
                                     child: Padding(

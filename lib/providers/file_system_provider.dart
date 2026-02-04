@@ -80,14 +80,14 @@ class FileSystemProvider extends ChangeNotifier with WidgetsBindingObserver {
   }
 
   Future<void> loadRoots() async {
-    print('🔍 [FileSystemProvider] loadRoots called');
+    debugPrint('🔍 [FileSystemProvider] loadRoots called');
     final res = await PathService.volumes();
     res.fold(
       (err) {
-        print('❌ [FileSystemProvider] loadRoots error: $err');
+        debugPrint('❌ [FileSystemProvider] loadRoots error: $err');
       },
       (dirs) {
-        print('✅ [FileSystemProvider] loadRoots success: $dirs');
+        debugPrint('✅ [FileSystemProvider] loadRoots success: $dirs');
         _roots = dirs;
         notifyListeners();
       },
@@ -97,18 +97,18 @@ class FileSystemProvider extends ChangeNotifier with WidgetsBindingObserver {
   /// Load files for a specific path.
   /// [forceRefresh] will ignore cache and fetch from disk.
   Future<void> load(String path, {bool forceRefresh = false}) async {
-    print(
+    debugPrint(
       '🔍 [FileSystemProvider] load called for: $path (forceRefresh: $forceRefresh)',
     );
     if (!forceRefresh && _cache.containsKey(path)) {
-      print('📦 [FileSystemProvider] returning cached for: $path');
+      debugPrint('📦 [FileSystemProvider] returning cached for: $path');
       // Data exists, but maybe check if it's stale?
       // For now, trust cache unless forced or auto-refreshed.
       return;
     }
 
     if (_loading.contains(path)) {
-      print('⏳ [FileSystemProvider] already loading: $path');
+      debugPrint('⏳ [FileSystemProvider] already loading: $path');
       return; // Already loading
     }
 
@@ -122,13 +122,15 @@ class FileSystemProvider extends ChangeNotifier with WidgetsBindingObserver {
 
     result.fold(
       (error) {
-        print('❌ [FileSystemProvider] error loading $path: $error');
+        debugPrint('❌ [FileSystemProvider] error loading $path: $error');
         _errors[path] = error.toString();
         // keep old cache if exists? or clear?
         // _cache.remove(path);
       },
       (files) {
-        print('✅ [FileSystemProvider] loaded ${files.length} items for $path');
+        debugPrint(
+          '✅ [FileSystemProvider] loaded ${files.length} items for $path',
+        );
         _cache[path] = files;
       },
     );
@@ -243,13 +245,105 @@ class FileSystemProvider extends ChangeNotifier with WidgetsBindingObserver {
   // --- Search ---
 
   StreamSubscription? _searchSub;
+  Timer? _searchNotifyTimer;
+  int _searchToken = 0;
+
+  void _scheduleSearchNotify() {
+    if (_searchNotifyTimer?.isActive ?? false) return;
+    _searchNotifyTimer = Timer(const Duration(milliseconds: 100), () {
+      if (_isSearching) {
+        notifyListeners();
+      }
+    });
+  }
 
   void clearSearch() {
     _searchSub?.cancel();
+    _searchNotifyTimer?.cancel();
     _isSearching = false;
     _currentQuery = '';
     _searchResults.clear();
     notifyListeners();
+  }
+
+  bool _matchesQuery(FileInfo f, String query) {
+    if (f.isDirectory) return false;
+    final q = query.toLowerCase();
+    final lower = f.name.toLowerCase();
+    final i = lower.lastIndexOf('.');
+    final stem = (i <= 0) ? lower : lower.substring(0, i);
+    return stem.contains(q);
+  }
+
+  /// Optimized search:
+  /// 1) Immediately searches the current folder (cached/loaded) for matches.
+  /// 2) Continues searching recursively in nested folders via stream.
+  ///
+  /// This provides fast first results and avoids re-scanning UI too frequently.
+  Future<void> searchOptimized(String path, String query) async {
+    if (query.isEmpty) {
+      clearSearch();
+      return;
+    }
+
+    // Cancel previous
+    _searchSub?.cancel();
+    _searchNotifyTimer?.cancel();
+
+    final token = ++_searchToken;
+
+    _isSearching = true;
+    _currentQuery = query;
+    _searchResults.clear();
+    notifyListeners();
+
+    final seen = <String>{};
+
+    // Phase 1: current folder only
+    try {
+      if (!_cache.containsKey(path)) {
+        await load(path);
+      }
+      if (token != _searchToken) return;
+
+      final local = (_cache[path] ?? const <FileInfo>[])
+          .where((f) => _matchesQuery(f, query))
+          .toList();
+
+      for (final f in local) {
+        if (seen.add(f.path)) {
+          _searchResults.add(f);
+        }
+      }
+      notifyListeners();
+    } catch (_) {
+      // Ignore local phase errors; recursive stream may still find results.
+    }
+
+    // Phase 2: recursive search in nested folders
+    final stream = FileSystemService.searchStream(path, query);
+    _searchSub = stream.listen(
+      (either) {
+        if (token != _searchToken) return;
+        either.fold((err) {}, (file) {
+          if (!_matchesQuery(file, query)) return;
+          if (seen.add(file.path)) {
+            _searchResults.add(file);
+            _scheduleSearchNotify();
+          }
+        });
+      },
+      onDone: () {
+        if (token != _searchToken) return;
+        _isSearching = false;
+        notifyListeners();
+      },
+      onError: (_) {
+        if (token != _searchToken) return;
+        _isSearching = false;
+        notifyListeners();
+      },
+    );
   }
 
   void search(String path, String query) {
